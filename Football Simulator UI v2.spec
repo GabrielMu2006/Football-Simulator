@@ -46,5 +46,5 @@ app = BUNDLE(
     coll,
     name='Football Simulator UI v2.app',
     icon=None,
-    bundle_identifier=None,
+    bundle_identifier='com.gabrielmu.footballsimulator.uiv2',
 )

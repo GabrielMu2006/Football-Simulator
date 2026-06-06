@@ -18,6 +18,7 @@ mkdir -p "$PYINSTALLER_CONFIG_DIR"
   --clean \
   --windowed \
   --name "$APP_NAME" \
+  --osx-bundle-identifier "com.gabrielmu.footballsimulator.uiv2" \
   --distpath "$DIST_DIR" \
   --workpath "build-ui-v2" \
   --add-data "${SHARED_CONFIG_NAME}:." \
