@@ -1,0 +1,890 @@
+{
+  "premier_teams": [
+    "Kingsmeadow Rovers",
+    "Glazed Dreams",
+    "Thorned Reliquary",
+    "Dark Side of the Moon",
+    "Crownfield Athletic",
+    "Crimson Moon",
+    "Void Relics",
+    "Midnight Tales",
+    "Yellowjackets FC",
+    "Gaia's Revenge",
+    "Ancient Dragonfire",
+    "Icefire Ballad",
+    "Northern Lords",
+    "Star Guardians",
+    "Brookgate Wanderers",
+    "Solford Town",
+    "Shadow Eaters",
+    "Xeno Hunters",
+    "Blazing Shadows",
+    "Ironvale FC"
+  ],
+  "second_division_teams": [
+    "Nightingales",
+    "Pain FC",
+    "Hands of Fate",
+    "Ocean Stars",
+    "Celestial Vanguard",
+    "Supersonic Knights",
+    "Polaris FC",
+    "Hannya Masks",
+    "Zero Returners",
+    "Fallen Heirlooms",
+    "Ravenhill",
+    "Doom Knights",
+    "Ruined Legion",
+    "Thunder Rangers",
+    "Crystal Roses",
+    "Sentinels of Light",
+    "Glorious Vision",
+    "Miracle Makers",
+    "Chaos Overture",
+    "Royal Junction"
+  ],
+  "team_chinese_names": {
+    "Kingsmeadow Rovers": "国王草地流浪者",
+    "Ironvale FC": "铁谷 FC",
+    "Solford Town": "索尔福德镇",
+    "Royal Junction": "皇家枢纽",
+    "Crownfield Athletic": "王冠原竞技",
+    "Ravenhill": "渡鸦山",
+    "Brookgate Wanderers": "溪门流浪者",
+    "Yellowjackets FC": "大黄蜂",
+    "Northern Lords": "北境之主",
+    "Chaos Overture": "混沌序曲",
+    "Thunder Rangers": "雷霆巡游者",
+    "Supersonic Knights": "超音速骑士",
+    "Icefire Ballad": "冰与火之歌",
+    "Pain FC": "痛苦FC",
+    "Nightingales": "夜莺",
+    "Glorious Vision": "光荣异象",
+    "Gaia's Revenge": "盖亚的复仇",
+    "Sentinels of Light": "光明哨兵",
+    "Ruined Legion": "破败军团",
+    "Midnight Tales": "黯夜怪谈",
+    "Thorned Reliquary": "荆棘圣骸",
+    "Blazing Shadows": "炽焰之影",
+    "Shadow Eaters": "噬影者",
+    "Void Relics": "虚空遗器",
+    "Ocean Stars": "海洋之星",
+    "Miracle Makers": "奇迹之师",
+    "Ancient Dragonfire": "上古龙炎",
+    "Zero Returners": "归零者",
+    "Hannya Masks": "般若假面",
+    "Doom Knights": "毁灭骑士",
+    "Glazed Dreams": "琉璃幻梦",
+    "Hands of Fate": "命运之手",
+    "Celestial Vanguard": "天界神兵",
+    "Fallen Heirlooms": "堕天遗武",
+    "Xeno Hunters": "异形猎人",
+    "Crystal Roses": "水晶玫瑰",
+    "Polaris FC": "北极星",
+    "Star Guardians": "星之守护者",
+    "Crimson Moon": "猩红之月",
+    "Dark Side of the Moon": "月之暗面"
+  },
+  "real_players": [
+    {
+      "name": "Karim Adeyemi",
+      "position": "FW"
+    },
+    {
+      "name": "Aymeric Laporte",
+      "position": "DF"
+    },
+    {
+      "name": "Rodrygo",
+      "position": "FW"
+    },
+    {
+      "name": "Phil Foden",
+      "position": "MF"
+    },
+    {
+      "name": "Kenan Yildiz",
+      "position": "FW"
+    },
+    {
+      "name": "Milos Kerkez",
+      "position": "DF"
+    },
+    {
+      "name": "Antoine Griezmann",
+      "position": "FW"
+    },
+    {
+      "name": "Vitinha",
+      "position": "MF"
+    },
+    {
+      "name": "Amad Diallo",
+      "position": "FW"
+    },
+    {
+      "name": "Viktor Gyokeres",
+      "position": "FW"
+    },
+    {
+      "name": "Roberto Firmino",
+      "position": "FW"
+    },
+    {
+      "name": "Xavi Simons",
+      "position": "MF"
+    },
+    {
+      "name": "Alejandro Garnacho",
+      "position": "FW"
+    },
+    {
+      "name": "Granit Xhaka",
+      "position": "MF"
+    },
+    {
+      "name": "Eder Militao",
+      "position": "DF"
+    },
+    {
+      "name": "Alejandro Balde",
+      "position": "DF"
+    },
+    {
+      "name": "Patrik Schick",
+      "position": "FW"
+    },
+    {
+      "name": "Ederson",
+      "position": "MF"
+    },
+    {
+      "name": "Alphonso Davies",
+      "position": "DF"
+    },
+    {
+      "name": "Noussair Mazraoui",
+      "position": "DF"
+    },
+    {
+      "name": "Rodrigo De Paul",
+      "position": "MF"
+    },
+    {
+      "name": "Jurrien Timber",
+      "position": "DF"
+    },
+    {
+      "name": "Luke Shaw",
+      "position": "DF"
+    },
+    {
+      "name": "Marcelo Brozovic",
+      "position": "MF"
+    },
+    {
+      "name": "Frenkie de Jong",
+      "position": "MF"
+    },
+    {
+      "name": "Carlos Baleba",
+      "position": "MF"
+    },
+    {
+      "name": "Jonathan Tah",
+      "position": "DF"
+    },
+    {
+      "name": "Mikel Merino",
+      "position": "MF"
+    },
+    {
+      "name": "Moises Caicedo",
+      "position": "MF"
+    },
+    {
+      "name": "Sergio Busquets",
+      "position": "MF"
+    },
+    {
+      "name": "Christian Pulisic",
+      "position": "FW"
+    },
+    {
+      "name": "Nicolas Jackson",
+      "position": "FW"
+    },
+    {
+      "name": "Pau Cubarsi",
+      "position": "DF"
+    },
+    {
+      "name": "Jude Bellingham",
+      "position": "MF"
+    },
+    {
+      "name": "Nico Williams",
+      "position": "FW"
+    },
+    {
+      "name": "Alisson Becker",
+      "position": "GK"
+    },
+    {
+      "name": "Kingsley Coman",
+      "position": "FW"
+    },
+    {
+      "name": "Kobbie Mainoo",
+      "position": "MF"
+    },
+    {
+      "name": "Warren Zaire-Emery",
+      "position": "MF"
+    },
+    {
+      "name": "Jamie Vardy",
+      "position": "FW"
+    },
+    {
+      "name": "Gavi",
+      "position": "MF"
+    },
+    {
+      "name": "Anthony Gordon",
+      "position": "FW"
+    },
+    {
+      "name": "Leny Yoro",
+      "position": "DF"
+    },
+    {
+      "name": "Bradley Barcola",
+      "position": "FW"
+    },
+    {
+      "name": "Jeremie Frimpong",
+      "position": "DF"
+    },
+    {
+      "name": "Giovanni Di Lorenzo",
+      "position": "DF"
+    },
+    {
+      "name": "Matheus Cunha",
+      "position": "FW"
+    },
+    {
+      "name": "Casemiro",
+      "position": "MF"
+    },
+    {
+      "name": "Benjamin Sesko",
+      "position": "FW"
+    },
+    {
+      "name": "Gregor Kobel",
+      "position": "GK"
+    },
+    {
+      "name": "Desire Doue",
+      "position": "MF"
+    },
+    {
+      "name": "Matthijs de Ligt",
+      "position": "DF"
+    },
+    {
+      "name": "Ryan Gravenberch",
+      "position": "MF"
+    },
+    {
+      "name": "Jordi Alba",
+      "position": "DF"
+    },
+    {
+      "name": "Joao Cancelo",
+      "position": "DF"
+    },
+    {
+      "name": "Karim Benzema",
+      "position": "FW"
+    },
+    {
+      "name": "Mateo Retegui",
+      "position": "FW"
+    },
+    {
+      "name": "Ruben Dias",
+      "position": "DF"
+    },
+    {
+      "name": "Thomas Muller",
+      "position": "MF"
+    },
+    {
+      "name": "Jobe Bellingham",
+      "position": "MF"
+    },
+    {
+      "name": "Dominik Szoboszlai",
+      "position": "MF"
+    },
+    {
+      "name": "Jan Oblak",
+      "position": "GK"
+    },
+    {
+      "name": "Andre Onana",
+      "position": "GK"
+    },
+    {
+      "name": "Morgan Rogers",
+      "position": "MF"
+    },
+    {
+      "name": "Robert Lewandowski",
+      "position": "FW"
+    },
+    {
+      "name": "Goncalo Ramos",
+      "position": "FW"
+    },
+    {
+      "name": "Riyad Mahrez",
+      "position": "FW"
+    },
+    {
+      "name": "Rasmus Hojlund",
+      "position": "FW"
+    },
+    {
+      "name": "Luis Suarez",
+      "position": "FW"
+    },
+    {
+      "name": "Pedro Neto",
+      "position": "FW"
+    },
+    {
+      "name": "David Neres",
+      "position": "FW"
+    },
+    {
+      "name": "Theo Hernandez",
+      "position": "DF"
+    },
+    {
+      "name": "Arda Guler",
+      "position": "MF"
+    },
+    {
+      "name": "Declan Rice",
+      "position": "MF"
+    },
+    {
+      "name": "Bruno Fernandes",
+      "position": "MF"
+    },
+    {
+      "name": "Son Heung-min",
+      "position": "FW"
+    },
+    {
+      "name": "Lucas Hernandez",
+      "position": "DF"
+    },
+    {
+      "name": "Florian Wirtz",
+      "position": "MF"
+    },
+    {
+      "name": "Manuel Locatelli",
+      "position": "MF"
+    },
+    {
+      "name": "Alessandro Bastoni",
+      "position": "DF"
+    },
+    {
+      "name": "Romelu Lukaku",
+      "position": "FW"
+    },
+    {
+      "name": "Ruben Neves",
+      "position": "MF"
+    },
+    {
+      "name": "Federico Chiesa",
+      "position": "FW"
+    },
+    {
+      "name": "Charles De Ketelaere",
+      "position": "MF"
+    },
+    {
+      "name": "Jules Kounde",
+      "position": "DF"
+    },
+    {
+      "name": "Lisandro Martinez",
+      "position": "DF"
+    },
+    {
+      "name": "Kevin De Bruyne",
+      "position": "MF"
+    },
+    {
+      "name": "Senne Lammens",
+      "position": "GK"
+    },
+    {
+      "name": "Cristian Romero",
+      "position": "DF"
+    },
+    {
+      "name": "Darwin Nunez",
+      "position": "FW"
+    },
+    {
+      "name": "Cristiano Ronaldo",
+      "position": "FW"
+    },
+    {
+      "name": "Yann Sommer",
+      "position": "GK"
+    },
+    {
+      "name": "Bryan Mbeumo",
+      "position": "FW"
+    },
+    {
+      "name": "Adam Wharton",
+      "position": "MF"
+    },
+    {
+      "name": "Christian Eriksen",
+      "position": "MF"
+    },
+    {
+      "name": "Dayot Upamecano",
+      "position": "DF"
+    },
+    {
+      "name": "Rafael Leao",
+      "position": "FW"
+    },
+    {
+      "name": "Alexander Isak",
+      "position": "FW"
+    },
+    {
+      "name": "Enzo Fernandez",
+      "position": "MF"
+    },
+    {
+      "name": "Levi Colwill",
+      "position": "DF"
+    },
+    {
+      "name": "Dean Henderson",
+      "position": "GK"
+    },
+    {
+      "name": "Harry Maguire",
+      "position": "DF"
+    },
+    {
+      "name": "Antonio Rudiger",
+      "position": "DF"
+    },
+    {
+      "name": "Deniz Undav",
+      "position": "FW"
+    },
+    {
+      "name": "Mason Greenwood",
+      "position": "FW"
+    },
+    {
+      "name": "Scott McTominay",
+      "position": "MF"
+    },
+    {
+      "name": "Pedri",
+      "position": "MF"
+    },
+    {
+      "name": "Achraf Hakimi",
+      "position": "DF"
+    },
+    {
+      "name": "Lautaro Martinez",
+      "position": "FW"
+    },
+    {
+      "name": "Manuel Ugarte",
+      "position": "MF"
+    },
+    {
+      "name": "Diogo Dalot",
+      "position": "DF"
+    },
+    {
+      "name": "Marco Reus",
+      "position": "MF"
+    },
+    {
+      "name": "Federico Valverde",
+      "position": "MF"
+    },
+    {
+      "name": "Edouard Mendy",
+      "position": "GK"
+    },
+    {
+      "name": "Julian Alvarez",
+      "position": "FW"
+    },
+    {
+      "name": "Kylian Mbappe",
+      "position": "FW"
+    },
+    {
+      "name": "Dusan Vlahovic",
+      "position": "FW"
+    },
+    {
+      "name": "Angel Di Maria",
+      "position": "FW"
+    },
+    {
+      "name": "Marquinhos",
+      "position": "DF"
+    },
+    {
+      "name": "Reece James",
+      "position": "DF"
+    },
+    {
+      "name": "Moise Kean",
+      "position": "FW"
+    },
+    {
+      "name": "William Saliba",
+      "position": "DF"
+    },
+    {
+      "name": "Eduardo Camavinga",
+      "position": "MF"
+    },
+    {
+      "name": "Emiliano Martinez",
+      "position": "GK"
+    },
+    {
+      "name": "Virgil van Dijk",
+      "position": "DF"
+    },
+    {
+      "name": "Joshua Zirkzee",
+      "position": "FW"
+    },
+    {
+      "name": "Cole Palmer",
+      "position": "MF"
+    },
+    {
+      "name": "Federico Dimarco",
+      "position": "DF"
+    },
+    {
+      "name": "Marcus Rashford",
+      "position": "FW"
+    },
+    {
+      "name": "Lionel Messi",
+      "position": "FW"
+    },
+    {
+      "name": "Estevao Willian",
+      "position": "FW"
+    },
+    {
+      "name": "Sadio Mane",
+      "position": "FW"
+    },
+    {
+      "name": "Hugo Lloris",
+      "position": "GK"
+    },
+    {
+      "name": "Trent Alexander-Arnold",
+      "position": "DF"
+    },
+    {
+      "name": "Jordan Pickford",
+      "position": "GK"
+    },
+    {
+      "name": "Gianluigi Donnarumma",
+      "position": "GK"
+    },
+    {
+      "name": "Martin Odegaard",
+      "position": "MF"
+    },
+    {
+      "name": "Kalidou Koulibaly",
+      "position": "DF"
+    },
+    {
+      "name": "Evan Ferguson",
+      "position": "FW"
+    },
+    {
+      "name": "Ronald Araujo",
+      "position": "DF"
+    },
+    {
+      "name": "Lamine Yamal",
+      "position": "FW"
+    },
+    {
+      "name": "Raphinha",
+      "position": "FW"
+    },
+    {
+      "name": "Paulo Dybala",
+      "position": "FW"
+    },
+    {
+      "name": "Antony",
+      "position": "FW"
+    },
+    {
+      "name": "Patrick Dorgu",
+      "position": "DF"
+    },
+    {
+      "name": "Vinicius Junior",
+      "position": "FW"
+    },
+    {
+      "name": "Nuno Mendes",
+      "position": "DF"
+    },
+    {
+      "name": "Olivier Giroud",
+      "position": "FW"
+    },
+    {
+      "name": "Youri Tielemans",
+      "position": "MF"
+    },
+    {
+      "name": "Hakan Calhanoglu",
+      "position": "MF"
+    },
+    {
+      "name": "Sergio Ramos",
+      "position": "DF"
+    },
+    {
+      "name": "Harry Kane",
+      "position": "FW"
+    },
+    {
+      "name": "Marc Cucurella",
+      "position": "DF"
+    },
+    {
+      "name": "Alexis Mac Allister",
+      "position": "MF"
+    },
+    {
+      "name": "Luis Diaz",
+      "position": "FW"
+    },
+    {
+      "name": "Joshua Kimmich",
+      "position": "MF"
+    },
+    {
+      "name": "Manuel Neuer",
+      "position": "GK"
+    },
+    {
+      "name": "Rodri",
+      "position": "MF"
+    },
+    {
+      "name": "Anthony Elanga",
+      "position": "FW"
+    },
+    {
+      "name": "Ousmane Dembele",
+      "position": "FW"
+    },
+    {
+      "name": "David Raya",
+      "position": "GK"
+    },
+    {
+      "name": "Ademola Lookman",
+      "position": "FW"
+    },
+    {
+      "name": "Cody Gakpo",
+      "position": "FW"
+    },
+    {
+      "name": "Joao Pedro",
+      "position": "FW"
+    },
+    {
+      "name": "Lucas Chevalier",
+      "position": "GK"
+    },
+    {
+      "name": "Denzel Dumfries",
+      "position": "DF"
+    },
+    {
+      "name": "Micky van de Ven",
+      "position": "DF"
+    },
+    {
+      "name": "Michael Olise",
+      "position": "FW"
+    },
+    {
+      "name": "Endrick",
+      "position": "FW"
+    },
+    {
+      "name": "Bukayo Saka",
+      "position": "FW"
+    },
+    {
+      "name": "Bruno Guimaraes",
+      "position": "MF"
+    },
+    {
+      "name": "Mason Mount",
+      "position": "MF"
+    },
+    {
+      "name": "N'Golo Kante",
+      "position": "MF"
+    },
+    {
+      "name": "Rayan Cherki",
+      "position": "MF"
+    },
+    {
+      "name": "Christopher Nkunku",
+      "position": "FW"
+    },
+    {
+      "name": "Joao Neves",
+      "position": "MF"
+    },
+    {
+      "name": "James Trafford",
+      "position": "GK"
+    },
+    {
+      "name": "Aurelien Tchouameni",
+      "position": "MF"
+    },
+    {
+      "name": "John Stones",
+      "position": "DF"
+    },
+    {
+      "name": "Nicolo Barella",
+      "position": "MF"
+    },
+    {
+      "name": "Nick Woltemade",
+      "position": "FW"
+    },
+    {
+      "name": "Jamal Musiala",
+      "position": "MF"
+    },
+    {
+      "name": "Luka Modric",
+      "position": "MF"
+    },
+    {
+      "name": "Sandro Tonali",
+      "position": "MF"
+    },
+    {
+      "name": "Kai Havertz",
+      "position": "FW"
+    },
+    {
+      "name": "Jadon Sancho",
+      "position": "FW"
+    },
+    {
+      "name": "Josko Gvardiol",
+      "position": "DF"
+    },
+    {
+      "name": "Elliot Anderson",
+      "position": "MF"
+    },
+    {
+      "name": "Erling Haaland",
+      "position": "FW"
+    },
+    {
+      "name": "Ivan Toney",
+      "position": "FW"
+    },
+    {
+      "name": "Thibaut Courtois",
+      "position": "GK"
+    },
+    {
+      "name": "Dani Olmo",
+      "position": "MF"
+    },
+    {
+      "name": "Adrien Rabiot",
+      "position": "MF"
+    },
+    {
+      "name": "Unai Simon",
+      "position": "GK"
+    },
+    {
+      "name": "Ferran Torres",
+      "position": "FW"
+    },
+    {
+      "name": "Pierre-Emerick Aubameyang",
+      "position": "FW"
+    },
+    {
+      "name": "Nico Schlotterbeck",
+      "position": "DF"
+    },
+    {
+      "name": "Mohamed Salah",
+      "position": "FW"
+    },
+    {
+      "name": "Marcus Thuram",
+      "position": "FW"
+    },
+    {
+      "name": "Khvicha Kvaratskhelia",
+      "position": "FW"
+    }
+  ]
+}
