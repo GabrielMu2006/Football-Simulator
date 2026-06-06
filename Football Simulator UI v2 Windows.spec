@@ -12,6 +12,7 @@ a = Analysis(
     binaries=[],
     datas=[
         ("足球模拟器总配置.json", "."),
+        ("football_simulator_config.json", "."),
     ],
     hiddenimports=[],
     hookspath=[],

@@ -50,6 +50,10 @@ def shared_config_path() -> Path:
 
 
 def bundled_shared_config_path() -> Path:
+    for file_name in (SHARED_CONFIG_FILE_NAME, *ALTERNATE_SHARED_CONFIG_FILE_NAMES):
+        candidate = resource_root() / file_name
+        if candidate.exists():
+            return candidate
     return resource_root() / SHARED_CONFIG_FILE_NAME
 
 

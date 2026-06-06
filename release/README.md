@@ -7,6 +7,12 @@
 当前可运行版本：
 
 ```text
+release/macos/Open Football Simulator UI v2.command
+```
+
+它会打开：
+
+```text
 release/macos/Football-Simulator-UI-v2-macOS/Football Simulator UI v2.app
 ```
 

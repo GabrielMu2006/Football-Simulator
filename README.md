@@ -35,10 +35,22 @@ Football Simulator UI v2.app
 
 ## macOS 游玩方式
 
-下载或构建完成后，打开：
+本地仓库中可以直接双击：
+
+```text
+release/macos/Open Football Simulator UI v2.command
+```
+
+它会自动打开：
 
 ```text
 release/macos/Football-Simulator-UI-v2-macOS/Football Simulator UI v2.app
+```
+
+如果从 GitHub 下载，建议下载 macOS 压缩包：
+
+```text
+release/macos/Football-Simulator-UI-v2-macOS.zip
 ```
 
 如果 macOS 提示无法打开，可以尝试：
@@ -191,6 +203,7 @@ build_windows_ui_v2.bat
 足球模拟器总配置.json
 release/
   macos/               macOS 可运行版与 zip
+    Open Football Simulator UI v2.command
   windows/             Windows 发布说明
 ```
 

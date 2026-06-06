@@ -15,6 +15,7 @@ dist/
 dist-*/
 dist-ui-v2/
 dist-windows-ui-v2/
+windows-build-package/
 
 saves/
 current_save.txt
