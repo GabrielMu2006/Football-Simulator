@@ -14,7 +14,7 @@ Football Simulator UI v2.app
 
 - `release/macos/Football-Simulator-UI-v2-macOS/`：可直接运行的 macOS 图形版。
 - `release/macos/Football-Simulator-UI-v2-macOS.zip`：macOS 发布压缩包。
-- `release/windows/`：Windows 可运行版预留目录，后续你可以把 Windows 构建产物放进去。
+- Windows 图形版通过 GitHub Releases 提供 zip 下载。
 - `football_simulator/`、`main.py`、`ui_v2_main.py`：游戏源码。
 - `足球模拟器总配置.json`：总配置文件。
 - `README.md`：项目说明。
@@ -98,6 +98,22 @@ Windows 版运行时，存档在：
 %APPDATA%\Football Simulator\saves
 ```
 
+## Windows 游玩方式
+
+下载 Windows 压缩包：
+
+```text
+https://github.com/GabrielMu2006/Football-Simulator/releases/download/v0.1.0-windows/Football-Simulator-UI-v2-Windows.zip
+```
+
+解压后打开：
+
+```text
+Football-Simulator-UI-v2-Windows/Football Simulator UI v2.exe
+```
+
+如果 Windows 安全提示来自未知发布者，请选择“更多信息”，再选择“仍要运行”。这是因为当前版本没有进行商业代码签名。
+
 ## 从源码运行
 
 需要 Python 3.9+。
@@ -140,7 +156,7 @@ cp "Football-Simulator-UI-v2-macOS.zip" "release/macos/Football-Simulator-UI-v2-
 
 ## 构建 Windows 版
 
-Windows `.exe` 需要在 Windows 系统上构建。把整个项目复制到 Windows 后运行：
+如果需要重新生成 Windows `.exe`，请在 Windows 系统上构建。把整个项目复制到 Windows 后运行：
 
 ```bat
 build_windows_ui_v2.bat
@@ -152,7 +168,7 @@ build_windows_ui_v2.bat
 dist-windows-ui-v2\Football Simulator UI v2\Football Simulator UI v2.exe
 ```
 
-后续要把 Windows 版加入仓库时，建议复制到：
+重新构建后，要把 Windows 版加入仓库时，建议复制到：
 
 ```text
 release/windows/Football-Simulator-UI-v2-Windows/
@@ -175,11 +191,11 @@ build_windows_ui_v2.bat
 足球模拟器总配置.json
 release/
   macos/               macOS 可运行版与 zip
-  windows/             Windows 可运行版预留目录
+  windows/             Windows 发布说明
 ```
 
 ## GitHub 发布建议
 
 - 仓库中提交源码、构建脚本、README、`足球模拟器总配置.json` 和 `release/` 目录。
 - 不建议把 `.venv/`、`build*/`、`dist*/`、`saves/`、`__pycache__/` 提交进源码仓库。
-- 如果只想让玩家下载，`release/macos/Football-Simulator-UI-v2-macOS.zip` 也可以同步上传到 GitHub Releases。
+- Windows zip 超过 GitHub 普通仓库单文件限制，因此放在 GitHub Releases 中作为下载附件。
