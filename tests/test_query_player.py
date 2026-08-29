@@ -423,6 +423,30 @@ class PlayerSeasonOneQueryTest(_ReadOnlySaveCase):
             # 第 1 赛季没有杯赛。
             self.assertEqual(list_players(conn, 1, competition="优胜者杯"), [])
 
+    def test_directory_real_only_filter(self) -> None:
+        with self.open_conn() as conn:
+            all_rows = self._directory(conn)
+            real_rows = [row for row in all_rows if row.is_real]
+            default_rows = [row for row in all_rows if not row.is_real]
+            self.assertTrue(real_rows, "赛季 1 应包含真实球员")
+            self.assertTrue(default_rows, "赛季 1 应包含默认球员")
+
+            by_real = list_players(conn, 1, is_real=True)
+            by_default = list_players(conn, 1, is_real=False)
+            self.assertEqual([row.player_id for row in by_real], [row.player_id for row in real_rows])
+            self.assertEqual([row.player_id for row in by_default], [row.player_id for row in default_rows])
+            self.assertTrue(all(row.is_real for row in by_real))
+            self.assertTrue(all(not row.is_real for row in by_default))
+            # 真实 + 默认是完整目录的一个划分（无重复、无遗漏）。
+            self.assertEqual(
+                {row.player_id for row in by_real} | {row.player_id for row in by_default},
+                {row.player_id for row in all_rows},
+            )
+            self.assertEqual(
+                set(row.player_id for row in by_real) & set(row.player_id for row in by_default),
+                set(),
+            )
+
     def test_unknown_player_or_season_raise_key_error(self) -> None:
         with self.open_conn() as conn:
             with self.assertRaises(KeyError):

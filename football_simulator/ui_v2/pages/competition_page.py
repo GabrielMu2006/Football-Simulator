@@ -34,10 +34,11 @@ import sqlite3
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
-from PySide6.QtCore import QEvent, Qt
+from PySide6.QtCore import QEvent, QRect, Qt
 from PySide6.QtGui import QColor, QPainter
 from PySide6.QtWidgets import (
     QApplication,
+    QCheckBox,
     QComboBox,
     QFrame,
     QGridLayout,
@@ -63,6 +64,7 @@ from football_simulator.ui_v2.components import (
     EntityTable,
     PageHeader,
 )
+from football_simulator.ui_v2.components.team_crest import draw_team_crest
 from football_simulator.ui_v2.navigation import Route
 from football_simulator.ui_v2.pages.entity_page_base import EntityPageBase, PageContext
 from football_simulator.ui_v2.widgets import CardFrame
@@ -261,7 +263,7 @@ class _HistoryRow:
 
 _STANDINGS_COLUMNS: Tuple[ColumnSpec, ...] = (
     ColumnSpec("rank", "名次", width=64, alignment=Qt.AlignmentFlag.AlignRight),
-    ColumnSpec("team_name", "球队", width=200),
+    ColumnSpec("team_name", "球队", width=200, stretch=True),
     ColumnSpec("played", "赛", width=56, alignment=Qt.AlignmentFlag.AlignRight),
     ColumnSpec("wins", "胜", width=56, alignment=Qt.AlignmentFlag.AlignRight),
     ColumnSpec("draws", "平", width=56, alignment=Qt.AlignmentFlag.AlignRight),
@@ -291,16 +293,16 @@ _PLAYOFF_STAGE_COLUMNS: Tuple[ColumnSpec, ...] = (
 _MATCH_COLUMNS: Tuple[ColumnSpec, ...] = (
     ColumnSpec("week_text", "周", width=96),
     ColumnSpec("round_text", "轮次", width=96, alignment=Qt.AlignmentFlag.AlignRight),
-    ColumnSpec("home_name", "主队", width=190),
+    ColumnSpec("home_name", "主队", width=190, stretch=True),
     ColumnSpec("score_text", "比分/未赛", width=104, alignment=Qt.AlignmentFlag.AlignCenter),
-    ColumnSpec("away_name", "客队", width=190),
+    ColumnSpec("away_name", "客队", width=190, stretch=True),
     ColumnSpec("status_text", "状态", width=84, alignment=Qt.AlignmentFlag.AlignCenter),
 )
 
 _LEADER_COLUMNS: Tuple[ColumnSpec, ...] = (
     ColumnSpec("board", "类型", width=88, alignment=Qt.AlignmentFlag.AlignCenter),
     ColumnSpec("rank", "名次", width=60, alignment=Qt.AlignmentFlag.AlignRight),
-    ColumnSpec("player_name", "球员", width=190),
+    ColumnSpec("player_name", "球员", width=190, stretch=True),
     ColumnSpec("team_name", "球队", width=180),
     ColumnSpec("appeared", "出场", width=64, alignment=Qt.AlignmentFlag.AlignRight),
     ColumnSpec("stat_text", "主要统计", width=140, alignment=Qt.AlignmentFlag.AlignRight),
@@ -349,11 +351,13 @@ class _LinkColumnDelegate(QStyledItemDelegate):
         resolver: Callable[[Any], Optional[Route]],
         alignment: Qt.AlignmentFlag,
         parent: Optional[QWidget] = None,
+        crest: bool = False,
     ) -> None:
         super().__init__(parent)
         self._table = table
         self._resolver = resolver
         self._alignment = Qt.AlignmentFlag(alignment)
+        self._show_crest = crest
 
     def paint(self, painter: QPainter, option: QStyleOptionViewItem, index) -> None:  # noqa: N802 - Qt API
         opt = QStyleOptionViewItem(option)
@@ -365,11 +369,22 @@ class _LinkColumnDelegate(QStyledItemDelegate):
         if not text:
             return
         painter.save()
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         font = opt.font
         font.setUnderline(bool(opt.state & QStyle.State.State_MouseOver))
         painter.setFont(font)
         painter.setPen(QColor("#7dd3fc"))
         rect = opt.rect.adjusted(8, 0, -8, 0)
+        if self._show_crest:
+            crest_size = min(rect.height(), 24)
+            crest_rect = QRect(rect.left(), rect.top() + (rect.height() - crest_size) // 2, crest_size, crest_size)
+            draw_team_crest(painter, crest_rect, str(text), size=crest_size)
+            rect = QRect(
+                rect.left() + crest_size + 8,
+                rect.top(),
+                max(0, rect.width() - crest_size - 8),
+                rect.height(),
+            )
         painter.drawText(rect, int(self._alignment | Qt.AlignmentFlag.AlignVCenter), str(text))
         painter.restore()
 
@@ -491,7 +506,15 @@ class CompetitionPage(EntityPageBase):
         self._leader_table = EntityTable(_LEADER_COLUMNS, navigator=self._context.navigate, parent=self)
         self._leader_empty_slot = self._make_empty_slot()
         self._leader_stack = self._make_tab_stack(self._leader_table, self._leader_empty_slot)
-        self._tabs.addTab(self._leader_stack, _TAB_TITLES[_TAB_LEADERS])
+        # “只显示真实球员”复选框（切换 → refresh → 重新拉取榜单，过滤发生在
+        # 截取前 N 名之前，排名不失真）。复选框行不是滚动面（§8.2 不受影响）。
+        leader_panel = QWidget(self)
+        leader_layout = QVBoxLayout(leader_panel)
+        leader_layout.setContentsMargins(0, 0, 0, 0)
+        leader_layout.setSpacing(6)
+        leader_layout.addWidget(self._make_leader_real_check(), 0)
+        leader_layout.addWidget(self._leader_stack, 1)
+        self._tabs.addTab(leader_panel, _TAB_TITLES[_TAB_LEADERS])
 
         self._awards_table = EntityTable(_AWARD_COLUMNS, navigator=self._context.navigate, parent=self)
         self._awards_empty_slot = self._make_empty_slot()
@@ -548,14 +571,18 @@ class CompetitionPage(EntityPageBase):
         table: EntityTable,
         columns: Tuple[ColumnSpec, ...],
         resolvers: Sequence[Tuple[str, Callable[[Any], Optional[Route]]]],
+        crest_keys: Optional[Sequence[str]] = None,
     ) -> None:
         """给表格的可点列挂链接 delegate 并注册手型光标列。"""
 
         registered = set()
+        crest_keys = crest_keys or ()
         for key, resolver in resolvers:
             index = _column_index(columns, key)
             # 生命周期约定：挂 view 为 parent + 页面持引用、列表只增不清（见 __init__ 注释）。
-            delegate = _LinkColumnDelegate(table, resolver, columns[index].alignment, parent=table.view)
+            delegate = _LinkColumnDelegate(
+                table, resolver, columns[index].alignment, parent=table.view, crest=key in crest_keys
+            )
             table.view.setItemDelegateForColumn(index, delegate)
             self._delegates.append(delegate)
             registered.add(index)
@@ -586,7 +613,9 @@ class CompetitionPage(EntityPageBase):
                     for item in competition_queries.list_competitions(conn, int(season))
                 }
                 try:
-                    profile = competition_queries.get_competition_profile(conn, competition_id, int(season))
+                    profile = competition_queries.get_competition_profile(
+                        conn, competition_id, int(season), leaderboards_is_real=self._leader_real_only
+                    )
                 except KeyError:
                     self._set_page_empty("未知赛事", f"“{competition_id}”不是本存档的六项规范赛事之一。")
                     return
@@ -811,7 +840,9 @@ class CompetitionPage(EntityPageBase):
             self._stage_rows = list(rows)
             table = EntityTable(_STANDINGS_COLUMNS, navigator=self._context.navigate, parent=self._stage_container)
             table.set_rows(rows, route_for_row=self._standing_team_route)
-            self._install_stage_delegates(table, _STANDINGS_COLUMNS, (("team_name", self._standing_team_route),))
+            self._install_stage_delegates(
+                table, _STANDINGS_COLUMNS, (("team_name", self._standing_team_route),), crest_keys=("team_name",)
+            )
             self._stage_container_layout.addWidget(table)
             self._stage_table = table
             return
@@ -946,14 +977,18 @@ class CompetitionPage(EntityPageBase):
         table: EntityTable,
         columns: Tuple[ColumnSpec, ...],
         resolvers: Sequence[Tuple[str, Callable[[Any], Optional[Route]]]],
+        crest_keys: Optional[Sequence[str]] = None,
     ) -> None:
         """给刷新时新建的签表/积分榜表格挂链接 delegate。"""
 
         registered: set = set()
+        crest_keys = crest_keys or ()
         for key, resolver in resolvers:
             index = _column_index(columns, key)
             # 生命周期约定：挂 view 为 parent + 页面持引用、列表只增不清（见 __init__ 注释）。
-            delegate = _LinkColumnDelegate(table, resolver, columns[index].alignment, parent=table.view)
+            delegate = _LinkColumnDelegate(
+                table, resolver, columns[index].alignment, parent=table.view, crest=key in crest_keys
+            )
             table.view.setItemDelegateForColumn(index, delegate)
             self._stage_delegates.append(delegate)
             registered.add(index)
@@ -994,6 +1029,25 @@ class CompetitionPage(EntityPageBase):
             )
 
     # -- 球员榜页签 -------------------------------------------------------------
+
+    @property
+    def _leader_real_only(self) -> Optional[bool]:
+        # None = 不过滤（全部球员）；True = 只显示真实球员。绝不能传 False，
+        # 否则查询层会把榜单过滤成“只显示默认球员”。
+        check = getattr(self, "_leader_real_only_check", None)
+        if check is None or not check.isChecked():
+            return None
+        return True
+
+    def _make_leader_real_check(self) -> QCheckBox:
+        """球员榜“只显示真实球员”复选框：跨刷新保持，切换即重新拉取。"""
+        check = getattr(self, "_leader_real_only_check", None)
+        if check is None:
+            check = QCheckBox("只显示真实球员")
+            check.setObjectName("leaderRealOnlyCheck")
+            check.toggled.connect(lambda _checked: self.refresh())
+            self._leader_real_only_check = check
+        return check
 
     def _rebuild_leader_tab(
         self,

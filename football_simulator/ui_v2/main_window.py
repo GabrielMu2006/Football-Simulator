@@ -26,7 +26,8 @@ import importlib
 import traceback
 from typing import Dict, Optional, Tuple, Type
 
-from PySide6.QtCore import QThread, Qt, Signal
+from PySide6.QtCore import QRectF, QThread, Qt, Signal
+from PySide6.QtGui import QColor, QFont, QIcon, QKeySequence, QPainter, QPixmap, QShortcut
 from PySide6.QtWidgets import (
     QComboBox,
     QFrame,
@@ -72,6 +73,43 @@ NAV_ITEMS = [
 ]
 
 _NAV_KEYS = tuple(key for _, key in NAV_ITEMS)
+
+# 侧栏图标符号（几何/运动符号，Item 文本保持不变以兼容测试与高亮逻辑）。
+_NAV_ICON_SYMBOLS = {
+    "dashboard": "⌂",
+    "season_overview": "▦",
+    "matches": "⚽",
+    "competition": "◆",
+    "teams": "⚑",
+    "players": "●",
+    "transfers": "⇄",
+    "draft": "★",
+    "history": "▣",
+    "saves": "▤",
+}
+
+
+def _nav_icon(symbol: str) -> QIcon:
+    """生成 22×22 的圆角小图标（深色底 + 青色符号）。"""
+    pixmap = QPixmap(22, 22)
+    pixmap.fill(Qt.GlobalColor.transparent)
+    painter = QPainter(pixmap)
+    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+    painter.setPen(Qt.PenStyle.NoPen)
+    painter.setBrush(QColor("#122238"))
+    painter.drawRoundedRect(QRectF(1.0, 1.0, 20.0, 20.0), 6.0, 6.0)
+    painter.setPen(QColor("#7dd3fc"))
+    font = QFont()
+    font.setPixelSize(13)
+    font.setBold(True)
+    painter.setFont(font)
+    painter.drawText(
+        QRectF(0.0, 0.0, 22.0, 22.0),
+        Qt.AlignmentFlag.AlignCenter,
+        symbol,
+    )
+    painter.end()
+    return QIcon(pixmap)
 
 # 实体详情路由 → 所属一级导航（侧栏高亮镜像用）。
 _SIDEBAR_PARENT_BY_ROUTE = {
@@ -207,6 +245,7 @@ class MainWindow(QMainWindow):
         for label, key in NAV_ITEMS:
             item = QListWidgetItem(label)
             item.setData(Qt.UserRole, key)
+            item.setIcon(_nav_icon(_NAV_ICON_SYMBOLS[key]))
             self.nav_list.addItem(item)
         # 侧栏只是导航入口和高亮镜像：点击 → router.navigate；高亮由 Router
         # 观察者写回（_nav_syncing 防止程序化同步触发二次导航）。
@@ -262,6 +301,13 @@ class MainWindow(QMainWindow):
             self.router.navigate,
         )
         self.search_box.setFixedWidth(260)
+        # 全局搜索快捷键：Ctrl+K / Cmd+K（macOS 下 Meta 即 Command）。
+        self._search_shortcuts = [
+            QShortcut(QKeySequence("Ctrl+K"), self),
+            QShortcut(QKeySequence("Meta+K"), self),
+        ]
+        for shortcut in self._search_shortcuts:
+            shortcut.activated.connect(self._focus_global_search)
         nav_row.addWidget(self.back_button)
         nav_row.addWidget(self.forward_button)
         nav_row.addWidget(self.breadcrumb_bar, 1)
@@ -298,6 +344,11 @@ class MainWindow(QMainWindow):
         control_row.addWidget(self.reload_button)
         bar_layout.addLayout(control_row)
         return bar
+
+    def _focus_global_search(self) -> None:
+        """聚焦全局搜索框并全选已有文本（Cmd/Ctrl+K）。"""
+        self.search_box.line_edit.setFocus()
+        self.search_box.line_edit.selectAll()
 
     def _build_pages(self) -> None:
         """初始化页面装配。所有路由页面均为 EntityPageBase 新契约，由

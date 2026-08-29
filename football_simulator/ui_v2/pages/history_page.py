@@ -46,6 +46,8 @@ parent（与视图同生命周期），同时页面持有 Python 引用，且引
 了 parent），而旧视图的列映射仍指向该对象，此后任意 GC/绘制时刻都会
 SIGSEGV。本页所有表格在 ``_build_ui`` 一次构建、随刷新只换行数据，delegate
 全部存入 ``self._delegates``，从不重建、从不清空。
+
+数据口径：历史页的奖项/结算数据仅覆盖真实球员（默认球员不参与评分/身价结算），因此无需“只显示真实球员”过滤。
 """
 
 from __future__ import annotations
@@ -53,7 +55,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
-from PySide6.QtCore import QEvent, Qt
+from PySide6.QtCore import QEvent, QRect, Qt
 from PySide6.QtGui import QColor, QPainter
 from PySide6.QtWidgets import (
     QApplication,
@@ -85,6 +87,7 @@ from football_simulator.ui_v2.components import (
     TEXT_COLOR_BRIGHT,
     TEXT_COLOR_MUTED,
 )
+from football_simulator.ui_v2.components.team_crest import draw_team_crest
 from football_simulator.ui_v2.navigation import Route
 from football_simulator.ui_v2.pages.entity_page_base import EntityPageBase, PageContext
 from football_simulator.ui_v2.widgets import section_header
@@ -115,7 +118,7 @@ _BRIGHT_STYLE = f"color: {TEXT_COLOR_BRIGHT}; background: transparent; font-weig
 
 _STANDING_COLUMNS: Tuple[ColumnSpec, ...] = (
     ColumnSpec("rank", "名次", width=64, alignment=Qt.AlignmentFlag.AlignRight),
-    ColumnSpec("team_name", "球队", width=200),
+    ColumnSpec("team_name", "球队", width=200, stretch=True),
     ColumnSpec("played", "赛", width=56, alignment=Qt.AlignmentFlag.AlignRight),
     ColumnSpec("wins", "胜", width=56, alignment=Qt.AlignmentFlag.AlignRight),
     ColumnSpec("draws", "平", width=56, alignment=Qt.AlignmentFlag.AlignRight),
@@ -128,7 +131,7 @@ _STANDING_COLUMNS: Tuple[ColumnSpec, ...] = (
 
 _TOP20_COLUMNS: Tuple[ColumnSpec, ...] = (
     ColumnSpec("rank", "名次", width=64, alignment=Qt.AlignmentFlag.AlignRight),
-    ColumnSpec("player_name", "球员", width=180),
+    ColumnSpec("player_name", "球员", width=180, stretch=True),
     ColumnSpec("position", "位置", width=64, alignment=Qt.AlignmentFlag.AlignHCenter),
     ColumnSpec("team_name", "球队", width=180),
     ColumnSpec("rating", "赛季末评分", width=104, alignment=Qt.AlignmentFlag.AlignRight),
@@ -137,7 +140,7 @@ _TOP20_COLUMNS: Tuple[ColumnSpec, ...] = (
 )
 
 _HONOR_COLUMNS: Tuple[ColumnSpec, ...] = (
-    ColumnSpec("team_name", "球队", width=190),
+    ColumnSpec("team_name", "球队", width=190, stretch=True),
     ColumnSpec("division", "级别", width=96, alignment=Qt.AlignmentFlag.AlignHCenter),
     ColumnSpec("league_result", "联赛", width=96),
     ColumnSpec("winners_cup_result", "优胜者杯", width=104),
@@ -148,7 +151,7 @@ _HONOR_COLUMNS: Tuple[ColumnSpec, ...] = (
 )
 
 _SETTLEMENT_COLUMNS: Tuple[ColumnSpec, ...] = (
-    ColumnSpec("player_name", "球员", width=180),
+    ColumnSpec("player_name", "球员", width=180, stretch=True),
     ColumnSpec("team_name", "球队", width=170),
     ColumnSpec("season_number", "赛季", width=64, alignment=Qt.AlignmentFlag.AlignRight),
     ColumnSpec("stage", "阶段", width=84, alignment=Qt.AlignmentFlag.AlignHCenter),
@@ -257,11 +260,13 @@ class _LinkColumnDelegate(QStyledItemDelegate):
         resolver: Callable[[Any], Optional[navigation.Route]],
         alignment: Qt.AlignmentFlag,
         parent: Optional[QWidget] = None,
+        crest: bool = False,
     ) -> None:
         super().__init__(parent)
         self._table = table
         self._resolver = resolver
         self._alignment = Qt.AlignmentFlag(alignment)
+        self._show_crest = crest
 
     def paint(self, painter: QPainter, option: QStyleOptionViewItem, index) -> None:  # noqa: N802 - Qt API
         opt = QStyleOptionViewItem(option)
@@ -273,11 +278,22 @@ class _LinkColumnDelegate(QStyledItemDelegate):
         if not text or str(text) == "—":
             return
         painter.save()
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         font = opt.font
         font.setUnderline(bool(opt.state & QStyle.State.State_MouseOver))
         painter.setFont(font)
         painter.setPen(QColor(LINK_COLOR))
         rect = opt.rect.adjusted(8, 0, -8, 0)
+        if self._show_crest:
+            crest_size = min(rect.height(), 24)
+            crest_rect = QRect(rect.left(), rect.top() + (rect.height() - crest_size) // 2, crest_size, crest_size)
+            draw_team_crest(painter, crest_rect, str(text), size=crest_size)
+            rect = QRect(
+                rect.left() + crest_size + 8,
+                rect.top(),
+                max(0, rect.width() - crest_size - 8),
+                rect.height(),
+            )
         painter.drawText(rect, int(self._alignment | Qt.AlignmentFlag.AlignVCenter), str(text))
         painter.restore()
 
@@ -453,6 +469,7 @@ class HistoryPage(EntityPageBase):
         self._settlement_filter = FilterBar(parent=settlement_page)
         self._settlement_filter.add_search("筛选球员或球队（留空显示全部）")
         self._settlement_filter.search_changed.connect(self._on_settlement_search)
+        self._settlement_filter.add_reset()
         settlement_layout.addWidget(self._settlement_filter)
         self._settlement_table = EntityTable(_SETTLEMENT_COLUMNS, navigator=self._context.navigate, parent=self)
         self._settlement_empty_slot = self._make_empty_slot()
@@ -497,18 +514,19 @@ class HistoryPage(EntityPageBase):
         """列级链接 delegate：parent=view，页面持有引用且只增不清（勿改）。"""
 
         specs = (
-            (self._standings_table, _STANDING_COLUMNS, "team_name", self._standing_team_route),
-            (self._top20_table, _TOP20_COLUMNS, "player_name", self._top20_player_route),
-            (self._honor_table, _HONOR_COLUMNS, "team_name", self._honor_team_route),
-            (self._settlement_table, _SETTLEMENT_COLUMNS, "player_name", self._settlement_player_route),
+            (self._standings_table, _STANDING_COLUMNS, "team_name", self._standing_team_route, True),
+            (self._top20_table, _TOP20_COLUMNS, "player_name", self._top20_player_route, False),
+            (self._honor_table, _HONOR_COLUMNS, "team_name", self._honor_team_route, True),
+            (self._settlement_table, _SETTLEMENT_COLUMNS, "player_name", self._settlement_player_route, False),
         )
-        for table, columns, key, resolver in specs:
+        for table, columns, key, resolver, show_crest in specs:
             index = _column_index(columns, key)
             delegate = _LinkColumnDelegate(
                 table,
                 resolver,
                 columns[index].alignment,
                 parent=table.view,
+                crest=show_crest,
             )
             table.view.setItemDelegateForColumn(index, delegate)
             self._delegates.append(delegate)
@@ -784,8 +802,6 @@ class HistoryPage(EntityPageBase):
                 row_layout.addWidget(empty)
             row_layout.addStretch(1)
             champions_layout.addWidget(row)
-        layout.addWidget(champions_frame)
-
         top3_frame = QFrame(entry_row.parentWidget())
         top3_frame.setObjectName("cardFrame")
         top3_layout = QVBoxLayout(top3_frame)
@@ -822,7 +838,14 @@ class HistoryPage(EntityPageBase):
             empty = QLabel("该赛季还没有年度 Top20 数据")
             empty.setStyleSheet(_MUTED_STYLE)
             top3_layout.addWidget(empty)
-        layout.addWidget(top3_frame)
+
+        # 双栏：左侧冠军、右侧 Top20 前三，降低单列纵向空白。
+        overview_row = QHBoxLayout()
+        overview_row.setContentsMargins(0, 0, 0, 0)
+        overview_row.setSpacing(12)
+        overview_row.addWidget(champions_frame, 1)
+        overview_row.addWidget(top3_frame, 1)
+        layout.addLayout(overview_row)
         layout.addStretch(1)
 
     # -- 页签 1：最终排名 ------------------------------------------------------

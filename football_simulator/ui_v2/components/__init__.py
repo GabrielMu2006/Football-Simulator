@@ -15,34 +15,36 @@ FilterBar / EmptyState。组件层只允许依赖 PySide6、``football_simulator
 
 from __future__ import annotations
 
-# —— 链接配色（§7.2：青色链接色、hover/焦点态、可访问焦点框） ————————————
-LINK_COLOR = "#7dd3fc"  # 青色链接色；取自 widgets.py 既有青色（TrendSparkline 默认线色 / POSITION_COLORS["GK"]）
-LINK_COLOR_HOVER = "#bae6fd"  # hover 提亮（LINK_COLOR 的亮一阶，配合下划线）
-LINK_COLOR_FOCUS = "#38bdf8"  # 键盘焦点框描边（青色系，与 LINK_COLOR 同族）
-
-# —— 文本配色 ————————————————————————————————————————————
-TEXT_COLOR = "#e8eef7"  # theme.py APP_STYLE `QWidget { color: ... }`
-TEXT_COLOR_BRIGHT = "#f8fbff"  # theme.py APP_STYLE `QLabel#titleLabel`
-TEXT_COLOR_MUTED = "#91a8c5"  # theme.py APP_STYLE `QLabel#subtitleLabel`
-TEXT_COLOR_SOFT = "#cbd7e6"  # theme.py APP_STYLE `QListWidget#navList::item`
-
-# —— 背景与边框 ————————————————————————————————————————————
-BG_COLOR = "#0b1220"  # theme.py APP_STYLE `QWidget { background: ... }`
-BG_COLOR_CARD = "#111c2e"  # theme.py APP_STYLE `QFrame#cardFrame`
-BG_COLOR_INPUT = "#0f1b2d"  # theme.py APP_STYLE `QComboBox/QLineEdit/QTableWidget`
-BORDER_COLOR = "#263b5b"  # theme.py APP_STYLE `QFrame#cardFrame` 边框
-BORDER_COLOR_SOFT = "#223653"  # theme.py APP_STYLE `QComboBox` 边框
-
-# —— 强调色 ——————————————————————————————————————————————
-ACCENT_COLOR = "#1167d8"  # theme.py APP_STYLE `QPushButton` 背景
-ACCENT_COLOR_HOVER = "#2784ff"  # theme.py APP_STYLE `QPushButton:hover`
-
-# —— 表格配色 ————————————————————————————————————————————
-HEADER_BG_COLOR = "#172942"  # theme.py APP_STYLE `QHeaderView::section` 背景
-ALT_ROW_COLOR = "#13243a"  # theme.py APP_STYLE `QTableWidget alternate-background-color`
-GRID_COLOR = "#23344d"  # theme.py APP_STYLE `QTableWidget gridline-color`
-SELECTION_COLOR = "#155bb6"  # theme.py APP_STYLE `QTableWidget selection-background-color`
-ROW_HOVER_COLOR = "#1d3555"  # theme.py APP_STYLE `QTableWidget::item:hover`
+# 颜色 tokens 已收敛到 football_simulator.ui_v2.design_tokens（本包保持原导出名）。
+from football_simulator.ui_v2.design_tokens import (
+    ACCENT_COLOR,
+    ACCENT_COLOR_HOVER,
+    ALT_ROW_COLOR,
+    BG_COLOR,
+    BG_COLOR_CARD,
+    BG_COLOR_INPUT,
+    BORDER_COLOR,
+    BORDER_COLOR_SOFT,
+    DANGER_BG,
+    DANGER_COLOR,
+    GRID_COLOR,
+    HEADER_BG_COLOR,
+    LINK_COLOR,
+    LINK_COLOR_FOCUS,
+    LINK_COLOR_HOVER,
+    NEUTRAL_BG,
+    NEUTRAL_COLOR,
+    ROW_HOVER_COLOR,
+    SELECTION_COLOR,
+    SUCCESS_BG,
+    SUCCESS_COLOR,
+    TEXT_COLOR,
+    TEXT_COLOR_BRIGHT,
+    TEXT_COLOR_MUTED,
+    TEXT_COLOR_SOFT,
+    WARNING_BG,
+    WARNING_COLOR,
+)
 
 from football_simulator.ui_v2.components.empty_state import EmptyState
 from football_simulator.ui_v2.components.entity_link import EntityLink

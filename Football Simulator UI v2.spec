@@ -6,7 +6,7 @@ a = Analysis(
     pathex=['/Users/gabrielmu/Documents/Football Simulator'],
     binaries=[],
     datas=[('足球模拟器总配置.json', '.')],
-    hiddenimports=[],
+    hiddenimports=['football_simulator.ui_v2.pages.competition_page', 'football_simulator.ui_v2.pages.dashboard_page', 'football_simulator.ui_v2.pages.draft_page', 'football_simulator.ui_v2.pages.history_page', 'football_simulator.ui_v2.pages.match_detail_page', 'football_simulator.ui_v2.pages.matches_page', 'football_simulator.ui_v2.pages.player_profile_page', 'football_simulator.ui_v2.pages.players_page', 'football_simulator.ui_v2.pages.saves_page', 'football_simulator.ui_v2.pages.season_overview_page', 'football_simulator.ui_v2.pages.team_profile_page', 'football_simulator.ui_v2.pages.teams_page', 'football_simulator.ui_v2.pages.transfers_page', 'football_simulator.ui_v2.pages.weekly_report_page', 'football_simulator.ui_v2.components.team_crest', 'football_simulator.ui_v2.design_tokens'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -32,6 +32,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon=['/Users/gabrielmu/Documents/Football Simulator/assets/app.icns'],
 )
 coll = COLLECT(
     exe,
@@ -45,6 +46,6 @@ coll = COLLECT(
 app = BUNDLE(
     coll,
     name='Football Simulator UI v2.app',
-    icon=None,
+    icon='/Users/gabrielmu/Documents/Football Simulator/assets/app.icns',
     bundle_identifier='com.gabrielmu.footballsimulator.uiv2',
 )

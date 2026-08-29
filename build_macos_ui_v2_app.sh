@@ -26,11 +26,28 @@ arch -arm64 "$VENV_DIR/bin/pyinstaller" \
   --clean \
   --windowed \
   --name "$APP_NAME" \
+  --icon "$ROOT_DIR/assets/app.icns" \
   --osx-bundle-identifier "com.gabrielmu.footballsimulator.uiv2" \
   --distpath "$DIST_DIR" \
   --workpath "build-ui-v2" \
   --add-data "${SHARED_CONFIG_NAME}:." \
   --paths "$ROOT_DIR" \
+  --hidden-import football_simulator.ui_v2.pages.competition_page \
+  --hidden-import football_simulator.ui_v2.pages.dashboard_page \
+  --hidden-import football_simulator.ui_v2.pages.draft_page \
+  --hidden-import football_simulator.ui_v2.pages.history_page \
+  --hidden-import football_simulator.ui_v2.pages.match_detail_page \
+  --hidden-import football_simulator.ui_v2.pages.matches_page \
+  --hidden-import football_simulator.ui_v2.pages.player_profile_page \
+  --hidden-import football_simulator.ui_v2.pages.players_page \
+  --hidden-import football_simulator.ui_v2.pages.saves_page \
+  --hidden-import football_simulator.ui_v2.pages.season_overview_page \
+  --hidden-import football_simulator.ui_v2.pages.team_profile_page \
+  --hidden-import football_simulator.ui_v2.pages.teams_page \
+  --hidden-import football_simulator.ui_v2.pages.transfers_page \
+  --hidden-import football_simulator.ui_v2.pages.weekly_report_page \
+  --hidden-import football_simulator.ui_v2.components.team_crest \
+  --hidden-import football_simulator.ui_v2.design_tokens \
   ui_v2_main.py
 
 cp "$SHARED_CONFIG_NAME" "${DIST_DIR}/${SHARED_CONFIG_NAME}"

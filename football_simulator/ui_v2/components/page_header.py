@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Optional, Sequence
 
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QWidget
 
 from football_simulator.ui_v2 import navigation
@@ -29,6 +30,7 @@ class PageHeader(QWidget):
         breadcrumbs: Optional[Sequence[navigation.Breadcrumb]] = None,
         navigator: Optional[object] = None,
         actions: Optional[Sequence[QWidget]] = None,
+        avatar: Optional[QWidget] = None,
         parent: Optional[QWidget] = None,
     ) -> None:
         super().__init__(parent)
@@ -38,6 +40,9 @@ class PageHeader(QWidget):
         root = QHBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(12)
+
+        if avatar is not None:
+            root.addWidget(avatar, 0, Qt.AlignmentFlag.AlignVCenter)
 
         left = QVBoxLayout()
         left.setContentsMargins(0, 0, 0, 0)

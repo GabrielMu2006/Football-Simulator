@@ -41,6 +41,7 @@ try:
     from PySide6.QtWidgets import (
         QAbstractScrollArea,
         QApplication,
+        QCheckBox,
         QLabel,
         QListView,
         QScrollArea,
@@ -63,6 +64,7 @@ from football_simulator import runtime as sim_runtime
 from football_simulator import state as sim_state
 from football_simulator.queries import base, competition_queries, dashboard_queries, match_queries
 from football_simulator.schedule import TOTAL_WEEKS, build_week_calendar
+from football_simulator.ui_v2 import theme
 from football_simulator.ui_v2.components import EntityLink, EntityTable
 from football_simulator.ui_v2.navigation import Route
 from football_simulator.ui_v2.pages.dashboard_page import DashboardPage
@@ -141,6 +143,7 @@ def _app() -> QApplication:
     global _APP
     if _APP is None:
         _APP = QApplication.instance() or QApplication([])
+        _APP.setStyleSheet(theme.APP_STYLE)
     return _APP
 
 
@@ -312,6 +315,62 @@ class DashboardPageTests(unittest.TestCase):
         self.assertIn(expected, routes)
         away_expected = Route("team", team=first.away.team_id, season=first.season_number)
         self.assertIn(away_expected, routes)
+
+    def test_leader_real_only_checkbox_filters_leaders(self) -> None:
+        with base.open_read_connection(SAVE_A) as conn:
+            all_snapshot = dashboard_queries.get_dashboard(conn)
+            real_snapshot = dashboard_queries.get_dashboard(conn, leaderboards_is_real=True)
+
+        check = self.page.findChild(QCheckBox, "dashboardLeaderRealOnlyCheck")
+        self.assertIsNotNone(check)
+        check.setChecked(True)
+        self.assertTrue(self.page._leader_real_only)
+
+        # 刷新后展示的球员链接全部落在真实球员榜单集合内。
+        # 注意：首页只展示每个联赛的榜首（top_scorers[0] / assist_leaders[0]）。
+        real_player_ids = {
+            entry.player.player_id
+            for leaders in real_snapshot.league_leaders
+            for entry in (
+                leaders.top_scorers[0] if leaders.top_scorers else None,
+                leaders.assist_leaders[0] if leaders.assist_leaders else None,
+            )
+            if entry is not None
+        }
+        shown_player_ids = {
+            link.route.params.get("player")
+            for link in self.page._leader_links
+            if link.route is not None and link.route.name == "player"
+        }
+        self.assertTrue(shown_player_ids)
+        self.assertTrue(shown_player_ids <= real_player_ids)
+
+        # 刷新会重建区块与复选框；重新查找当前实例再取消勾选。
+        check = self.page.findChild(QCheckBox, "dashboardLeaderRealOnlyCheck")
+        self.assertIsNotNone(check)
+        check.setChecked(False)
+        self.assertFalse(self.page._leader_real_only)
+        # 取消勾选后主页展示的球员链接应恢复为完整榜单（含真实球员榜首）。
+        all_player_ids = {
+            entry.player.player_id
+            for leaders in all_snapshot.league_leaders
+            for entry in (
+                leaders.top_scorers[0] if leaders.top_scorers else None,
+                leaders.assist_leaders[0] if leaders.assist_leaders else None,
+            )
+            if entry is not None
+        }
+        shown_after_uncheck = {
+            link.route.params.get("player")
+            for link in self.page._leader_links
+            if link.route is not None and link.route.name == "player"
+        }
+        self.assertEqual(shown_after_uncheck, all_player_ids)
+        with base.open_read_connection(SAVE_A) as conn:
+            self.assertEqual(
+                dashboard_queries.get_dashboard(conn).league_leaders,
+                all_snapshot.league_leaders,
+            )
 
     def test_pending_block_hidden_without_pending(self) -> None:
         self.assertIsNotNone(self.page._pending_frame)

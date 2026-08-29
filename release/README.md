@@ -10,10 +10,16 @@
 release/macos/Open Football Simulator UI v2.command
 ```
 
-它会打开：
+推荐使用可安装镜像：
 
 ```text
-release/macos/Football-Simulator-UI-v2-macOS/Football Simulator UI v2.app
+release/macos/Football Simulator UI v2.dmg
+```
+
+也提供可安装镜像：
+
+```text
+release/macos/Football Simulator UI v2.dmg
 ```
 
 也提供压缩包：
@@ -21,6 +27,8 @@ release/macos/Football-Simulator-UI-v2-macOS/Football Simulator UI v2.app
 ```text
 release/macos/Football-Simulator-UI-v2-macOS.zip
 ```
+
+生成 DMG：在项目根目录执行 `scripts/create_macos_dmg.sh`。
 
 如果 macOS 提示无法打开，请右键点击 `.app`，选择“打开”，再在弹窗中确认。
 

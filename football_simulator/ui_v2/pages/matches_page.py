@@ -67,9 +67,9 @@ _LIST_COLUMNS = (
     ColumnSpec("week_text", "周", width=92),
     ColumnSpec("competition", "赛事", width=118),
     ColumnSpec("round_text", "轮次", width=92, alignment=Qt.AlignmentFlag.AlignRight),
-    ColumnSpec("home_name", "主队", width=190),
+    ColumnSpec("home_name", "主队", width=190, stretch=True),
     ColumnSpec("score_text", "比分/未赛", width=104, alignment=Qt.AlignmentFlag.AlignCenter),
-    ColumnSpec("away_name", "客队", width=190),
+    ColumnSpec("away_name", "客队", width=190, stretch=True),
     ColumnSpec("result_text", "结果", width=84, alignment=Qt.AlignmentFlag.AlignCenter),
 )
 
@@ -135,7 +135,7 @@ class MatchCenterPage(EntityPageBase):
         self._header = PageHeader("比赛中心", navigator=self._context.navigate)
         layout.addWidget(self._header)
 
-        self._filter_bar = FilterBar()
+        self._filter_bar = FilterBar(on_search_changed=self._on_filters_changed)
         self._season_combo = self._filter_bar.add_combo("赛季", [], "matchesSeasonCombo")
         self._competition_combo = self._filter_bar.add_combo(
             "赛事", [_ALL_COMPETITION, *base.ALL_COMPETITIONS], "matchesCompetitionCombo"
@@ -150,6 +150,7 @@ class MatchCenterPage(EntityPageBase):
         self._competition_combo.currentIndexChanged.connect(self._on_filters_changed)
         self._week_combo.currentIndexChanged.connect(self._on_filters_changed)
         self._status_combo.currentIndexChanged.connect(self._on_filters_changed)
+        self._filter_bar.add_reset()
         layout.addWidget(self._filter_bar)
 
         self._summary_label = QLabel("")

@@ -54,6 +54,7 @@ from football_simulator import runtime as sim_runtime
 from football_simulator import state as sim_state
 from football_simulator.queries import base, team_queries
 from football_simulator.queries.team_queries import list_teams
+from football_simulator.ui_v2 import theme
 from football_simulator.ui_v2.components import EmptyState, EntityLink
 from football_simulator.ui_v2.navigation import Route
 from football_simulator.ui_v2.pages.entity_page_base import PageContext
@@ -119,6 +120,7 @@ def _app() -> QApplication:
     global _APP
     if _APP is None:
         _APP = QApplication.instance() or QApplication([])
+        _APP.setStyleSheet(theme.APP_STYLE)
     return _APP
 
 
@@ -454,6 +456,25 @@ class TeamProfilePageTests(unittest.TestCase):
         table.view.activated.emit(table.view.model().index(0, 0))
         expected = Route("player", player=table.model.row_at(0).player.player_id, season=1)
         self.assertEqual(harness.routes[-1], expected)
+
+    def test_squad_real_only_checkbox_filters_rows(self) -> None:
+        harness, page, route = _make_profile_page(self.champion.team.team_id, 1)
+        page._tabs.setCurrentIndex(1)
+        profile = self._profile_of(self.champion.team.team_id, 1)
+        real_count = sum(1 for line in profile.roster if line.player.is_real)
+        self.assertLess(real_count, len(profile.roster), "阵容应同时含真实与默认球员")
+
+        page._squad_real_only.setChecked(True)
+        rows = [
+            page._squad_table.model.row_at(i)
+            for i in range(page._squad_table.model.rowCount())
+        ]
+        self.assertTrue(all(row.player.is_real for row in rows))
+        self.assertEqual(len(rows), real_count)
+
+        # 取消勾选恢复完整 11 人阵容。
+        page._squad_real_only.setChecked(False)
+        self.assertEqual(page._squad_table.model.rowCount(), len(profile.roster))
 
     # -- 赛程与结果 -----------------------------------------------------------
 

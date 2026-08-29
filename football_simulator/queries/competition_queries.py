@@ -483,8 +483,16 @@ def _aggregate_competition_stats(conn: sqlite3.Connection, season_id: int, compe
     return entries
 
 
-def _leaderboards(conn: sqlite3.Connection, season_id: int, competition: str) -> CompetitionLeaderboards:
+def _leaderboards(
+    conn: sqlite3.Connection,
+    season_id: int,
+    competition: str,
+    is_real: Optional[bool] = None,
+) -> CompetitionLeaderboards:
     entries = _aggregate_competition_stats(conn, season_id, competition)
+    if is_real is not None:
+        # “只显示真实球员”必须在截取前 N 名之前过滤，否则排名失真。
+        entries = [entry for entry in entries if entry.player.is_real == is_real]
     # 并列时确定性排序：统计降序 → 评分降序 → 能力降序 → 名称升序。
     # 评分榜的主统计即评分，并列时以（进球+助攻）作次级统计（与引擎榜单一致）。
     scorers = sorted(entries, key=lambda e: (-e.goals, -e.rating, -e.ability, e.player.display_name))
@@ -868,7 +876,13 @@ def list_competitions(conn: sqlite3.Connection, season_number: int) -> List[Comp
     return overviews
 
 
-def get_competition_profile(conn: sqlite3.Connection, competition_id: str, season_number: int) -> CompetitionProfile:
+def get_competition_profile(
+    conn: sqlite3.Connection,
+    competition_id: str,
+    season_number: int,
+    *,
+    leaderboards_is_real: Optional[bool] = None,
+) -> CompetitionProfile:
     """赛事详情：积分榜 / 杯赛签表 / 全部比赛 / 榜单 / 奖项 / 冠军。"""
     if competition_id not in base.ALL_COMPETITIONS:
         raise KeyError(f"未知赛事：{competition_id}")
@@ -888,7 +902,7 @@ def get_competition_profile(conn: sqlite3.Connection, competition_id: str, seaso
             standings=standings_rows,
             stage_rows=(),
             matches=tuple(matches),
-            leaderboards=_leaderboards(conn, season_id, competition_id),
+            leaderboards=_leaderboards(conn, season_id, competition_id, is_real=leaderboards_is_real),
             awards=_competition_awards(conn, season_id, competition_id),
             champion=champion,
         )
@@ -901,7 +915,7 @@ def get_competition_profile(conn: sqlite3.Connection, competition_id: str, seaso
             standings=None,
             stage_rows=(),
             matches=tuple(matches),
-            leaderboards=_leaderboards(conn, season_id, competition_id),
+            leaderboards=_leaderboards(conn, season_id, competition_id, is_real=leaderboards_is_real),
             awards=(),
             champion=champion,
         )
@@ -918,7 +932,7 @@ def get_competition_profile(conn: sqlite3.Connection, competition_id: str, seaso
         standings=None,
         stage_rows=stage_rows,
         matches=tuple(matches),
-        leaderboards=_leaderboards(conn, season_id, competition_id),
+        leaderboards=_leaderboards(conn, season_id, competition_id, is_real=leaderboards_is_real),
         awards=_competition_awards(conn, season_id, competition_id),
         champion=champion,
     )

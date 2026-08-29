@@ -74,6 +74,7 @@ class ColumnSpec:
     width: Optional[int] = None
     alignment: Qt.AlignmentFlag = Qt.AlignLeft
     sort_role: bool = True
+    stretch: bool = False
 
 
 class _EntityTableModel(QAbstractTableModel):
@@ -213,7 +214,10 @@ class EntityTable(QWidget):
         header.setDefaultAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         header.setStretchLastSection(True)
         for index, column in enumerate(self._columns):
-            if column.width is not None:
+            if column.stretch:
+                # 宽屏适配：标记列随窗口弹性拉伸，避免右侧大面积空档。
+                header.setSectionResizeMode(index, QHeaderView.ResizeMode.Stretch)
+            elif column.width is not None:
                 header.setSectionResizeMode(index, QHeaderView.ResizeMode.Interactive)
                 self._view.setColumnWidth(index, column.width)
             else:

@@ -275,6 +275,24 @@ class PlayersDirectoryTests(_PageTestCase):
         self.assertEqual(len(page._rows), len(expected))
         self.assertTrue(all(row.team_name == team_name for row in page._rows))
 
+    def test_real_only_checkbox_filters_directory(self) -> None:
+        page, _, _ = self._make_page()
+        with base.open_read_connection(_SAVE_NAME) as conn:
+            all_rows = player_queries.list_players(conn, page._season)
+        real_count = sum(1 for row in all_rows if row.is_real)
+        default_count = len(all_rows) - real_count
+        self.assertGreater(real_count, 0)
+        self.assertGreater(default_count, 0)
+
+        expected_real_ids = {row.player_id for row in all_rows if row.is_real}
+        page._real_only_check.setChecked(True)
+        self.assertEqual({row.player_id for row in page._rows}, expected_real_ids)
+        self.assertEqual(len(page._rows), real_count)
+
+        # 取消勾选恢复完整目录。
+        page._real_only_check.setChecked(False)
+        self.assertEqual(len(page._rows), len(all_rows))
+
     def test_goalkeeper_rows_show_placeholder_in_outfield_columns(self) -> None:
         """位置相关主数据列：门将行 进球/助攻 显示 “—”，扑救/零封 有值。"""
         page, _, _ = self._make_page()

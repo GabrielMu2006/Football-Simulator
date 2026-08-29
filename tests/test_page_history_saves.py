@@ -67,6 +67,7 @@ except ImportError:  # 系统 Python 无 PySide6：整模块跳过
 from football_simulator import runtime as sim_runtime
 from football_simulator import state as sim_state
 from football_simulator.queries import base, competition_queries, history_queries
+from football_simulator.ui_v2 import theme
 from football_simulator.ui_v2.components import EntityLink, EntityTable
 from football_simulator.ui_v2.navigation import Route
 from football_simulator.ui_v2.pages.entity_page_base import PageContext
@@ -159,6 +160,7 @@ def _app() -> QApplication:
     global _APP
     if _APP is None:
         _APP = QApplication.instance() or QApplication([])
+        _APP.setStyleSheet(theme.APP_STYLE)
     return _APP
 
 

@@ -513,6 +513,29 @@ class MatchDetailCompletedTests(_PageTestCase):
         self.assertEqual(table.maximumHeight(), expected_height)
         self.assertEqual(view.verticalScrollBar().maximum(), 0)
 
+    def test_real_only_checkbox_filters_player_table(self) -> None:
+        harness, page = self._make_page()
+        lines = self.detail.player_lines
+        real_count = sum(1 for line in lines if line.player.is_real)
+        self.assertLess(real_count, len(lines), "已赛详情应同时含真实与默认球员行")
+
+        real_ids = {line.player.player_id for line in lines if line.player.is_real}
+
+        check = page._make_real_only_check()
+        check.setChecked(True)
+        table = page._player_table
+        self.assertIsNotNone(table)
+        self.assertEqual(table.view.model().rowCount(), real_count)
+        self.assertEqual(
+            {table.model.row_at(i).player_id for i in range(real_count)},
+            real_ids,
+        )
+
+        # 取消勾选恢复完整的 22 行出场记录。
+        check.setChecked(False)
+        table = page._player_table
+        self.assertEqual(table.view.model().rowCount(), 22)
+
     def test_home_team_link_click_navigates_to_team_route(self) -> None:
         harness, page = self._make_page()
         _show_page(page)

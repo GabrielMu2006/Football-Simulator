@@ -16,11 +16,16 @@ import sqlite3
 from dataclasses import dataclass
 from typing import Any, Callable, List, Optional, Sequence, Tuple
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QRect, Qt
+from PySide6.QtGui import QColor, QPainter
 from PySide6.QtWidgets import (
+    QApplication,
     QComboBox,
     QLabel,
     QStackedWidget,
+    QStyle,
+    QStyledItemDelegate,
+    QStyleOptionViewItem,
     QVBoxLayout,
     QWidget,
 )
@@ -33,8 +38,10 @@ from football_simulator.ui_v2.components import (
     EntityTable,
     FilterBar,
     PageHeader,
+    TEXT_COLOR,
     TEXT_COLOR_MUTED,
 )
+from football_simulator.ui_v2.components.team_crest import draw_team_crest
 from football_simulator.ui_v2.pages.entity_page_base import (
     EntityPageBase,
     PageContext,
@@ -45,7 +52,7 @@ _DIVISION_ALL = "全部"
 _DIVISION_OPTIONS = (_DIVISION_ALL, base.COMPETITION_PREMIER, base.COMPETITION_SECOND)
 
 _DIRECTORY_COLUMNS: Tuple[ColumnSpec, ...] = (
-    ColumnSpec("team_name", "球队", width=210),
+    ColumnSpec("team_name", "球队", width=210, stretch=True),
     ColumnSpec("season_division", "分区", width=92),
     ColumnSpec("played", "赛", width=52, alignment=Qt.AlignmentFlag.AlignRight),
     ColumnSpec("wins", "胜", width=52, alignment=Qt.AlignmentFlag.AlignRight),
@@ -82,6 +89,45 @@ class _DirectoryRow:
     roster_total_ability: int
 
 
+class _TeamCrestTextDelegate(QStyledItemDelegate):
+    # 球队名列：队徽 + 队名文本，保持基础选中/悬停行为，行激活由表格处理。
+
+    def paint(self, painter: QPainter, option: QStyleOptionViewItem, index) -> None:  # noqa: N802 - Qt API
+        opt = QStyleOptionViewItem(option)
+        self.initStyleOption(opt, index)
+        opt.text = ""
+        style = opt.widget.style() if opt.widget is not None else QApplication.style()
+        style.drawControl(QStyle.ControlElement.CE_ItemViewItem, opt, painter, opt.widget)
+        text = str(index.data(Qt.ItemDataRole.DisplayRole) or "")
+        if not text or text == "—":
+            return
+        painter.save()
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        rect = opt.rect.adjusted(8, 4, -8, -4)
+        crest_size = min(rect.height(), 28)
+        crest_rect = QRect(
+            rect.left(),
+            rect.top() + (rect.height() - crest_size) // 2,
+            crest_size,
+            crest_size,
+        )
+        draw_team_crest(painter, crest_rect, text, size=crest_size)
+        painter.setPen(QColor(TEXT_COLOR))
+        painter.setFont(opt.font)
+        text_rect = QRect(
+            rect.left() + crest_size + 8,
+            rect.top(),
+            max(0, rect.width() - crest_size - 8),
+            rect.height(),
+        )
+        painter.drawText(
+            text_rect,
+            int(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
+            text,
+        )
+        painter.restore()
+
+
 class TeamsPage(EntityPageBase):
     """球队目录：``Route("teams")``，查询层主数据源为 ``team_queries.list_teams``。"""
 
@@ -116,10 +162,13 @@ class TeamsPage(EntityPageBase):
         )
         self._division_combo.currentIndexChanged.connect(self._on_filters_changed)
         self._search_edit = self._filter_bar.add_search("搜索球队名…")
+        self._filter_bar.add_reset()
         root.addWidget(self._filter_bar)
 
         self._stack = QStackedWidget(self)
         self._table = EntityTable(_DIRECTORY_COLUMNS, navigator=self._context.navigate, parent=self)
+        self._crest_delegate = _TeamCrestTextDelegate(parent=self._table.view)
+        self._table.view.setItemDelegateForColumn(0, self._crest_delegate)
         self._empty = EmptyState("暂无球队数据", "当前存档还没有球队数据。")
         self._stack.addWidget(self._table)
         self._stack.addWidget(self._empty)

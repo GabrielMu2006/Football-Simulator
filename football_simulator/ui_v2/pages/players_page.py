@@ -51,7 +51,7 @@ _POSITION_OPTIONS = ("全部位置", "GK", "DF", "MF", "FW")
 _DIRECTORY_COLUMNS = (
     ColumnSpec("display_name", "球员", width=190),
     ColumnSpec("position", "位置", width=60, alignment=Qt.AlignCenter),
-    ColumnSpec("team_name", "球队", width=170),
+    ColumnSpec("team_name", "球队", width=170, stretch=True),
     ColumnSpec("ability", "能力", alignment=Qt.AlignRight),
     ColumnSpec("appeared", "本季出场", alignment=Qt.AlignRight),
     ColumnSpec("goals", "进球", alignment=Qt.AlignRight),
@@ -155,7 +155,10 @@ class PlayersPage(EntityPageBase):
         )
         self._position_combo.currentIndexChanged.connect(self._on_filters_changed)
         self._team_combo = self._filter_bar.add_combo("球队", ["全部球队"], "playersTeamCombo")
+        self._real_only_check = self._filter_bar.add_check("只显示真实球员", "playersRealOnlyCheck")
+        self._real_only_check.toggled.connect(self._on_filters_changed)
         self._team_combo.currentIndexChanged.connect(self._on_filters_changed)
+        self._filter_bar.add_reset()
         # 引擎只对真实球员结算身价；列头说明口径，避免逐行重复长文案。
         self._table = EntityTable(_DIRECTORY_COLUMNS, navigator=self._context.navigate)
         self._table.view.horizontalHeader().setToolTip(
@@ -247,6 +250,7 @@ class PlayersPage(EntityPageBase):
 
     def _load_rows(self, conn, season: int) -> None:
         search, position, team_id = self._current_filters()
+        is_real = True if self._real_only_check.isChecked() else None
         try:
             source_rows = player_queries.list_players(
                 conn,
@@ -254,6 +258,7 @@ class PlayersPage(EntityPageBase):
                 search=search,
                 position=position,
                 team_id=team_id,
+                is_real=is_real,
             )
         except KeyError:
             self._season = None

@@ -25,9 +25,10 @@ import sqlite3
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
-from PySide6.QtCore import QEvent, Qt
+from PySide6.QtCore import QEvent, QRect, Qt
 from PySide6.QtGui import QColor, QPainter
 from PySide6.QtWidgets import (
+    QCheckBox,
     QApplication,
     QComboBox,
     QFrame,
@@ -63,6 +64,21 @@ from football_simulator.ui_v2.components import (
     TEXT_COLOR_BRIGHT,
     TEXT_COLOR_MUTED,
 )
+from football_simulator.ui_v2.design_tokens import (
+    DANGER_DEEP_BG,
+    DANGER_SOFT,
+    HEADER_TEXT_COLOR,
+    LINK_DARK_BG,
+    NEUTRAL_BADGE_BG,
+    NEUTRAL_BADGE_FG,
+    NEUTRAL_DARK_BG,
+    NEUTRAL_LIGHT,
+    SUCCESS_BG,
+    SUCCESS_BRIGHT,
+    SUCCESS_COLOR,
+    SUCCESS_DEEP_BG,
+)
+from football_simulator.ui_v2.components.team_crest import TeamCrest
 from football_simulator.ui_v2.pages.entity_page_base import (
     EntityPageBase,
     PageContext,
@@ -80,19 +96,19 @@ _AWARD_TYPE_LABELS: Dict[str, str] = {
 
 # 胜/平/负/未赛 徽标配色（前景色铺满圆角底、深色文字保证可读）。
 _RESULT_BADGE_COLORS: Dict[str, Tuple[str, str]] = {
-    "胜": ("#34d399", "#052e1c"),
-    "平": ("#cbd5e1", "#111827"),
-    "负": ("#fca5a5", "#3f0d0d"),
-    "未赛": ("#94a3b8", "#0f172a"),
+    "胜": (SUCCESS_BRIGHT, SUCCESS_DEEP_BG),
+    "平": (NEUTRAL_LIGHT, NEUTRAL_DARK_BG),
+    "负": (DANGER_SOFT, DANGER_DEEP_BG),
+    "未赛": (NEUTRAL_BADGE_FG, NEUTRAL_BADGE_BG),
 }
 
 _DIVISION_BADGE_COLORS: Dict[str, Tuple[str, str]] = {
-    base.COMPETITION_PREMIER: ("#7dd3fc", "#082032"),
-    base.COMPETITION_SECOND: ("#86efac", "#0a2e1a"),
+    base.COMPETITION_PREMIER: (LINK_COLOR, LINK_DARK_BG),
+    base.COMPETITION_SECOND: (SUCCESS_COLOR, SUCCESS_BG),
 }
 
 _GRID_HEADER_STYLE = (
-    f"background: {HEADER_BG_COLOR}; color: #dfe9f7; font-weight: 800;"
+    f"background: {HEADER_BG_COLOR}; color: {HEADER_TEXT_COLOR}; font-weight: 800;"
     f"padding: 8px 10px; border-bottom: 1px solid {GRID_COLOR};"
 )
 _GRID_CELL_STYLE = (
@@ -182,7 +198,7 @@ _FIXTURE_COLUMNS: Tuple[ColumnSpec, ...] = (
     ColumnSpec("competition", "赛事", width=110),
     ColumnSpec("round_number", "轮次", width=64, alignment=Qt.AlignmentFlag.AlignRight),
     ColumnSpec("side", "主/客", width=68, alignment=Qt.AlignmentFlag.AlignHCenter),
-    ColumnSpec("opponent", "对手", width=190),
+    ColumnSpec("opponent", "对手", width=190, stretch=True),
     ColumnSpec("score", "比分", width=84, alignment=Qt.AlignmentFlag.AlignRight),
     ColumnSpec("result", "结果", width=72, alignment=Qt.AlignmentFlag.AlignHCenter),
 )
@@ -278,15 +294,20 @@ class _ResultDelegate(QStyledItemDelegate):
             return
         painter.save()
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        rect = opt.rect.adjusted(8, 5, -8, -5)
+        full_rect = opt.rect.adjusted(8, 5, -8, -5)
         colors = _RESULT_BADGE_COLORS.get(text)
         if colors is not None:
             background, foreground = colors
+            # 缩小徽标宽度并居中，避免全列宽的高饱和药丸造成视觉噪音。
+            badge_width = min(full_rect.width(), 64)
+            badge_x = full_rect.x() + (full_rect.width() - badge_width) // 2
+            rect = QRect(badge_x, full_rect.y(), badge_width, full_rect.height())
             painter.setPen(Qt.PenStyle.NoPen)
             painter.setBrush(QColor(background))
             painter.drawRoundedRect(rect, 8, 8)
         else:
             foreground = TEXT_COLOR
+            rect = full_rect
         painter.setPen(QColor(foreground))
         painter.setFont(opt.font)
         painter.drawText(rect, int(Qt.AlignmentFlag.AlignCenter), text)
@@ -417,8 +438,17 @@ class TeamProfilePage(EntityPageBase):
         self._overview_scroll = self._make_content_scroll("teamOverviewScroll")
         self._tabs.addTab(self._overview_scroll, _TAB_TITLES[0])
 
-        self._squad_table = EntityTable(_SQUAD_COLUMNS, navigator=self._context.navigate, parent=self)
-        self._tabs.addTab(self._squad_table, _TAB_TITLES[1])
+        self._squad_panel = QWidget(self)
+        squad_layout = QVBoxLayout(self._squad_panel)
+        squad_layout.setContentsMargins(0, 0, 0, 0)
+        squad_layout.setSpacing(6)
+        self._squad_table = EntityTable(_SQUAD_COLUMNS, navigator=self._context.navigate, parent=self._squad_panel)
+        self._squad_real_only = QCheckBox("只显示真实球员", self._squad_panel)
+        self._squad_real_only.setObjectName("squadRealOnlyCheck")
+        self._squad_real_only.toggled.connect(self._on_squad_real_only_toggled)
+        squad_layout.addWidget(self._squad_real_only, 0)
+        squad_layout.addWidget(self._squad_table, 1)
+        self._tabs.addTab(self._squad_panel, _TAB_TITLES[1])
 
         self._fixtures_table = EntityTable(_FIXTURE_COLUMNS, navigator=self._context.navigate, parent=self)
         self._tabs.addTab(self._fixtures_table, _TAB_TITLES[2])
@@ -515,7 +545,13 @@ class TeamProfilePage(EntityPageBase):
             self._page_header.setParent(None)
             self._page_header.deleteLater()
         breadcrumbs = navigation.breadcrumbs(route, {"team_name": title}) if route is not None else []
-        self._page_header = PageHeader(title, breadcrumbs, self._context.navigate)
+        self._team_crest = TeamCrest(title, size=42)
+        self._page_header = PageHeader(
+            title,
+            breadcrumbs,
+            self._context.navigate,
+            avatar=self._team_crest,
+        )
         assert self._season_caption is not None
         self._page_header.add_action(self._season_caption)
         self._page_header.add_action(self._season_combo)
@@ -590,7 +626,26 @@ class TeamProfilePage(EntityPageBase):
             )
             for line_ in profile.roster
         ]
-        self._squad_table.set_rows(squad_rows, route_for_row=self._squad_route_for_row)
+        self._profile = profile
+        self._history_rows = history_rows
+        self._season = season
+        self._squad_rows_all = squad_rows
+        self._refresh_squad()
+        # 页签记忆：恢复上次勾选（放在数据就绪后，避免恢复时行集为空）。
+        state = self.stored_state()
+        self._squad_real_only.blockSignals(True)
+        self._squad_real_only.setChecked(str(state.get("squadRealOnly", "0")) == "1")
+        self._squad_real_only.blockSignals(False)
+        self._refresh_squad()
+
+    def _refresh_squad(self) -> None:
+        profile = self._profile
+        season = self._season
+        history_rows = self._history_rows
+        rows = getattr(self, "_squad_rows_all", [])
+        if self._squad_real_only.isChecked():
+            rows = [row for row in rows if row.player.is_real]
+        self._squad_table.set_rows(rows, route_for_row=self._squad_route_for_row)
 
         fixture_rows = [self._fixture_row(fixture, profile.identity.team_id) for fixture in profile.fixtures]
         self._fixtures_table.set_rows(fixture_rows, route_for_row=self._fixture_route_for_row)
@@ -729,7 +784,6 @@ class TeamProfilePage(EntityPageBase):
         for index, (label, value) in enumerate(metric_values):
             metrics_layout.addWidget(self._metric_cell(label, value), index // 5, index % 5)
         standings_card.body_layout.addWidget(metrics_widget)
-        layout.addWidget(standings_card)
 
         # 该赛季球队荣誉。
         honors_card = CardFrame("本赛季球队荣誉", None)
@@ -745,7 +799,14 @@ class TeamProfilePage(EntityPageBase):
         honors_holder = QWidget(honors_card)
         honors_holder.setLayout(honors_row)
         honors_card.body_layout.addWidget(honors_holder)
-        layout.addWidget(honors_card)
+
+        # 双栏：左侧积分榜、右侧本赛季荣誉，降低单列纵向空白。
+        overview_row = QHBoxLayout()
+        overview_row.setContentsMargins(0, 0, 0, 0)
+        overview_row.setSpacing(12)
+        overview_row.addWidget(standings_card, 3)
+        overview_row.addWidget(honors_card, 2)
+        layout.addLayout(overview_row)
 
         # 联赛走势摘要：最近 5 场联赛结果，胜/平/负徽标序列（按周倒序）。
         form_card = CardFrame("联赛走势", "最近 5 场联赛结果（按周倒序）")
@@ -1022,7 +1083,19 @@ class TeamProfilePage(EntityPageBase):
         self.navigate(navigation.Route("team", team=route.int_param("team"), season=season))
 
     def _on_tab_changed(self, index: int) -> None:
-        self.save_state({"tab": int(index)})
+        self._save_profile_state()
+
+    def _on_squad_real_only_toggled(self, _checked: bool) -> None:
+        self._refresh_squad()
+        self._save_profile_state()
+
+    def _save_profile_state(self) -> None:
+        self.save_state(
+            {
+                "tab": int(self._tabs.currentIndex()),
+                "squadRealOnly": "1" if self._squad_real_only.isChecked() else "0",
+            }
+        )
 
     def eventFilter(self, obj: object, event: QEvent) -> bool:  # noqa: N802 - Qt API
         if event.type() in (QEvent.Type.MouseMove, QEvent.Type.Leave):

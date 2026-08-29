@@ -570,6 +570,44 @@ class LeaderboardTests(unittest.TestCase):
         self.assertEqual(harness.routes[-1], Route("player", player=top.player_id, season=1))
         page.hide()
 
+    def test_leaderboard_real_only_checkbox_filters_rows(self) -> None:
+        harness, page, route = _make_page(_LEAGUE, 1)
+        page._tabs.setCurrentIndex(3)
+        checker = page._make_leader_real_check()
+        checker.setChecked(True)
+
+        rows = [page._leader_table.model.row_at(i) for i in range(page._leader_table.model.rowCount())]
+        self.assertTrue(rows)
+        with base.open_read_connection(SAVE_NAME) as conn:
+            real_profile = competition_queries.get_competition_profile(
+                conn, _LEAGUE, 1, leaderboards_is_real=True
+            )
+        real_ids = {
+            entry.player.player_id
+            for board in (real_profile.leaderboards.top_scorers, real_profile.leaderboards.top_assisters, real_profile.leaderboards.top_rated)
+            for entry in board
+        }
+        self.assertEqual({row.player_id for row in rows}, real_ids)
+        self.assertEqual(len(rows), sum(len(board) for board in (
+            real_profile.leaderboards.top_scorers,
+            real_profile.leaderboards.top_assisters,
+            real_profile.leaderboards.top_rated,
+        )))
+
+        # 取消勾选：榜单恢复为全部球员（含默认球员）的口径。
+        checker.setChecked(False)
+        rows_all = [page._leader_table.model.row_at(i) for i in range(page._leader_table.model.rowCount())]
+        with base.open_read_connection(SAVE_NAME) as conn:
+            profile = competition_queries.get_competition_profile(conn, _LEAGUE, 1)
+        self.assertEqual(
+            len(rows_all),
+            sum(len(board) for board in (
+                profile.leaderboards.top_scorers,
+                profile.leaderboards.top_assisters,
+                profile.leaderboards.top_rated,
+            )),
+        )
+
     def test_awards_tab_matches_query(self) -> None:
         harness, page, route = _make_page(_LEAGUE, 1)
         profile: competition_queries.CompetitionProfile = self.facts["premier1"]

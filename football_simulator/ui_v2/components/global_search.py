@@ -98,8 +98,15 @@ class GlobalSearchBox(QWidget):
     def eventFilter(self, obj, event) -> bool:  # noqa: N802 - Qt API
         if obj is self.line_edit and event.type() == QEvent.Type.KeyPress:
             key = event.key()
-            if key == Qt.Key.Key_Escape and self.popup.isVisible():
-                self.popup.hide()
+            if key == Qt.Key.Key_Escape:
+                # 首次 Esc 关闭结果弹层；再次按 Esc 清空搜索文本。
+                if self.popup.isVisible():
+                    self.popup.hide()
+                else:
+                    self._suppress_text_events = True
+                    self.line_edit.clear()
+                    self._suppress_text_events = False
+                    self.clear_results()
                 return True
             if key in (Qt.Key.Key_Down, Qt.Key.Key_Up):
                 if self.popup.isVisible() and self.popup.count():

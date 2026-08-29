@@ -29,6 +29,7 @@ from typing import Callable, Dict, List, Optional, Tuple
 from PySide6.QtCore import QEvent, Qt
 from PySide6.QtGui import QColor, QPainter
 from PySide6.QtWidgets import (
+    QCheckBox,
     QApplication,
     QFrame,
     QHBoxLayout,
@@ -49,12 +50,15 @@ from football_simulator.ui_v2 import navigation
 from football_simulator.ui_v2.components import (
     LINK_COLOR,
     TEXT_COLOR_MUTED,
+    TEXT_COLOR_SOFT,
     ColumnSpec,
     EmptyState,
     EntityLink,
     EntityTable,
     PageHeader,
 )
+from football_simulator.ui_v2.components.team_crest import TeamCrest
+from football_simulator.ui_v2.design_tokens import ACCENT_SOFT, EVENT_TEXT_COLOR, SUCCESS_HIGHLIGHT
 from football_simulator.ui_v2.navigation import Route
 from football_simulator.ui_v2.pages.entity_page_base import EntityPageBase, PageContext
 from football_simulator.ui_v2.widgets import section_header
@@ -77,7 +81,10 @@ _PLAYER_COLUMNS = (
 
 _MUTED_STYLE = f"color: {TEXT_COLOR_MUTED}; background: transparent;"
 _BRIGHT_STYLE = "color: #f8fbff; background: transparent;"
-_EVENT_STYLE = "color: #dbe6f3; background: transparent;"
+_EVENT_STYLE = f"color: {EVENT_TEXT_COLOR}; background: transparent;"
+_EVENT_GOAL_STYLE = f"color: {SUCCESS_HIGHLIGHT}; background: transparent; font-weight: 800;"
+_EVENT_SAVE_STYLE = f"color: {ACCENT_SOFT}; background: transparent;"
+_EVENT_DEFENSE_STYLE = f"color: {TEXT_COLOR_SOFT}; background: transparent;"
 
 
 @dataclass(frozen=True)
@@ -347,13 +354,17 @@ class MatchDetailPage(EntityPageBase):
                 section_header("关键事件", "按比赛原始顺序完整列出全部关键事件，不做截断。")
             )
             self._build_events(layout, detail.key_events)
-            layout.addWidget(
+            header_row = QHBoxLayout()
+            header_row.addWidget(
                 section_header(
                     "球员数据",
                     "两队当时注册阵容的全部出场记录（含六项全 0 行）；单击球员/球队名可继续跳转。",
-                )
+                ),
+                1,
             )
-            self._player_table = self._build_player_table(detail.player_lines)
+            header_row.addWidget(self._make_real_only_check(), 0, Qt.AlignmentFlag.AlignBottom)
+            layout.addLayout(header_row)
+            self._player_table = self._build_player_table(self._filtered_player_lines(detail.player_lines))
             layout.addWidget(self._player_table)
         else:
             layout.addWidget(
@@ -395,6 +406,7 @@ class MatchDetailPage(EntityPageBase):
         home_box.setContentsMargins(0, 0, 0, 0)
         home_box.setSpacing(2)
         home_box.addWidget(home_caption)
+        home_box.addWidget(TeamCrest(match.home.display_name, size=44))
         home_box.addWidget(home_link)
         home_holder = QWidget()
         home_holder.setLayout(home_box)
@@ -439,6 +451,7 @@ class MatchDetailPage(EntityPageBase):
         away_box.setContentsMargins(0, 0, 0, 0)
         away_box.setSpacing(2)
         away_box.addWidget(away_caption)
+        away_box.addWidget(TeamCrest(match.away.display_name, size=44))
         away_box.addWidget(away_link)
         away_holder = QWidget()
         away_holder.setLayout(away_box)
@@ -474,10 +487,38 @@ class MatchDetailPage(EntityPageBase):
         for index, text in enumerate(events, start=1):
             label = QLabel(f"{index}. {text}")
             label.setWordWrap(True)
-            label.setStyleSheet(_EVENT_STYLE)
+            # 视觉区分事件类型：进球高亮、扑救/化解弱色强调；文本内容保持不变。
+            if "进球" in text:
+                label.setStyleSheet(_EVENT_GOAL_STYLE)
+            elif "扑出" in text or "扑救" in text:
+                label.setStyleSheet(_EVENT_SAVE_STYLE)
+            elif "化解" in text or "成功防守" in text:
+                label.setStyleSheet(_EVENT_DEFENSE_STYLE)
+            else:
+                label.setStyleSheet(_EVENT_STYLE)
             holder_layout.addWidget(label)
             self._event_labels.append(label)
         layout.addWidget(holder)
+
+    def _make_real_only_check(self) -> QCheckBox:
+        """球员数据“只显示真实球员”复选框：状态跨刷新保持（存于页面实例）。"""
+        check = getattr(self, "_real_only_check", None)
+        if check is None:
+            check = QCheckBox("只显示真实球员")
+            check.setObjectName("playerRealOnlyCheck")
+            check.setToolTip("隐藏默认球员的出场行（真实球员始终显示）")
+            check.toggled.connect(self._on_real_only_toggled)
+            self._real_only_check = check
+        return check
+
+    def _on_real_only_toggled(self, _checked: bool) -> None:
+        # 只重拉当前比赛数据并重建内容，保持复选框状态与滚动位置语义。
+        self.refresh()
+
+    def _filtered_player_lines(self, lines):
+        if self._make_real_only_check().isChecked():
+            return [line for line in lines if line.player.is_real]
+        return lines
 
     # -- 球员数据表（22 行完整展开，唯一性外层滚动负责翻看） ---------------------
 

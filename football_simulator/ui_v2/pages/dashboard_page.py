@@ -26,6 +26,7 @@ from typing import Dict, List, Optional
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
+    QCheckBox,
     QFrame,
     QGridLayout,
     QHBoxLayout,
@@ -152,6 +153,8 @@ class DashboardPage(EntityPageBase):
         self._champion_links: List[EntityLink] = []
         self._sections_layout: Optional[QVBoxLayout] = None
         self._empty: Optional[EmptyState] = None
+        # “只显示真实球员”应用于联赛射手/助攻榜；页面实例常驻，跨刷新保持。
+        self._leader_real_only = False
         super().__init__(context, parent)
 
     # -- UI 骨架（一次构建；内容在 refresh 中重建） ---------------------------
@@ -247,7 +250,10 @@ class DashboardPage(EntityPageBase):
         navigate = getattr(self._context, "navigate", None)
         try:
             with base.open_read_connection(self.save_name()) as conn:
-                snapshot = dashboard_queries.get_dashboard(conn)
+                snapshot = dashboard_queries.get_dashboard(
+                    conn,
+                    leaderboards_is_real=True if self._leader_real_only else None,
+                )
                 season_id = base.season_id_for(conn, snapshot.current_season)
                 standings = {
                     category: competition_queries.league_standings_rows(
@@ -380,6 +386,7 @@ class DashboardPage(EntityPageBase):
         frame, grid = self._section_frame(
             "联赛射手 / 助攻",
             "各联赛当前榜首球员（前 3 名中的第 1 名）；单击球员名打开球员页。",
+            action=self._make_leader_real_check(),
         )
         self._fill_leader_grid(grid, snapshot.league_leaders, season, navigate)
         self._sections_layout.addWidget(frame)
@@ -394,13 +401,15 @@ class DashboardPage(EntityPageBase):
 
         self._sections_layout.addStretch(1)
 
-    def _section_frame(self, title: str, note: str):
+    def _section_frame(self, title: str, note: str, action: Optional[QWidget] = None):
         frame = QFrame()
         frame.setObjectName("cardFrame")
         layout = QVBoxLayout(frame)
         layout.setContentsMargins(12, 10, 12, 10)
         layout.setSpacing(8)
         layout.addWidget(section_header(title, note))
+        if action is not None:
+            layout.addWidget(action)
         grid = QGridLayout()
         grid.setContentsMargins(0, 0, 0, 0)
         grid.setHorizontalSpacing(10)
@@ -546,6 +555,20 @@ class DashboardPage(EntityPageBase):
                 value_label.setFixedWidth(_COLUMN_WIDTHS[2])
                 value_label.setAlignment(Qt.AlignCenter)
                 grid.addWidget(value_label, row_index, column + 1)
+
+    def _make_leader_real_check(self) -> QCheckBox:
+        # 联赛射手/助攻榜"只显示真实球员"：每次刷新新建（随区块重建），
+        # 勾选状态保存在页面实例 _leader_real_only，跨刷新/路由保持。
+        check = QCheckBox("只显示真实球员")
+        check.setObjectName("dashboardLeaderRealOnlyCheck")
+        check.setToolTip("联赛射手/助攻榜只显示真实球员（隐藏默认球员）")
+        check.setChecked(self._leader_real_only)
+        check.toggled.connect(self._on_leader_real_only_toggled)
+        return check
+
+    def _on_leader_real_only_toggled(self, checked: bool) -> None:
+        self._leader_real_only = bool(checked)
+        self.refresh()
 
     def _fill_champion_grid(self, grid: QGridLayout, champions, team_ids, season: int, navigate) -> None:
         self._grid_header(grid, ("赛事", "冠军"))

@@ -192,7 +192,11 @@ def _synthetic_default_ref(player_id: str, team_id: int) -> Optional[base.Player
     )
 
 
-def _league_leaders(conn: sqlite3.Connection, season_id: int) -> Tuple[LeagueLeaders, ...]:
+def _league_leaders(
+    conn: sqlite3.Connection,
+    season_id: int,
+    is_real: Optional[bool] = None,
+) -> Tuple[LeagueLeaders, ...]:
     identity = _player_identity(conn)
     fallback_ability = _default_ability_fallback(conn)
     leaders: List[LeagueLeaders] = []
@@ -245,6 +249,14 @@ def _league_leaders(conn: sqlite3.Connection, season_id: int) -> Tuple[LeagueLea
             bucket["successful_defenses"] += int(row["successful_defenses"] or 0)
             bucket["successful_saves"] += int(row["successful_saves"] or 0)
             bucket["clean_sheets"] += int(row["clean_sheets"] or 0)
+
+        if is_real is not None:
+            # “只显示真实球员”必须在截取前 N 名之前过滤，否则排名失真。
+            accumulated = {
+                player_id: bucket
+                for player_id, bucket in accumulated.items()
+                if bucket["ref"].is_real == is_real
+            }
 
         scorers: List[DashboardLeaderboardEntry] = []
         assisters: List[DashboardLeaderboardEntry] = []
@@ -304,7 +316,11 @@ def _league_leaders(conn: sqlite3.Connection, season_id: int) -> Tuple[LeagueLea
 # -- 公开查询 -----------------------------------------------------------
 
 
-def get_dashboard(conn: sqlite3.Connection) -> DashboardSnapshot:
+def get_dashboard(
+    conn: sqlite3.Connection,
+    *,
+    leaderboards_is_real: Optional[bool] = None,
+) -> DashboardSnapshot:
     """首页快照：赛季指针、待办计数、赛程速览、榜单与已决出杯赛冠军。"""
     meta = _load_meta(conn)
     season_number, season_id = _current_season_id(conn, meta)
@@ -359,6 +375,6 @@ def get_dashboard(conn: sqlite3.Connection) -> DashboardSnapshot:
         pending_counts=pending_counts,
         upcoming_matches=upcoming,
         latest_results=latest,
-        league_leaders=_league_leaders(conn, season_id),
+        league_leaders=_league_leaders(conn, season_id, is_real=leaderboards_is_real),
         cup_champions_so_far=tuple(cup_champions),
     )

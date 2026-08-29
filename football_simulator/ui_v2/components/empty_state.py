@@ -12,6 +12,7 @@ from football_simulator.ui_v2.components import TEXT_COLOR_BRIGHT, TEXT_COLOR_MU
 _TITLE_STYLESHEET = f"color: {TEXT_COLOR_BRIGHT}; background: transparent; font-size: 18px; font-weight: 800;"
 _DESCRIPTION_STYLESHEET = f"color: {TEXT_COLOR_MUTED}; background: transparent; font-size: 14px;"
 _HINT_STYLESHEET = f"color: {TEXT_COLOR_MUTED}; background: transparent; font-size: 12px; font-style: italic;"
+_ICON_STYLESHEET = "color: rgba(125, 211, 252, 56); background: transparent; font-size: 56px; font-weight: 800;"
 
 
 class EmptyState(QWidget):
@@ -32,6 +33,14 @@ class EmptyState(QWidget):
         layout.setContentsMargins(24, 24, 24, 24)
         layout.setSpacing(8)
         layout.addStretch(1)
+
+        # 装饰性占位符号：低透明度青色，不表达具体业务语义。
+        self._icon_label = QLabel("◉")
+        self._icon_label.setObjectName("emptyStateIcon")
+        self._icon_label.setStyleSheet(_ICON_STYLESHEET)
+        self._icon_label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
+        self._icon_label.setAccessibleName("空状态图标")
+        layout.addWidget(self._icon_label)
 
         self._title_label = QLabel(title)
         self._title_label.setObjectName("emptyStateTitle")

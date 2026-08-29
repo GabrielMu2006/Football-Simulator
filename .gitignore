@@ -22,5 +22,7 @@ saves/
 current_save.txt
 
 *.zip
-!release/**/*.zip
+release/**/*.zip
+release/**/*.dmg
+release/**/*.app
 *.log

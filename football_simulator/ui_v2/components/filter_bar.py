@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Callable, Dict, Optional, Sequence
 
 from PySide6.QtCore import QTimer, Signal
-from PySide6.QtWidgets import QComboBox, QHBoxLayout, QLabel, QLineEdit, QWidget
+from PySide6.QtWidgets import QCheckBox, QComboBox, QHBoxLayout, QLabel, QLineEdit, QPushButton, QWidget
 
 from football_simulator.ui_v2.components import TEXT_COLOR_MUTED
 
@@ -26,6 +26,8 @@ class FilterBar(QWidget):
 
     # 搜索文本防抖后的信号。
     search_changed = Signal(str)
+    # “清除筛选”按钮触发（清空后发出，供页面连接刷新）。
+    reset_changed = Signal()
 
     def __init__(
         self,
@@ -37,6 +39,7 @@ class FilterBar(QWidget):
         self._on_search_changed = on_search_changed
         self._search: Optional[QLineEdit] = None
         self._combos: Dict[str, QComboBox] = {}
+        self._checks: Dict[str, QCheckBox] = {}
 
         self._layout = QHBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
@@ -75,6 +78,29 @@ class FilterBar(QWidget):
         self._combos[object_name] = combo
         return combo
 
+    def add_check(self, label: str, object_name: str) -> QCheckBox:
+        """添加复选框筛选（如“只显示真实球员”），返回创建的 ``QCheckBox``。
+
+        复选框状态纳入 ``state()`` / ``restore()`` 往返。
+        """
+
+        check = QCheckBox(label, self)
+        check.setObjectName(object_name)
+        check.setToolTip(label)
+        self._layout.addWidget(check)
+        self._checks[object_name] = check
+        return check
+
+    def add_reset(self, label: str = "清除筛选") -> QPushButton:
+        """添加“清除筛选”按钮：清空搜索、回退全部下拉、取消全部复选框。"""
+
+        button = QPushButton(label, self)
+        button.setObjectName("filterBarReset")
+        button.setToolTip("清空搜索与全部筛选，恢复默认列表")
+        button.clicked.connect(self._reset_all)
+        self._layout.addWidget(button)
+        return button
+
     # -- 状态往返 ---------------------------------------------------------------
 
     def state(self) -> Dict[str, str]:
@@ -85,6 +111,8 @@ class FilterBar(QWidget):
             result["search"] = self._search.text()
         for name, combo in self._combos.items():
             result[name] = combo.currentText()
+        for name, check in self._checks.items():
+            result[name] = "1" if check.isChecked() else "0"
         return result
 
     def restore(self, state: Optional[Dict[str, str]]) -> None:
@@ -105,6 +133,35 @@ class FilterBar(QWidget):
                 combo.blockSignals(True)
                 combo.setCurrentIndex(index)
                 combo.blockSignals(False)
+        for name, check in self._checks.items():
+            value = data.get(name)
+            if value is None:
+                continue
+            check.blockSignals(True)
+            check.setChecked(str(value) == "1")
+            check.blockSignals(False)
+
+    # -- 重置 ---------------------------------------------------------------
+
+    def _reset_all(self) -> None:
+        """清空全部筛选并通知页面刷新（信号与构造回调双保险，页面只接其一）。"""
+        self._debounce_timer.stop()
+        if self._search is not None:
+            self._search.blockSignals(True)
+            self._search.clear()
+            self._search.blockSignals(False)
+        for combo in self._combos.values():
+            combo.blockSignals(True)
+            combo.setCurrentIndex(0)
+            combo.blockSignals(False)
+        for check in self._checks.values():
+            check.blockSignals(True)
+            check.setChecked(False)
+            check.blockSignals(False)
+        self.reset_changed.emit()
+        self.search_changed.emit("")
+        if self._on_search_changed is not None:
+            self._on_search_changed("")
 
     # -- 搜索防抖 ---------------------------------------------------------------
 

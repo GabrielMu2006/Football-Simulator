@@ -635,6 +635,7 @@ def list_players(
     position: Optional[str] = None,
     team_id: Optional[int] = None,
     competition: Optional[str] = None,
+    is_real: Optional[bool] = None,
 ) -> List[PlayerDirectoryRow]:
     """球员目录（按赛季口径统计）。
 
@@ -670,9 +671,9 @@ def list_players(
     rows: List[PlayerDirectoryRow] = []
     for prow in roster:
         db_player_id = prow["player_id"]
-        is_real = bool(prow["is_real"])
+        row_is_real = bool(prow["is_real"])
         slot_number = int(prow["slot_number"])
-        stable_id = prow["player_id"] if is_real else base.default_player_id(int(prow["team_id"]), slot_number)
+        stable_id = prow["player_id"] if row_is_real else base.default_player_id(int(prow["team_id"]), slot_number)
         display_name = display_label(prow["name"], prow["position"], slot_number)
 
         segments = segments_by_player.get(db_player_id, [])
@@ -706,6 +707,8 @@ def list_players(
             continue
         if position is not None and prow["position"] != position:
             continue
+        if is_real is not None and is_real != row_is_real:
+            continue
         if search_lower is not None and search_lower not in display_name.lower():
             continue
 
@@ -718,7 +721,7 @@ def list_players(
                 player_id=stable_id,
                 display_name=display_name,
                 position=prow["position"],
-                is_real=is_real,
+                is_real=row_is_real,
                 team=primary_team,
                 additional_teams=[teams[tid] for tid in additional_ids if tid in teams],
                 ability=int(prow["ability"]),
@@ -732,7 +735,7 @@ def list_players(
                 rating=_derived_rating(
                     position=prow["position"],
                     ability=int(prow["ability"]),
-                    is_real=is_real,
+                    is_real=row_is_real,
                     stable_id=stable_id,
                     display_name=display_name,
                     slot_number=slot_number,

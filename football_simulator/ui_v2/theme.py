@@ -125,4 +125,61 @@ QPushButton#reviewDecisionReject:checked {
     background: #dc2626;
     color: #ffffff;
 }
+/* 危险操作（删除、批量拒绝）：红色填充层级，与主操作蓝色区分。 */
+QPushButton#savesDeleteButton,
+QPushButton#transferRejectAllButton {
+    background: #7f1d1d;
+    color: #ffffff;
+}
+QPushButton#savesDeleteButton:hover,
+QPushButton#transferRejectAllButton:hover {
+    background: #b91c1c;
+    color: #ffffff;
+}
+/* 行内决策按钮：未选中为描边态，选中为填充色，避免“两个都一样蓝”。 */
+QPushButton#transferApproveButton,
+QPushButton#reviewApproveButton {
+    background: transparent;
+    border: 1px solid #2b4a6f;
+    color: #cbd7e6;
+}
+QPushButton#transferApproveButton:hover,
+QPushButton#reviewApproveButton:hover {
+    background: #122238;
+    color: #ffffff;
+}
+QPushButton#transferApproveButton:checked,
+QPushButton#reviewApproveButton:checked {
+    background: #16a34a;
+    border: 1px solid #16a34a;
+    color: #ffffff;
+}
+QPushButton#transferRejectButton {
+    background: transparent;
+    border: 1px solid #7f1d1d;
+    color: #fca5a5;
+}
+QPushButton#transferRejectButton:hover {
+    background: #3f1d1d;
+    color: #ffffff;
+}
+QPushButton#transferRejectButton:checked {
+    background: #dc2626;
+    border: 1px solid #dc2626;
+    color: #ffffff;
+}
+QPushButton#reviewKeepButton {
+    background: transparent;
+    border: 1px solid #475569;
+    color: #cbd5e1;
+}
+QPushButton#reviewKeepButton:hover {
+    background: #293548;
+    color: #ffffff;
+}
+QPushButton#reviewKeepButton:checked {
+    background: #475569;
+    border: 1px solid #475569;
+    color: #ffffff;
+}
 """
