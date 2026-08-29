@@ -1,0 +1,7084 @@
+{
+ "meta": {
+  "format_version": 1,
+  "seed": 20260828,
+  "master_config_sha256": "90b356abfae0bf0b657fd50dcf3ddbaee7dff210b9121d7a6520ddeaa76fc011",
+  "scope": [
+   "三个完整赛季的逐周比分（premier/second/cup/playoff）",
+   "每赛季最终积分榜、杯赛冠军、升降级过渡",
+   "年度 Top20 与各赛事个人奖得主"
+  ],
+  "note": "随机源为 state.set_rng_provider 注入的 random.Random(seed)，每次 _rng() 调用返回新实例；生产默认仍是 random.SystemRandom。"
+ },
+ "seasons": [
+  {
+   "season_number": 1,
+   "weeks": [
+    {
+     "week_number": 1,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 1,
+        "results": [
+         "Gaia's Revenge 2-1 Ironvale FC",
+         "Crimson Moon 2-1 Miracle Makers",
+         "Nightingales 2-2 Sentinels of Light",
+         "Solford Town 1-0 Midnight Tales",
+         "Crystal Roses 1-1 Yellowjackets FC",
+         "Hands of Fate 1-2 Crownfield Athletic",
+         "Ravenhill 3-1 Supersonic Knights",
+         "Shadow Eaters 2-1 Chaos Overture",
+         "Kingsmeadow Rovers 4-3 Ancient Dragonfire",
+         "Thunder Rangers 2-1 Celestial Vanguard"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 1,
+        "results": [
+         "Hannya Masks 3-1 Ocean Stars",
+         "Royal Junction 1-1 Pain FC",
+         "Void Relics 5-0 Star Guardians",
+         "Polaris FC 2-0 Xeno Hunters",
+         "Thorned Reliquary 2-1 Fallen Heirlooms",
+         "Ruined Legion 1-0 Brookgate Wanderers",
+         "Zero Returners 2-4 Glazed Dreams",
+         "Dark Side of the Moon 3-1 Doom Knights",
+         "Blazing Shadows 3-0 Glorious Vision",
+         "Icefire Ballad 2-1 Northern Lords"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 2,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 2,
+        "results": [
+         "Miracle Makers 1-0 Gaia's Revenge",
+         "Sentinels of Light 3-0 Ironvale FC",
+         "Midnight Tales 0-3 Crimson Moon",
+         "Yellowjackets FC 1-0 Nightingales",
+         "Crownfield Athletic 0-0 Solford Town",
+         "Supersonic Knights 1-1 Crystal Roses",
+         "Chaos Overture 2-1 Hands of Fate",
+         "Ancient Dragonfire 3-1 Ravenhill",
+         "Celestial Vanguard 0-3 Shadow Eaters",
+         "Thunder Rangers 2-1 Kingsmeadow Rovers"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 2,
+        "results": [
+         "Pain FC 3-1 Hannya Masks",
+         "Star Guardians 1-1 Ocean Stars",
+         "Xeno Hunters 5-0 Royal Junction",
+         "Fallen Heirlooms 2-0 Void Relics",
+         "Brookgate Wanderers 2-1 Polaris FC",
+         "Glazed Dreams 1-0 Thorned Reliquary",
+         "Doom Knights 2-4 Ruined Legion",
+         "Glorious Vision 3-1 Zero Returners",
+         "Northern Lords 3-0 Dark Side of the Moon",
+         "Icefire Ballad 2-1 Blazing Shadows"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 3,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 3,
+        "results": [
+         "Gaia's Revenge 0-0 Sentinels of Light",
+         "Miracle Makers 2-2 Midnight Tales",
+         "Ironvale FC 2-2 Yellowjackets FC",
+         "Crimson Moon 0-1 Crownfield Athletic",
+         "Nightingales 2-1 Supersonic Knights",
+         "Solford Town 0-1 Chaos Overture",
+         "Crystal Roses 3-2 Ancient Dragonfire",
+         "Hands of Fate 1-3 Celestial Vanguard",
+         "Ravenhill 1-0 Thunder Rangers",
+         "Shadow Eaters 0-2 Kingsmeadow Rovers"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 3,
+        "results": [
+         "Hannya Masks 1-2 Star Guardians",
+         "Pain FC 3-3 Xeno Hunters",
+         "Ocean Stars 4-1 Fallen Heirlooms",
+         "Royal Junction 2-2 Brookgate Wanderers",
+         "Void Relics 3-1 Glazed Dreams",
+         "Polaris FC 2-0 Doom Knights",
+         "Thorned Reliquary 6-2 Glorious Vision",
+         "Ruined Legion 2-1 Northern Lords",
+         "Zero Returners 1-3 Icefire Ballad",
+         "Dark Side of the Moon 2-0 Blazing Shadows"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 4,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 4,
+        "results": [
+         "Midnight Tales 0-1 Gaia's Revenge",
+         "Yellowjackets FC 3-0 Sentinels of Light",
+         "Crownfield Athletic 1-1 Miracle Makers",
+         "Supersonic Knights 3-2 Ironvale FC",
+         "Chaos Overture 1-3 Crimson Moon",
+         "Ancient Dragonfire 1-1 Nightingales",
+         "Celestial Vanguard 6-0 Solford Town",
+         "Thunder Rangers 2-0 Crystal Roses",
+         "Kingsmeadow Rovers 1-1 Hands of Fate",
+         "Shadow Eaters 2-0 Ravenhill"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 4,
+        "results": [
+         "Xeno Hunters 3-0 Hannya Masks",
+         "Fallen Heirlooms 2-1 Star Guardians",
+         "Brookgate Wanderers 4-1 Pain FC",
+         "Glazed Dreams 4-2 Ocean Stars",
+         "Doom Knights 0-1 Royal Junction",
+         "Glorious Vision 1-0 Void Relics",
+         "Northern Lords 1-1 Polaris FC",
+         "Icefire Ballad 1-2 Thorned Reliquary",
+         "Blazing Shadows 1-0 Ruined Legion",
+         "Dark Side of the Moon 5-1 Zero Returners"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 5,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 5,
+        "results": [
+         "Gaia's Revenge 1-0 Yellowjackets FC",
+         "Midnight Tales 0-5 Crownfield Athletic",
+         "Sentinels of Light 1-0 Supersonic Knights",
+         "Miracle Makers 2-0 Chaos Overture",
+         "Ironvale FC 2-1 Ancient Dragonfire",
+         "Crimson Moon 1-1 Celestial Vanguard",
+         "Nightingales 3-0 Thunder Rangers",
+         "Solford Town 0-4 Kingsmeadow Rovers",
+         "Crystal Roses 2-1 Shadow Eaters",
+         "Hands of Fate 3-0 Ravenhill"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 5,
+        "results": [
+         "Hannya Masks 2-0 Fallen Heirlooms",
+         "Xeno Hunters 6-2 Brookgate Wanderers",
+         "Star Guardians 2-1 Glazed Dreams",
+         "Pain FC 1-3 Doom Knights",
+         "Ocean Stars 2-0 Glorious Vision",
+         "Royal Junction 6-0 Northern Lords",
+         "Void Relics 5-1 Icefire Ballad",
+         "Polaris FC 2-1 Blazing Shadows",
+         "Thorned Reliquary 2-0 Dark Side of the Moon",
+         "Ruined Legion 2-0 Zero Returners"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 6,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 6,
+        "results": [
+         "Crownfield Athletic 1-0 Gaia's Revenge",
+         "Supersonic Knights 2-1 Yellowjackets FC",
+         "Chaos Overture 3-0 Midnight Tales",
+         "Ancient Dragonfire 2-0 Sentinels of Light",
+         "Celestial Vanguard 0-2 Miracle Makers",
+         "Thunder Rangers 2-0 Ironvale FC",
+         "Kingsmeadow Rovers 2-2 Crimson Moon",
+         "Shadow Eaters 2-0 Nightingales",
+         "Ravenhill 2-0 Solford Town",
+         "Hands of Fate 2-0 Crystal Roses"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 6,
+        "results": [
+         "Brookgate Wanderers 2-1 Hannya Masks",
+         "Glazed Dreams 2-0 Fallen Heirlooms",
+         "Doom Knights 3-1 Xeno Hunters",
+         "Glorious Vision 2-1 Star Guardians",
+         "Northern Lords 1-3 Pain FC",
+         "Icefire Ballad 1-1 Ocean Stars",
+         "Blazing Shadows 1-1 Royal Junction",
+         "Dark Side of the Moon 1-1 Void Relics",
+         "Zero Returners 3-2 Polaris FC",
+         "Ruined Legion 5-1 Thorned Reliquary"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 7,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 7,
+        "results": [
+         "Gaia's Revenge 1-0 Supersonic Knights",
+         "Crownfield Athletic 1-2 Chaos Overture",
+         "Yellowjackets FC 3-1 Ancient Dragonfire",
+         "Midnight Tales 1-1 Celestial Vanguard",
+         "Sentinels of Light 3-0 Thunder Rangers",
+         "Miracle Makers 0-0 Kingsmeadow Rovers",
+         "Ironvale FC 2-2 Shadow Eaters",
+         "Crimson Moon 4-2 Ravenhill",
+         "Nightingales 1-1 Hands of Fate",
+         "Solford Town 1-5 Crystal Roses"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 7,
+        "results": [
+         "Hannya Masks 0-1 Glazed Dreams",
+         "Brookgate Wanderers 1-0 Doom Knights",
+         "Fallen Heirlooms 1-1 Glorious Vision",
+         "Xeno Hunters 1-2 Northern Lords",
+         "Star Guardians 1-0 Icefire Ballad",
+         "Pain FC 5-1 Blazing Shadows",
+         "Ocean Stars 3-0 Dark Side of the Moon",
+         "Royal Junction 2-1 Zero Returners",
+         "Void Relics 2-1 Ruined Legion",
+         "Polaris FC 5-1 Thorned Reliquary"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 8,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 8,
+        "results": [
+         "Chaos Overture 2-1 Gaia's Revenge",
+         "Ancient Dragonfire 0-3 Supersonic Knights",
+         "Celestial Vanguard 5-2 Crownfield Athletic",
+         "Thunder Rangers 1-2 Yellowjackets FC",
+         "Kingsmeadow Rovers 1-0 Midnight Tales",
+         "Shadow Eaters 2-1 Sentinels of Light",
+         "Ravenhill 2-1 Miracle Makers",
+         "Hands of Fate 2-2 Ironvale FC",
+         "Crystal Roses 0-0 Crimson Moon",
+         "Solford Town 1-2 Nightingales"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 8,
+        "results": [
+         "Doom Knights 2-0 Hannya Masks",
+         "Glorious Vision 5-1 Glazed Dreams",
+         "Northern Lords 1-0 Brookgate Wanderers",
+         "Icefire Ballad 2-4 Fallen Heirlooms",
+         "Blazing Shadows 5-2 Xeno Hunters",
+         "Dark Side of the Moon 1-1 Star Guardians",
+         "Zero Returners 1-2 Pain FC",
+         "Ruined Legion 6-2 Ocean Stars",
+         "Thorned Reliquary 3-1 Royal Junction",
+         "Polaris FC 6-3 Void Relics"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 9,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 9,
+        "results": [
+         "Gaia's Revenge 0-0 Ancient Dragonfire",
+         "Chaos Overture 2-1 Celestial Vanguard",
+         "Supersonic Knights 3-1 Thunder Rangers",
+         "Crownfield Athletic 4-0 Kingsmeadow Rovers",
+         "Yellowjackets FC 1-2 Shadow Eaters",
+         "Midnight Tales 1-1 Ravenhill",
+         "Sentinels of Light 2-0 Hands of Fate",
+         "Miracle Makers 1-2 Crystal Roses",
+         "Ironvale FC 3-1 Solford Town",
+         "Crimson Moon 4-2 Nightingales"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 9,
+        "results": [
+         "Hannya Masks 1-3 Glorious Vision",
+         "Doom Knights 2-2 Northern Lords",
+         "Glazed Dreams 1-2 Icefire Ballad",
+         "Brookgate Wanderers 1-1 Blazing Shadows",
+         "Fallen Heirlooms 1-2 Dark Side of the Moon",
+         "Xeno Hunters 4-0 Zero Returners",
+         "Star Guardians 5-0 Ruined Legion",
+         "Pain FC 2-0 Thorned Reliquary",
+         "Ocean Stars 2-0 Polaris FC",
+         "Royal Junction 2-4 Void Relics"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 10,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 10,
+        "results": [
+         "Celestial Vanguard 3-2 Gaia's Revenge",
+         "Thunder Rangers 2-0 Ancient Dragonfire",
+         "Kingsmeadow Rovers 3-1 Chaos Overture",
+         "Shadow Eaters 2-0 Supersonic Knights",
+         "Ravenhill 1-2 Crownfield Athletic",
+         "Hands of Fate 0-1 Yellowjackets FC",
+         "Crystal Roses 4-2 Midnight Tales",
+         "Solford Town 2-1 Sentinels of Light",
+         "Nightingales 2-0 Miracle Makers",
+         "Crimson Moon 2-1 Ironvale FC"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 10,
+        "results": [
+         "Northern Lords 2-2 Hannya Masks",
+         "Icefire Ballad 3-1 Glorious Vision",
+         "Blazing Shadows 2-0 Doom Knights",
+         "Dark Side of the Moon 6-2 Glazed Dreams",
+         "Zero Returners 2-1 Brookgate Wanderers",
+         "Ruined Legion 1-3 Fallen Heirlooms",
+         "Thorned Reliquary 2-0 Xeno Hunters",
+         "Polaris FC 6-0 Star Guardians",
+         "Void Relics 5-1 Pain FC",
+         "Royal Junction 2-1 Ocean Stars"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 11,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 11,
+        "results": [
+         "Gaia's Revenge 0-0 Thunder Rangers",
+         "Celestial Vanguard 2-1 Kingsmeadow Rovers",
+         "Ancient Dragonfire 2-1 Shadow Eaters",
+         "Chaos Overture 0-0 Ravenhill",
+         "Supersonic Knights 1-5 Hands of Fate",
+         "Crownfield Athletic 1-1 Crystal Roses",
+         "Yellowjackets FC 2-0 Solford Town",
+         "Midnight Tales 0-2 Nightingales",
+         "Sentinels of Light 2-1 Crimson Moon",
+         "Miracle Makers 3-1 Ironvale FC"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 11,
+        "results": [
+         "Hannya Masks 6-0 Icefire Ballad",
+         "Northern Lords 5-1 Blazing Shadows",
+         "Glorious Vision 2-1 Dark Side of the Moon",
+         "Doom Knights 2-0 Zero Returners",
+         "Glazed Dreams 2-0 Ruined Legion",
+         "Brookgate Wanderers 3-2 Thorned Reliquary",
+         "Fallen Heirlooms 0-3 Polaris FC",
+         "Xeno Hunters 1-2 Void Relics",
+         "Star Guardians 1-1 Royal Junction",
+         "Pain FC 1-1 Ocean Stars"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 12,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 12,
+        "results": [
+         "Kingsmeadow Rovers 1-1 Gaia's Revenge",
+         "Shadow Eaters 3-0 Thunder Rangers",
+         "Ravenhill 2-1 Celestial Vanguard",
+         "Hands of Fate 1-0 Ancient Dragonfire",
+         "Crystal Roses 1-0 Chaos Overture",
+         "Solford Town 0-0 Supersonic Knights",
+         "Nightingales 2-1 Crownfield Athletic",
+         "Crimson Moon 3-1 Yellowjackets FC",
+         "Ironvale FC 3-1 Midnight Tales",
+         "Miracle Makers 1-1 Sentinels of Light"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 12,
+        "results": [
+         "Blazing Shadows 3-3 Hannya Masks",
+         "Dark Side of the Moon 2-0 Icefire Ballad",
+         "Zero Returners 3-1 Northern Lords",
+         "Ruined Legion 4-1 Glorious Vision",
+         "Thorned Reliquary 1-0 Doom Knights",
+         "Polaris FC 2-0 Glazed Dreams",
+         "Void Relics 1-2 Brookgate Wanderers",
+         "Royal Junction 5-2 Fallen Heirlooms",
+         "Ocean Stars 1-0 Xeno Hunters",
+         "Pain FC 6-2 Star Guardians"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 13,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 13,
+        "results": [
+         "Gaia's Revenge 0-0 Shadow Eaters",
+         "Kingsmeadow Rovers 2-1 Ravenhill",
+         "Thunder Rangers 1-2 Hands of Fate",
+         "Celestial Vanguard 3-1 Crystal Roses",
+         "Ancient Dragonfire 1-1 Solford Town",
+         "Chaos Overture 1-1 Nightingales",
+         "Supersonic Knights 3-2 Crimson Moon",
+         "Crownfield Athletic 2-3 Ironvale FC",
+         "Yellowjackets FC 0-1 Miracle Makers",
+         "Midnight Tales 3-1 Sentinels of Light"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 13,
+        "results": [
+         "Hannya Masks 1-1 Dark Side of the Moon",
+         "Blazing Shadows 1-4 Zero Returners",
+         "Icefire Ballad 3-2 Ruined Legion",
+         "Northern Lords 1-0 Thorned Reliquary",
+         "Glorious Vision 5-1 Polaris FC",
+         "Doom Knights 1-3 Void Relics",
+         "Glazed Dreams 1-3 Royal Junction",
+         "Brookgate Wanderers 2-2 Ocean Stars",
+         "Fallen Heirlooms 1-2 Pain FC",
+         "Xeno Hunters 1-1 Star Guardians"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 14,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 14,
+        "results": [
+         "Ravenhill 2-1 Gaia's Revenge",
+         "Hands of Fate 1-1 Shadow Eaters",
+         "Crystal Roses 1-0 Kingsmeadow Rovers",
+         "Solford Town 2-0 Thunder Rangers",
+         "Nightingales 2-3 Celestial Vanguard",
+         "Crimson Moon 2-3 Ancient Dragonfire",
+         "Ironvale FC 4-0 Chaos Overture",
+         "Miracle Makers 1-1 Supersonic Knights",
+         "Sentinels of Light 2-1 Crownfield Athletic",
+         "Midnight Tales 2-2 Yellowjackets FC"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 14,
+        "results": [
+         "Zero Returners 6-2 Hannya Masks",
+         "Ruined Legion 2-1 Dark Side of the Moon",
+         "Thorned Reliquary 3-1 Blazing Shadows",
+         "Polaris FC 0-2 Icefire Ballad",
+         "Void Relics 1-2 Northern Lords",
+         "Royal Junction 1-0 Glorious Vision",
+         "Ocean Stars 6-1 Doom Knights",
+         "Pain FC 6-2 Glazed Dreams",
+         "Star Guardians 1-2 Brookgate Wanderers",
+         "Xeno Hunters 2-0 Fallen Heirlooms"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 15,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 15,
+        "results": [
+         "Gaia's Revenge 0-0 Hands of Fate",
+         "Ravenhill 3-0 Crystal Roses",
+         "Shadow Eaters 1-0 Solford Town",
+         "Kingsmeadow Rovers 1-0 Nightingales",
+         "Thunder Rangers 1-2 Crimson Moon",
+         "Celestial Vanguard 2-2 Ironvale FC",
+         "Ancient Dragonfire 0-1 Miracle Makers",
+         "Chaos Overture 1-1 Sentinels of Light",
+         "Supersonic Knights 1-1 Midnight Tales",
+         "Crownfield Athletic 2-1 Yellowjackets FC"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 15,
+        "results": [
+         "Hannya Masks 5-0 Ruined Legion",
+         "Zero Returners 1-1 Thorned Reliquary",
+         "Dark Side of the Moon 1-4 Polaris FC",
+         "Blazing Shadows 5-1 Void Relics",
+         "Icefire Ballad 4-2 Royal Junction",
+         "Northern Lords 1-0 Ocean Stars",
+         "Glorious Vision 6-3 Pain FC",
+         "Doom Knights 1-1 Star Guardians",
+         "Glazed Dreams 1-3 Xeno Hunters",
+         "Brookgate Wanderers 6-0 Fallen Heirlooms"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 16,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 16,
+        "results": [
+         "Crystal Roses 2-1 Gaia's Revenge",
+         "Solford Town 1-3 Hands of Fate",
+         "Nightingales 3-1 Ravenhill",
+         "Crimson Moon 0-1 Shadow Eaters",
+         "Ironvale FC 1-1 Kingsmeadow Rovers",
+         "Miracle Makers 0-0 Thunder Rangers",
+         "Sentinels of Light 3-1 Celestial Vanguard",
+         "Midnight Tales 1-1 Ancient Dragonfire",
+         "Yellowjackets FC 3-2 Chaos Overture",
+         "Crownfield Athletic 3-0 Supersonic Knights"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 16,
+        "results": [
+         "Thorned Reliquary 2-1 Hannya Masks",
+         "Polaris FC 2-0 Ruined Legion",
+         "Void Relics 3-1 Zero Returners",
+         "Royal Junction 2-1 Dark Side of the Moon",
+         "Ocean Stars 1-3 Blazing Shadows",
+         "Pain FC 1-1 Icefire Ballad",
+         "Star Guardians 1-1 Northern Lords",
+         "Xeno Hunters 1-1 Glorious Vision",
+         "Fallen Heirlooms 3-2 Doom Knights",
+         "Brookgate Wanderers 5-1 Glazed Dreams"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 17,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 17,
+        "results": [
+         "Gaia's Revenge 0-0 Solford Town",
+         "Crystal Roses 2-1 Nightingales",
+         "Hands of Fate 2-2 Crimson Moon",
+         "Ravenhill 2-3 Ironvale FC",
+         "Shadow Eaters 2-1 Miracle Makers",
+         "Kingsmeadow Rovers 1-1 Sentinels of Light",
+         "Thunder Rangers 1-0 Midnight Tales",
+         "Celestial Vanguard 1-2 Yellowjackets FC",
+         "Ancient Dragonfire 1-1 Crownfield Athletic",
+         "Chaos Overture 0-4 Supersonic Knights"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 17,
+        "results": [
+         "Hannya Masks 2-1 Polaris FC",
+         "Thorned Reliquary 2-0 Void Relics",
+         "Ruined Legion 2-0 Royal Junction",
+         "Zero Returners 3-2 Ocean Stars",
+         "Dark Side of the Moon 0-3 Pain FC",
+         "Blazing Shadows 1-2 Star Guardians",
+         "Icefire Ballad 1-1 Xeno Hunters",
+         "Northern Lords 1-1 Fallen Heirlooms",
+         "Glorious Vision 6-0 Brookgate Wanderers",
+         "Doom Knights 1-0 Glazed Dreams"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 18,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 18,
+        "results": [
+         "Nightingales 1-0 Gaia's Revenge",
+         "Crimson Moon 3-1 Solford Town",
+         "Ironvale FC 2-2 Crystal Roses",
+         "Miracle Makers 0-0 Hands of Fate",
+         "Sentinels of Light 1-1 Ravenhill",
+         "Midnight Tales 1-1 Shadow Eaters",
+         "Yellowjackets FC 2-3 Kingsmeadow Rovers",
+         "Crownfield Athletic 3-3 Thunder Rangers",
+         "Supersonic Knights 3-2 Celestial Vanguard",
+         "Chaos Overture 3-1 Ancient Dragonfire"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 18,
+        "results": [
+         "Void Relics 6-0 Hannya Masks",
+         "Royal Junction 5-1 Polaris FC",
+         "Ocean Stars 2-1 Thorned Reliquary",
+         "Pain FC 2-0 Ruined Legion",
+         "Star Guardians 2-0 Zero Returners",
+         "Xeno Hunters 3-2 Dark Side of the Moon",
+         "Fallen Heirlooms 0-3 Blazing Shadows",
+         "Brookgate Wanderers 1-2 Icefire Ballad",
+         "Glazed Dreams 1-1 Northern Lords",
+         "Doom Knights 1-1 Glorious Vision"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 19,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 19,
+        "results": [
+         "Gaia's Revenge 2-1 Crimson Moon",
+         "Nightingales 2-4 Ironvale FC",
+         "Solford Town 0-3 Miracle Makers",
+         "Crystal Roses 1-0 Sentinels of Light",
+         "Hands of Fate 2-0 Midnight Tales",
+         "Ravenhill 1-2 Yellowjackets FC",
+         "Shadow Eaters 2-1 Crownfield Athletic",
+         "Kingsmeadow Rovers 0-2 Supersonic Knights",
+         "Thunder Rangers 2-1 Chaos Overture",
+         "Celestial Vanguard 2-1 Ancient Dragonfire"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 19,
+        "results": [
+         "Hannya Masks 6-2 Royal Junction",
+         "Void Relics 2-1 Ocean Stars",
+         "Polaris FC 4-2 Pain FC",
+         "Thorned Reliquary 1-1 Star Guardians",
+         "Ruined Legion 1-4 Xeno Hunters",
+         "Zero Returners 3-2 Fallen Heirlooms",
+         "Dark Side of the Moon 1-0 Brookgate Wanderers",
+         "Blazing Shadows 5-1 Glazed Dreams",
+         "Icefire Ballad 1-3 Doom Knights",
+         "Northern Lords 1-3 Glorious Vision"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 20,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 20,
+        "results": [
+         "Ironvale FC 3-2 Gaia's Revenge",
+         "Miracle Makers 2-0 Crimson Moon",
+         "Sentinels of Light 1-2 Nightingales",
+         "Midnight Tales 2-0 Solford Town",
+         "Yellowjackets FC 2-1 Crystal Roses",
+         "Crownfield Athletic 1-1 Hands of Fate",
+         "Supersonic Knights 3-1 Ravenhill",
+         "Chaos Overture 0-3 Shadow Eaters",
+         "Ancient Dragonfire 0-2 Kingsmeadow Rovers",
+         "Celestial Vanguard 3-0 Thunder Rangers"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 20,
+        "results": [
+         "Ocean Stars 1-2 Hannya Masks",
+         "Pain FC 2-2 Royal Junction",
+         "Star Guardians 1-0 Void Relics",
+         "Xeno Hunters 1-1 Polaris FC",
+         "Fallen Heirlooms 1-0 Thorned Reliquary",
+         "Brookgate Wanderers 3-3 Ruined Legion",
+         "Glazed Dreams 3-1 Zero Returners",
+         "Doom Knights 1-4 Dark Side of the Moon",
+         "Glorious Vision 3-1 Blazing Shadows",
+         "Northern Lords 1-1 Icefire Ballad"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 21,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 21,
+        "results": [
+         "Gaia's Revenge 1-1 Miracle Makers",
+         "Ironvale FC 4-0 Sentinels of Light",
+         "Crimson Moon 2-3 Midnight Tales",
+         "Nightingales 1-1 Yellowjackets FC",
+         "Solford Town 0-3 Crownfield Athletic",
+         "Crystal Roses 1-1 Supersonic Knights",
+         "Hands of Fate 4-0 Chaos Overture",
+         "Ravenhill 2-0 Ancient Dragonfire",
+         "Shadow Eaters 1-2 Celestial Vanguard",
+         "Kingsmeadow Rovers 1-2 Thunder Rangers"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 21,
+        "results": [
+         "Hannya Masks 6-2 Pain FC",
+         "Ocean Stars 2-2 Star Guardians",
+         "Royal Junction 1-1 Xeno Hunters",
+         "Void Relics 1-2 Fallen Heirlooms",
+         "Polaris FC 2-2 Brookgate Wanderers",
+         "Thorned Reliquary 2-0 Glazed Dreams",
+         "Ruined Legion 1-1 Doom Knights",
+         "Zero Returners 1-1 Glorious Vision",
+         "Dark Side of the Moon 2-0 Northern Lords",
+         "Blazing Shadows 3-0 Icefire Ballad"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 22,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 22,
+        "results": [
+         "Sentinels of Light 2-1 Gaia's Revenge",
+         "Midnight Tales 0-4 Miracle Makers",
+         "Yellowjackets FC 3-1 Ironvale FC",
+         "Crownfield Athletic 1-1 Crimson Moon",
+         "Supersonic Knights 1-1 Nightingales",
+         "Chaos Overture 0-1 Solford Town",
+         "Ancient Dragonfire 2-0 Crystal Roses",
+         "Celestial Vanguard 2-2 Hands of Fate",
+         "Thunder Rangers 1-1 Ravenhill",
+         "Kingsmeadow Rovers 3-1 Shadow Eaters"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 22,
+        "results": [
+         "Star Guardians 1-3 Hannya Masks",
+         "Xeno Hunters 2-0 Pain FC",
+         "Fallen Heirlooms 1-1 Ocean Stars",
+         "Brookgate Wanderers 6-3 Royal Junction",
+         "Glazed Dreams 3-0 Void Relics",
+         "Doom Knights 1-0 Polaris FC",
+         "Glorious Vision 2-3 Thorned Reliquary",
+         "Northern Lords 3-2 Ruined Legion",
+         "Icefire Ballad 2-3 Zero Returners",
+         "Blazing Shadows 5-0 Dark Side of the Moon"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 23,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 23,
+        "results": [
+         "Gaia's Revenge 0-0 Midnight Tales",
+         "Sentinels of Light 2-1 Yellowjackets FC",
+         "Miracle Makers 2-2 Crownfield Athletic",
+         "Ironvale FC 2-0 Supersonic Knights",
+         "Crimson Moon 0-1 Chaos Overture",
+         "Nightingales 0-1 Ancient Dragonfire",
+         "Solford Town 2-1 Celestial Vanguard",
+         "Crystal Roses 4-0 Thunder Rangers",
+         "Hands of Fate 2-2 Kingsmeadow Rovers",
+         "Ravenhill 0-1 Shadow Eaters"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 23,
+        "results": [
+         "Hannya Masks 1-1 Xeno Hunters",
+         "Star Guardians 1-0 Fallen Heirlooms",
+         "Pain FC 3-3 Brookgate Wanderers",
+         "Ocean Stars 3-1 Glazed Dreams",
+         "Royal Junction 1-4 Doom Knights",
+         "Void Relics 3-1 Glorious Vision",
+         "Polaris FC 1-1 Northern Lords",
+         "Thorned Reliquary 5-0 Icefire Ballad",
+         "Ruined Legion 2-0 Blazing Shadows",
+         "Zero Returners 2-1 Dark Side of the Moon"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 24,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 24,
+        "results": [
+         "Yellowjackets FC 1-0 Gaia's Revenge",
+         "Crownfield Athletic 3-1 Midnight Tales",
+         "Supersonic Knights 3-0 Sentinels of Light",
+         "Chaos Overture 1-2 Miracle Makers",
+         "Ancient Dragonfire 0-4 Ironvale FC",
+         "Celestial Vanguard 3-4 Crimson Moon",
+         "Thunder Rangers 1-1 Nightingales",
+         "Kingsmeadow Rovers 0-3 Solford Town",
+         "Shadow Eaters 1-2 Crystal Roses",
+         "Ravenhill 0-3 Hands of Fate"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 24,
+        "results": [
+         "Fallen Heirlooms 6-2 Hannya Masks",
+         "Brookgate Wanderers 2-1 Xeno Hunters",
+         "Glazed Dreams 4-2 Star Guardians",
+         "Doom Knights 1-1 Pain FC",
+         "Glorious Vision 1-4 Ocean Stars",
+         "Northern Lords 3-2 Royal Junction",
+         "Icefire Ballad 1-0 Void Relics",
+         "Blazing Shadows 5-1 Polaris FC",
+         "Dark Side of the Moon 1-3 Thorned Reliquary",
+         "Zero Returners 1-3 Ruined Legion"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 25,
+     "kind": "winter_break",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 26,
+     "kind": "winter_break",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 27,
+     "kind": "winter_break",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 28,
+     "kind": "cup_week",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 29,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 25,
+        "results": [
+         "Gaia's Revenge 2-1 Crownfield Athletic",
+         "Yellowjackets FC 2-0 Supersonic Knights",
+         "Midnight Tales 1-0 Chaos Overture",
+         "Sentinels of Light 2-0 Ancient Dragonfire",
+         "Miracle Makers 1-1 Celestial Vanguard",
+         "Ironvale FC 1-1 Thunder Rangers",
+         "Crimson Moon 3-2 Kingsmeadow Rovers",
+         "Nightingales 1-2 Shadow Eaters",
+         "Solford Town 0-2 Ravenhill",
+         "Crystal Roses 2-2 Hands of Fate"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 25,
+        "results": [
+         "Hannya Masks 4-1 Brookgate Wanderers",
+         "Fallen Heirlooms 4-2 Glazed Dreams",
+         "Xeno Hunters 0-1 Doom Knights",
+         "Star Guardians 1-0 Glorious Vision",
+         "Pain FC 1-1 Northern Lords",
+         "Ocean Stars 1-2 Icefire Ballad",
+         "Royal Junction 1-0 Blazing Shadows",
+         "Void Relics 5-1 Dark Side of the Moon",
+         "Polaris FC 3-0 Zero Returners",
+         "Thorned Reliquary 2-1 Ruined Legion"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 30,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 26,
+        "results": [
+         "Supersonic Knights 1-0 Gaia's Revenge",
+         "Chaos Overture 0-3 Crownfield Athletic",
+         "Ancient Dragonfire 1-0 Yellowjackets FC",
+         "Celestial Vanguard 3-0 Midnight Tales",
+         "Thunder Rangers 1-1 Sentinels of Light",
+         "Kingsmeadow Rovers 1-1 Miracle Makers",
+         "Shadow Eaters 0-4 Ironvale FC",
+         "Ravenhill 3-0 Crimson Moon",
+         "Hands of Fate 2-0 Nightingales",
+         "Crystal Roses 0-0 Solford Town"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 26,
+        "results": [
+         "Glazed Dreams 6-0 Hannya Masks",
+         "Doom Knights 5-1 Brookgate Wanderers",
+         "Glorious Vision 2-1 Fallen Heirlooms",
+         "Northern Lords 2-0 Xeno Hunters",
+         "Icefire Ballad 2-0 Star Guardians",
+         "Blazing Shadows 3-2 Pain FC",
+         "Dark Side of the Moon 0-3 Ocean Stars",
+         "Zero Returners 1-2 Royal Junction",
+         "Ruined Legion 1-1 Void Relics",
+         "Thorned Reliquary 1-1 Polaris FC"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 31,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 27,
+        "results": [
+         "Gaia's Revenge 0-0 Chaos Overture",
+         "Supersonic Knights 2-1 Ancient Dragonfire",
+         "Crownfield Athletic 2-2 Celestial Vanguard",
+         "Yellowjackets FC 2-0 Thunder Rangers",
+         "Midnight Tales 2-2 Kingsmeadow Rovers",
+         "Sentinels of Light 0-0 Shadow Eaters",
+         "Miracle Makers 4-0 Ravenhill",
+         "Ironvale FC 1-1 Hands of Fate",
+         "Crimson Moon 4-1 Crystal Roses",
+         "Nightingales 2-0 Solford Town"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 27,
+        "results": [
+         "Hannya Masks 2-1 Doom Knights",
+         "Glazed Dreams 2-3 Glorious Vision",
+         "Brookgate Wanderers 1-2 Northern Lords",
+         "Fallen Heirlooms 1-1 Icefire Ballad",
+         "Xeno Hunters 2-0 Blazing Shadows",
+         "Star Guardians 1-2 Dark Side of the Moon",
+         "Pain FC 6-2 Zero Returners",
+         "Ocean Stars 2-2 Ruined Legion",
+         "Royal Junction 1-1 Thorned Reliquary",
+         "Void Relics 1-2 Polaris FC"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 32,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 28,
+        "results": [
+         "Ancient Dragonfire 1-1 Gaia's Revenge",
+         "Celestial Vanguard 3-0 Chaos Overture",
+         "Thunder Rangers 0-1 Supersonic Knights",
+         "Kingsmeadow Rovers 2-1 Crownfield Athletic",
+         "Shadow Eaters 5-3 Yellowjackets FC",
+         "Ravenhill 0-0 Midnight Tales",
+         "Hands of Fate 3-1 Sentinels of Light",
+         "Crystal Roses 1-1 Miracle Makers",
+         "Solford Town 2-1 Ironvale FC",
+         "Nightingales 0-2 Crimson Moon"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 28,
+        "results": [
+         "Glorious Vision 0-1 Hannya Masks",
+         "Northern Lords 6-0 Doom Knights",
+         "Icefire Ballad 5-1 Glazed Dreams",
+         "Blazing Shadows 6-1 Brookgate Wanderers",
+         "Dark Side of the Moon 2-3 Fallen Heirlooms",
+         "Zero Returners 3-2 Xeno Hunters",
+         "Ruined Legion 1-2 Star Guardians",
+         "Thorned Reliquary 6-1 Pain FC",
+         "Polaris FC 1-3 Ocean Stars",
+         "Void Relics 3-1 Royal Junction"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 33,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 29,
+        "results": [
+         "Gaia's Revenge 2-1 Celestial Vanguard",
+         "Ancient Dragonfire 2-1 Thunder Rangers",
+         "Chaos Overture 1-2 Kingsmeadow Rovers",
+         "Supersonic Knights 3-0 Shadow Eaters",
+         "Crownfield Athletic 1-0 Ravenhill",
+         "Yellowjackets FC 1-1 Hands of Fate",
+         "Midnight Tales 2-3 Crystal Roses",
+         "Sentinels of Light 0-2 Solford Town",
+         "Miracle Makers 2-2 Nightingales",
+         "Ironvale FC 3-0 Crimson Moon"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 29,
+        "results": [
+         "Hannya Masks 1-2 Northern Lords",
+         "Glorious Vision 6-2 Icefire Ballad",
+         "Doom Knights 2-2 Blazing Shadows",
+         "Glazed Dreams 1-1 Dark Side of the Moon",
+         "Brookgate Wanderers 1-2 Zero Returners",
+         "Fallen Heirlooms 2-2 Ruined Legion",
+         "Xeno Hunters 2-0 Thorned Reliquary",
+         "Star Guardians 1-1 Polaris FC",
+         "Pain FC 1-1 Void Relics",
+         "Ocean Stars 2-0 Royal Junction"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 34,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 30,
+        "results": [
+         "Thunder Rangers 0-1 Gaia's Revenge",
+         "Kingsmeadow Rovers 1-1 Celestial Vanguard",
+         "Shadow Eaters 1-0 Ancient Dragonfire",
+         "Ravenhill 1-0 Chaos Overture",
+         "Hands of Fate 1-0 Supersonic Knights",
+         "Crystal Roses 1-1 Crownfield Athletic",
+         "Solford Town 0-2 Yellowjackets FC",
+         "Nightingales 3-1 Midnight Tales",
+         "Crimson Moon 2-1 Sentinels of Light",
+         "Ironvale FC 3-1 Miracle Makers"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 30,
+        "results": [
+         "Icefire Ballad 1-0 Hannya Masks",
+         "Blazing Shadows 6-0 Northern Lords",
+         "Dark Side of the Moon 1-2 Glorious Vision",
+         "Zero Returners 1-2 Doom Knights",
+         "Ruined Legion 2-0 Glazed Dreams",
+         "Thorned Reliquary 3-2 Brookgate Wanderers",
+         "Polaris FC 3-0 Fallen Heirlooms",
+         "Void Relics 1-0 Xeno Hunters",
+         "Royal Junction 1-3 Star Guardians",
+         "Ocean Stars 2-1 Pain FC"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 35,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 31,
+        "results": [
+         "Gaia's Revenge 0-0 Kingsmeadow Rovers",
+         "Thunder Rangers 0-0 Shadow Eaters",
+         "Celestial Vanguard 2-1 Ravenhill",
+         "Ancient Dragonfire 2-1 Hands of Fate",
+         "Chaos Overture 2-1 Crystal Roses",
+         "Supersonic Knights 1-0 Solford Town",
+         "Crownfield Athletic 2-1 Nightingales",
+         "Yellowjackets FC 1-2 Crimson Moon",
+         "Midnight Tales 1-0 Ironvale FC",
+         "Sentinels of Light 2-2 Miracle Makers"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 31,
+        "results": [
+         "Hannya Masks 1-1 Blazing Shadows",
+         "Icefire Ballad 1-1 Dark Side of the Moon",
+         "Northern Lords 3-2 Zero Returners",
+         "Glorious Vision 5-1 Ruined Legion",
+         "Doom Knights 1-2 Thorned Reliquary",
+         "Glazed Dreams 2-2 Polaris FC",
+         "Brookgate Wanderers 1-0 Void Relics",
+         "Fallen Heirlooms 1-1 Royal Junction",
+         "Xeno Hunters 1-0 Ocean Stars",
+         "Star Guardians 3-3 Pain FC"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 36,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 32,
+        "results": [
+         "Shadow Eaters 0-0 Gaia's Revenge",
+         "Ravenhill 2-1 Kingsmeadow Rovers",
+         "Hands of Fate 2-1 Thunder Rangers",
+         "Crystal Roses 2-2 Celestial Vanguard",
+         "Solford Town 2-1 Ancient Dragonfire",
+         "Nightingales 1-1 Chaos Overture",
+         "Crimson Moon 3-2 Supersonic Knights",
+         "Ironvale FC 1-4 Crownfield Athletic",
+         "Miracle Makers 0-1 Yellowjackets FC",
+         "Sentinels of Light 3-1 Midnight Tales"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 32,
+        "results": [
+         "Dark Side of the Moon 1-1 Hannya Masks",
+         "Zero Returners 1-4 Blazing Shadows",
+         "Ruined Legion 3-2 Icefire Ballad",
+         "Thorned Reliquary 1-0 Northern Lords",
+         "Polaris FC 5-1 Glorious Vision",
+         "Void Relics 1-3 Doom Knights",
+         "Royal Junction 1-3 Glazed Dreams",
+         "Ocean Stars 2-2 Brookgate Wanderers",
+         "Pain FC 1-2 Fallen Heirlooms",
+         "Star Guardians 1-1 Xeno Hunters"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 37,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 33,
+        "results": [
+         "Gaia's Revenge 0-0 Ravenhill",
+         "Shadow Eaters 2-1 Hands of Fate",
+         "Kingsmeadow Rovers 2-2 Crystal Roses",
+         "Thunder Rangers 1-0 Solford Town",
+         "Celestial Vanguard 1-4 Nightingales",
+         "Ancient Dragonfire 0-1 Crimson Moon",
+         "Chaos Overture 2-2 Ironvale FC",
+         "Supersonic Knights 1-2 Miracle Makers",
+         "Crownfield Athletic 2-2 Sentinels of Light",
+         "Yellowjackets FC 5-0 Midnight Tales"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 33,
+        "results": [
+         "Hannya Masks 1-0 Zero Returners",
+         "Dark Side of the Moon 6-4 Ruined Legion",
+         "Blazing Shadows 1-3 Thorned Reliquary",
+         "Icefire Ballad 1-1 Polaris FC",
+         "Northern Lords 1-3 Void Relics",
+         "Glorious Vision 5-1 Royal Junction",
+         "Doom Knights 2-2 Ocean Stars",
+         "Glazed Dreams 3-4 Pain FC",
+         "Brookgate Wanderers 3-1 Star Guardians",
+         "Fallen Heirlooms 2-2 Xeno Hunters"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 38,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 34,
+        "results": [
+         "Hands of Fate 0-0 Gaia's Revenge",
+         "Crystal Roses 2-1 Ravenhill",
+         "Solford Town 1-2 Shadow Eaters",
+         "Nightingales 0-1 Kingsmeadow Rovers",
+         "Crimson Moon 2-0 Thunder Rangers",
+         "Ironvale FC 1-1 Celestial Vanguard",
+         "Miracle Makers 4-2 Ancient Dragonfire",
+         "Sentinels of Light 2-2 Chaos Overture",
+         "Midnight Tales 0-1 Supersonic Knights",
+         "Yellowjackets FC 2-1 Crownfield Athletic"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 34,
+        "results": [
+         "Ruined Legion 1-2 Hannya Masks",
+         "Thorned Reliquary 3-3 Zero Returners",
+         "Polaris FC 4-1 Dark Side of the Moon",
+         "Void Relics 2-2 Blazing Shadows",
+         "Royal Junction 3-1 Icefire Ballad",
+         "Ocean Stars 2-0 Northern Lords",
+         "Pain FC 6-2 Glorious Vision",
+         "Star Guardians 2-1 Doom Knights",
+         "Xeno Hunters 1-3 Glazed Dreams",
+         "Fallen Heirlooms 2-0 Brookgate Wanderers"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 39,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 35,
+        "results": [
+         "Gaia's Revenge 1-0 Crystal Roses",
+         "Hands of Fate 3-0 Solford Town",
+         "Ravenhill 1-1 Nightingales",
+         "Shadow Eaters 1-0 Crimson Moon",
+         "Kingsmeadow Rovers 0-4 Ironvale FC",
+         "Thunder Rangers 0-2 Miracle Makers",
+         "Celestial Vanguard 2-3 Sentinels of Light",
+         "Ancient Dragonfire 2-1 Midnight Tales",
+         "Chaos Overture 2-1 Yellowjackets FC",
+         "Supersonic Knights 2-4 Crownfield Athletic"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 35,
+        "results": [
+         "Hannya Masks 2-2 Thorned Reliquary",
+         "Ruined Legion 2-0 Polaris FC",
+         "Zero Returners 1-1 Void Relics",
+         "Dark Side of the Moon 1-1 Royal Junction",
+         "Blazing Shadows 2-0 Ocean Stars",
+         "Icefire Ballad 3-0 Pain FC",
+         "Northern Lords 1-3 Star Guardians",
+         "Glorious Vision 1-2 Xeno Hunters",
+         "Doom Knights 1-1 Fallen Heirlooms",
+         "Glazed Dreams 1-1 Brookgate Wanderers"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 40,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 36,
+        "results": [
+         "Solford Town 0-1 Gaia's Revenge",
+         "Nightingales 3-0 Crystal Roses",
+         "Crimson Moon 3-1 Hands of Fate",
+         "Ironvale FC 3-2 Ravenhill",
+         "Miracle Makers 0-0 Shadow Eaters",
+         "Sentinels of Light 2-1 Kingsmeadow Rovers",
+         "Midnight Tales 0-0 Thunder Rangers",
+         "Yellowjackets FC 2-2 Celestial Vanguard",
+         "Crownfield Athletic 4-0 Ancient Dragonfire",
+         "Supersonic Knights 0-2 Chaos Overture"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 36,
+        "results": [
+         "Polaris FC 1-2 Hannya Masks",
+         "Void Relics 5-0 Thorned Reliquary",
+         "Royal Junction 1-1 Ruined Legion",
+         "Ocean Stars 1-4 Zero Returners",
+         "Pain FC 5-1 Dark Side of the Moon",
+         "Star Guardians 4-2 Blazing Shadows",
+         "Xeno Hunters 1-0 Icefire Ballad",
+         "Fallen Heirlooms 6-3 Northern Lords",
+         "Brookgate Wanderers 1-1 Glorious Vision",
+         "Glazed Dreams 1-3 Doom Knights"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 41,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 37,
+        "results": [
+         "Gaia's Revenge 1-0 Nightingales",
+         "Solford Town 0-4 Crimson Moon",
+         "Crystal Roses 1-2 Ironvale FC",
+         "Hands of Fate 0-2 Miracle Makers",
+         "Ravenhill 1-0 Sentinels of Light",
+         "Shadow Eaters 1-0 Midnight Tales",
+         "Kingsmeadow Rovers 2-0 Yellowjackets FC",
+         "Thunder Rangers 0-1 Crownfield Athletic",
+         "Celestial Vanguard 2-1 Supersonic Knights",
+         "Ancient Dragonfire 0-3 Chaos Overture"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 37,
+        "results": [
+         "Hannya Masks 1-1 Void Relics",
+         "Polaris FC 3-2 Royal Junction",
+         "Thorned Reliquary 5-1 Ocean Stars",
+         "Ruined Legion 1-2 Pain FC",
+         "Zero Returners 2-2 Star Guardians",
+         "Dark Side of the Moon 1-0 Xeno Hunters",
+         "Blazing Shadows 1-1 Fallen Heirlooms",
+         "Icefire Ballad 1-0 Brookgate Wanderers",
+         "Northern Lords 3-3 Glazed Dreams",
+         "Glorious Vision 3-1 Doom Knights"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 42,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 38,
+        "results": [
+         "Crimson Moon 1-0 Gaia's Revenge",
+         "Ironvale FC 2-3 Nightingales",
+         "Miracle Makers 2-0 Solford Town",
+         "Sentinels of Light 2-2 Crystal Roses",
+         "Midnight Tales 1-1 Hands of Fate",
+         "Yellowjackets FC 2-1 Ravenhill",
+         "Crownfield Athletic 1-1 Shadow Eaters",
+         "Supersonic Knights 4-0 Kingsmeadow Rovers",
+         "Chaos Overture 2-2 Thunder Rangers",
+         "Ancient Dragonfire 3-1 Celestial Vanguard"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 38,
+        "results": [
+         "Royal Junction 1-2 Hannya Masks",
+         "Ocean Stars 1-1 Void Relics",
+         "Pain FC 1-1 Polaris FC",
+         "Star Guardians 2-3 Thorned Reliquary",
+         "Xeno Hunters 2-2 Ruined Legion",
+         "Fallen Heirlooms 1-1 Zero Returners",
+         "Brookgate Wanderers 6-3 Dark Side of the Moon",
+         "Glazed Dreams 5-1 Blazing Shadows",
+         "Doom Knights 2-2 Icefire Ballad",
+         "Glorious Vision 6-2 Northern Lords"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 43,
+     "kind": "cup_week",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 44,
+     "kind": "cup_week",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 45,
+     "kind": "cup_week",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 46,
+     "kind": "promotion_playoff",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": [
+       {
+        "round": 1,
+        "results": [
+         "Hannya Masks 6-1 Polaris FC",
+         "Pain FC 1-1 Void Relics"
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "week_number": 47,
+     "kind": "promotion_playoff",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": [
+       {
+        "round": 2,
+        "results": [
+         "Polaris FC 6-1 Hannya Masks",
+         "Void Relics 1-1 Pain FC"
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "week_number": 48,
+     "kind": "promotion_playoff",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": [
+       {
+        "round": 3,
+        "results": [
+         "Void Relics 6-1 Polaris FC"
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "week_number": 49,
+     "kind": "promotion_playoff",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": [
+       {
+        "round": 4,
+        "results": [
+         "Polaris FC 6-1 Void Relics"
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "week_number": 50,
+     "kind": "summer_break",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 51,
+     "kind": "summer_break",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 52,
+     "kind": "summer_break",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    }
+   ],
+   "final": {
+    "premier_table": [
+     [
+      "Shadow Eaters",
+      72,
+      52,
+      36
+     ],
+     [
+      "Crimson Moon",
+      68,
+      71,
+      52
+     ],
+     [
+      "Crownfield Athletic",
+      63,
+      72,
+      46
+     ],
+     [
+      "Miracle Makers",
+      63,
+      57,
+      34
+     ],
+     [
+      "Yellowjackets FC",
+      63,
+      62,
+      47
+     ],
+     [
+      "Ironvale FC",
+      61,
+      80,
+      59
+     ],
+     [
+      "Hands of Fate",
+      57,
+      59,
+      41
+     ],
+     [
+      "Supersonic Knights",
+      57,
+      56,
+      50
+     ],
+     [
+      "Crystal Roses",
+      55,
+      55,
+      55
+     ],
+     [
+      "Kingsmeadow Rovers",
+      54,
+      53,
+      55
+     ],
+     [
+      "Celestial Vanguard",
+      52,
+      73,
+      65
+     ],
+     [
+      "Nightingales",
+      52,
+      55,
+      49
+     ],
+     [
+      "Sentinels of Light",
+      51,
+      51,
+      54
+     ],
+     [
+      "Gaia's Revenge",
+      48,
+      26,
+      27
+     ],
+     [
+      "Ravenhill",
+      46,
+      45,
+      54
+     ],
+     [
+      "Chaos Overture",
+      44,
+      42,
+      60
+     ],
+     [
+      "Ancient Dragonfire",
+      39,
+      41,
+      64
+     ],
+     [
+      "Thunder Rangers",
+      37,
+      31,
+      54
+     ],
+     [
+      "Solford Town",
+      32,
+      24,
+      65
+     ],
+     [
+      "Midnight Tales",
+      27,
+      31,
+      69
+     ]
+    ],
+    "second_table": [
+     [
+      "Thorned Reliquary",
+      72,
+      77,
+      55
+     ],
+     [
+      "Glorious Vision",
+      62,
+      88,
+      71
+     ],
+     [
+      "Polaris FC",
+      60,
+      78,
+      58
+     ],
+     [
+      "Void Relics",
+      58,
+      77,
+      55
+     ],
+     [
+      "Pain FC",
+      56,
+      90,
+      82
+     ],
+     [
+      "Hannya Masks",
+      56,
+      71,
+      70
+     ],
+     [
+      "Icefire Ballad",
+      56,
+      59,
+      68
+     ],
+     [
+      "Blazing Shadows",
+      55,
+      84,
+      66
+     ],
+     [
+      "Star Guardians",
+      54,
+      59,
+      65
+     ],
+     [
+      "Xeno Hunters",
+      52,
+      63,
+      51
+     ],
+     [
+      "Ocean Stars",
+      52,
+      68,
+      62
+     ],
+     [
+      "Northern Lords",
+      52,
+      62,
+      73
+     ],
+     [
+      "Brookgate Wanderers",
+      51,
+      73,
+      77
+     ],
+     [
+      "Ruined Legion",
+      49,
+      68,
+      74
+     ],
+     [
+      "Fallen Heirlooms",
+      49,
+      61,
+      71
+     ],
+     [
+      "Doom Knights",
+      48,
+      58,
+      66
+     ],
+     [
+      "Royal Junction",
+      46,
+      65,
+      79
+     ],
+     [
+      "Glazed Dreams",
+      44,
+      71,
+      87
+     ],
+     [
+      "Dark Side of the Moon",
+      43,
+      60,
+      80
+     ],
+     [
+      "Zero Returners",
+      42,
+      64,
+      86
+     ]
+    ],
+    "cup_champions": {
+     "优胜者杯": null,
+     "挑战杯": null,
+     "超级杯": null
+    },
+    "last_transition": {
+     "season_number": 1,
+     "relegated": [
+      "Thunder Rangers",
+      "Solford Town",
+      "Midnight Tales"
+     ],
+     "promoted_direct": [
+      "Thorned Reliquary",
+      "Glorious Vision"
+     ],
+     "playoff_winner": "Polaris FC",
+     "cup_champions": {
+      "优胜者杯": null,
+      "挑战杯": null,
+      "超级杯": null
+     }
+    },
+    "top20": [
+     [
+      1,
+      "Julian Alvarez",
+      "Ironvale FC",
+      975.13
+     ],
+     [
+      2,
+      "Evan Ferguson",
+      "Yellowjackets FC",
+      946.93
+     ],
+     [
+      3,
+      "Bukayo Saka",
+      "Miracle Makers",
+      916.74
+     ],
+     [
+      4,
+      "Roberto Firmino",
+      "Crimson Moon",
+      909.68
+     ],
+     [
+      5,
+      "Cody Gakpo",
+      "Crownfield Athletic",
+      896.47
+     ],
+     [
+      6,
+      "Kenan Yildiz",
+      "Kingsmeadow Rovers",
+      872.11
+     ],
+     [
+      7,
+      "Xavi Simons",
+      "Crimson Moon",
+      852.17
+     ],
+     [
+      8,
+      "Carlos Baleba",
+      "Celestial Vanguard",
+      836.7
+     ],
+     [
+      9,
+      "Nicolas Jackson",
+      "Celestial Vanguard",
+      828.54
+     ],
+     [
+      10,
+      "Estevao Willian",
+      "Miracle Makers",
+      812.68
+     ],
+     [
+      11,
+      "Rodrygo",
+      "Celestial Vanguard",
+      807.58
+     ],
+     [
+      12,
+      "Joshua Zirkzee",
+      "Ancient Dragonfire",
+      793.81
+     ],
+     [
+      13,
+      "Dominik Szoboszlai",
+      "Ironvale FC",
+      780.68
+     ],
+     [
+      14,
+      "Nick Woltemade",
+      "Nightingales",
+      779.57
+     ],
+     [
+      15,
+      "Charles De Ketelaere",
+      "Hands of Fate",
+      765.68
+     ],
+     [
+      16,
+      "Nicolo Barella",
+      "Ironvale FC",
+      757.95
+     ],
+     [
+      17,
+      "Benjamin Sesko",
+      "Ironvale FC",
+      756.04
+     ],
+     [
+      18,
+      "Anthony Elanga",
+      "Crownfield Athletic",
+      750.5
+     ],
+     [
+      19,
+      "Deniz Undav",
+      "Ravenhill",
+      748.98
+     ],
+     [
+      20,
+      "Enzo Fernandez",
+      "Crystal Roses",
+      737.28
+     ]
+    ],
+    "competition_awards": {
+     "一级联赛": {
+      "top_scorer": "Julian Alvarez",
+      "assist_leader": "Xavi Simons",
+      "mvp": "Julian Alvarez"
+     }
+    },
+    "next_premier_team_names": [
+     "Gaia's Revenge",
+     "Crimson Moon",
+     "Nightingales",
+     "Crystal Roses",
+     "Hands of Fate",
+     "Ravenhill",
+     "Shadow Eaters",
+     "Kingsmeadow Rovers",
+     "Celestial Vanguard",
+     "Ancient Dragonfire",
+     "Chaos Overture",
+     "Supersonic Knights",
+     "Crownfield Athletic",
+     "Yellowjackets FC",
+     "Sentinels of Light",
+     "Miracle Makers",
+     "Ironvale FC",
+     "Thorned Reliquary",
+     "Glorious Vision",
+     "Polaris FC"
+    ],
+    "next_second_team_names": [
+     "Hannya Masks",
+     "Royal Junction",
+     "Void Relics",
+     "Ruined Legion",
+     "Zero Returners",
+     "Dark Side of the Moon",
+     "Blazing Shadows",
+     "Icefire Ballad",
+     "Northern Lords",
+     "Doom Knights",
+     "Glazed Dreams",
+     "Brookgate Wanderers",
+     "Fallen Heirlooms",
+     "Xeno Hunters",
+     "Star Guardians",
+     "Pain FC",
+     "Ocean Stars",
+     "Thunder Rangers",
+     "Solford Town",
+     "Midnight Tales"
+    ]
+   }
+  },
+  {
+   "season_number": 2,
+   "weeks": [
+    {
+     "week_number": 1,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 1,
+        "results": [
+         "Gaia's Revenge 1-0 Polaris FC",
+         "Crimson Moon 4-0 Glorious Vision",
+         "Nightingales 1-2 Thorned Reliquary",
+         "Crystal Roses 0-2 Ironvale FC",
+         "Hands of Fate 1-3 Miracle Makers",
+         "Ravenhill 1-1 Sentinels of Light",
+         "Shadow Eaters 2-1 Yellowjackets FC",
+         "Kingsmeadow Rovers 0-1 Crownfield Athletic",
+         "Celestial Vanguard 2-0 Supersonic Knights",
+         "Ancient Dragonfire 1-1 Chaos Overture"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 1,
+        "results": [
+         "Hannya Masks 1-2 Midnight Tales",
+         "Royal Junction 1-2 Solford Town",
+         "Void Relics 1-4 Thunder Rangers",
+         "Ruined Legion 2-0 Ocean Stars",
+         "Zero Returners 1-1 Pain FC",
+         "Dark Side of the Moon 6-1 Star Guardians",
+         "Blazing Shadows 0-1 Xeno Hunters",
+         "Icefire Ballad 1-2 Fallen Heirlooms",
+         "Northern Lords 1-1 Brookgate Wanderers",
+         "Doom Knights 1-1 Glazed Dreams"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 2,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 2,
+        "results": [
+         "Glorious Vision 0-1 Gaia's Revenge",
+         "Thorned Reliquary 3-0 Polaris FC",
+         "Ironvale FC 3-1 Crimson Moon",
+         "Miracle Makers 3-2 Nightingales",
+         "Sentinels of Light 3-0 Crystal Roses",
+         "Yellowjackets FC 0-3 Hands of Fate",
+         "Crownfield Athletic 1-1 Ravenhill",
+         "Supersonic Knights 1-2 Shadow Eaters",
+         "Chaos Overture 1-2 Kingsmeadow Rovers",
+         "Ancient Dragonfire 4-0 Celestial Vanguard"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 2,
+        "results": [
+         "Solford Town 6-1 Hannya Masks",
+         "Thunder Rangers 3-2 Midnight Tales",
+         "Ocean Stars 6-2 Royal Junction",
+         "Pain FC 2-1 Void Relics",
+         "Star Guardians 4-2 Ruined Legion",
+         "Xeno Hunters 1-1 Zero Returners",
+         "Fallen Heirlooms 1-4 Dark Side of the Moon",
+         "Brookgate Wanderers 3-2 Blazing Shadows",
+         "Glazed Dreams 1-0 Icefire Ballad",
+         "Doom Knights 5-1 Northern Lords"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 3,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 3,
+        "results": [
+         "Gaia's Revenge 1-0 Thorned Reliquary",
+         "Glorious Vision 3-0 Ironvale FC",
+         "Polaris FC 0-3 Miracle Makers",
+         "Crimson Moon 2-0 Sentinels of Light",
+         "Nightingales 1-1 Yellowjackets FC",
+         "Crystal Roses 2-1 Crownfield Athletic",
+         "Hands of Fate 0-2 Supersonic Knights",
+         "Ravenhill 1-0 Chaos Overture",
+         "Shadow Eaters 4-0 Ancient Dragonfire",
+         "Kingsmeadow Rovers 3-2 Celestial Vanguard"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 3,
+        "results": [
+         "Hannya Masks 2-2 Thunder Rangers",
+         "Solford Town 3-2 Ocean Stars",
+         "Midnight Tales 4-1 Pain FC",
+         "Royal Junction 6-2 Star Guardians",
+         "Void Relics 1-2 Xeno Hunters",
+         "Ruined Legion 5-0 Fallen Heirlooms",
+         "Zero Returners 1-1 Brookgate Wanderers",
+         "Dark Side of the Moon 1-4 Glazed Dreams",
+         "Blazing Shadows 5-1 Doom Knights",
+         "Icefire Ballad 4-2 Northern Lords"
+        ]
+       }
+      ],
+      "cup_matchdays": [
+       {
+        "round": 1,
+        "results": [
+         "Miracle Makers 2-0 Ravenhill",
+         "Supersonic Knights 3-4 Nightingales",
+         "Shadow Eaters 2-0 Sentinels of Light",
+         "Yellowjackets FC 1-1 Celestial Vanguard",
+         "Crimson Moon 1-1 Gaia's Revenge",
+         "Ironvale FC 3-1 Kingsmeadow Rovers",
+         "Crownfield Athletic 3-4 Chaos Overture",
+         "Hands of Fate 2-0 Crystal Roses"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 4,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 4,
+        "results": [
+         "Ironvale FC 3-2 Gaia's Revenge",
+         "Miracle Makers 3-0 Thorned Reliquary",
+         "Sentinels of Light 3-1 Glorious Vision",
+         "Yellowjackets FC 3-0 Polaris FC",
+         "Crownfield Athletic 2-1 Crimson Moon",
+         "Supersonic Knights 1-1 Nightingales",
+         "Chaos Overture 3-0 Crystal Roses",
+         "Ancient Dragonfire 1-2 Hands of Fate",
+         "Celestial Vanguard 1-1 Ravenhill",
+         "Kingsmeadow Rovers 1-1 Shadow Eaters"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 4,
+        "results": [
+         "Ocean Stars 3-0 Hannya Masks",
+         "Pain FC 2-0 Thunder Rangers",
+         "Star Guardians 4-1 Solford Town",
+         "Xeno Hunters 1-4 Midnight Tales",
+         "Fallen Heirlooms 2-1 Royal Junction",
+         "Brookgate Wanderers 1-0 Void Relics",
+         "Glazed Dreams 1-2 Ruined Legion",
+         "Doom Knights 2-2 Zero Returners",
+         "Northern Lords 1-1 Dark Side of the Moon",
+         "Icefire Ballad 1-3 Blazing Shadows"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 5,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 5,
+        "results": [
+         "Gaia's Revenge 3-2 Miracle Makers",
+         "Ironvale FC 2-1 Sentinels of Light",
+         "Thorned Reliquary 1-1 Yellowjackets FC",
+         "Glorious Vision 1-1 Crownfield Athletic",
+         "Polaris FC 0-0 Supersonic Knights",
+         "Crimson Moon 1-1 Chaos Overture",
+         "Nightingales 4-3 Ancient Dragonfire",
+         "Crystal Roses 1-2 Celestial Vanguard",
+         "Hands of Fate 4-0 Kingsmeadow Rovers",
+         "Ravenhill 1-1 Shadow Eaters"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 5,
+        "results": [
+         "Hannya Masks 3-0 Pain FC",
+         "Ocean Stars 2-0 Star Guardians",
+         "Thunder Rangers 6-1 Xeno Hunters",
+         "Solford Town 1-3 Fallen Heirlooms",
+         "Midnight Tales 3-1 Brookgate Wanderers",
+         "Royal Junction 1-0 Glazed Dreams",
+         "Void Relics 1-2 Doom Knights",
+         "Ruined Legion 2-2 Northern Lords",
+         "Zero Returners 1-1 Icefire Ballad",
+         "Dark Side of the Moon 1-3 Blazing Shadows"
+        ]
+       }
+      ],
+      "cup_matchdays": [
+       {
+        "round": 1,
+        "results": [
+         "Kingsmeadow Rovers 0-0 Ocean Stars",
+         "Midnight Tales 0-1 Northern Lords",
+         "Yellowjackets FC 1-1 Hands of Fate",
+         "Crystal Roses 2-0 Solford Town",
+         "Chaos Overture 2-0 Thorned Reliquary",
+         "Miracle Makers 3-0 Star Guardians",
+         "Icefire Ballad 0-3 Blazing Shadows",
+         "Crownfield Athletic 2-2 Polaris FC",
+         "Void Relics 0-0 Hannya Masks",
+         "Ironvale FC 2-1 Gaia's Revenge",
+         "Celestial Vanguard 2-2 Ravenhill",
+         "Sentinels of Light 2-1 Glorious Vision",
+         "Nightingales 2-1 Thunder Rangers",
+         "Shadow Eaters 0-3 Ancient Dragonfire",
+         "Pain FC 0-5 Xeno Hunters",
+         "Crimson Moon 5-2 Supersonic Knights"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 6,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 6,
+        "results": [
+         "Sentinels of Light 1-1 Gaia's Revenge",
+         "Yellowjackets FC 3-0 Miracle Makers",
+         "Crownfield Athletic 2-1 Ironvale FC",
+         "Supersonic Knights 1-0 Thorned Reliquary",
+         "Chaos Overture 2-0 Glorious Vision",
+         "Ancient Dragonfire 2-0 Polaris FC",
+         "Celestial Vanguard 1-2 Crimson Moon",
+         "Kingsmeadow Rovers 1-2 Nightingales",
+         "Shadow Eaters 1-1 Crystal Roses",
+         "Ravenhill 1-1 Hands of Fate"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 6,
+        "results": [
+         "Star Guardians 1-1 Hannya Masks",
+         "Xeno Hunters 1-1 Pain FC",
+         "Fallen Heirlooms 3-2 Ocean Stars",
+         "Brookgate Wanderers 5-1 Thunder Rangers",
+         "Glazed Dreams 1-2 Solford Town",
+         "Doom Knights 2-3 Midnight Tales",
+         "Northern Lords 1-0 Royal Junction",
+         "Icefire Ballad 1-1 Void Relics",
+         "Blazing Shadows 1-0 Ruined Legion",
+         "Dark Side of the Moon 3-3 Zero Returners"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 7,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 7,
+        "results": [
+         "Gaia's Revenge 1-0 Yellowjackets FC",
+         "Sentinels of Light 0-4 Crownfield Athletic",
+         "Miracle Makers 2-0 Supersonic Knights",
+         "Ironvale FC 2-0 Chaos Overture",
+         "Thorned Reliquary 2-2 Ancient Dragonfire",
+         "Glorious Vision 1-1 Celestial Vanguard",
+         "Polaris FC 3-1 Kingsmeadow Rovers",
+         "Crimson Moon 1-2 Shadow Eaters",
+         "Nightingales 2-2 Ravenhill",
+         "Crystal Roses 1-1 Hands of Fate"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 7,
+        "results": [
+         "Hannya Masks 1-1 Xeno Hunters",
+         "Star Guardians 1-4 Fallen Heirlooms",
+         "Pain FC 3-2 Brookgate Wanderers",
+         "Ocean Stars 1-0 Glazed Dreams",
+         "Thunder Rangers 6-1 Doom Knights",
+         "Solford Town 1-3 Northern Lords",
+         "Midnight Tales 1-3 Icefire Ballad",
+         "Royal Junction 2-2 Blazing Shadows",
+         "Void Relics 1-2 Dark Side of the Moon",
+         "Ruined Legion 1-1 Zero Returners"
+        ]
+       }
+      ],
+      "cup_matchdays": [
+       {
+        "round": 2,
+        "results": [
+         "Ravenhill 2-1 Supersonic Knights",
+         "Nightingales 3-0 Miracle Makers",
+         "Sentinels of Light 1-0 Yellowjackets FC",
+         "Celestial Vanguard 2-1 Shadow Eaters",
+         "Gaia's Revenge 3-4 Ironvale FC",
+         "Kingsmeadow Rovers 1-3 Crimson Moon",
+         "Chaos Overture 1-3 Hands of Fate",
+         "Crystal Roses 2-2 Crownfield Athletic"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 8,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 8,
+        "results": [
+         "Crownfield Athletic 3-2 Gaia's Revenge",
+         "Supersonic Knights 2-0 Yellowjackets FC",
+         "Chaos Overture 3-0 Sentinels of Light",
+         "Ancient Dragonfire 1-1 Miracle Makers",
+         "Celestial Vanguard 1-4 Ironvale FC",
+         "Kingsmeadow Rovers 0-1 Thorned Reliquary",
+         "Shadow Eaters 1-0 Glorious Vision",
+         "Ravenhill 1-2 Polaris FC",
+         "Hands of Fate 1-2 Crimson Moon",
+         "Crystal Roses 2-2 Nightingales"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 8,
+        "results": [
+         "Fallen Heirlooms 1-0 Hannya Masks",
+         "Brookgate Wanderers 5-1 Xeno Hunters",
+         "Glazed Dreams 3-0 Star Guardians",
+         "Doom Knights 2-1 Pain FC",
+         "Northern Lords 2-1 Ocean Stars",
+         "Icefire Ballad 5-1 Thunder Rangers",
+         "Blazing Shadows 2-0 Solford Town",
+         "Dark Side of the Moon 1-5 Midnight Tales",
+         "Zero Returners 5-3 Royal Junction",
+         "Ruined Legion 1-2 Void Relics"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 9,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 9,
+        "results": [
+         "Gaia's Revenge 1-1 Supersonic Knights",
+         "Crownfield Athletic 2-1 Chaos Overture",
+         "Yellowjackets FC 2-1 Ancient Dragonfire",
+         "Sentinels of Light 1-1 Celestial Vanguard",
+         "Miracle Makers 2-0 Kingsmeadow Rovers",
+         "Ironvale FC 2-1 Shadow Eaters",
+         "Thorned Reliquary 3-3 Ravenhill",
+         "Glorious Vision 0-4 Hands of Fate",
+         "Polaris FC 2-1 Crystal Roses",
+         "Crimson Moon 3-1 Nightingales"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 9,
+        "results": [
+         "Hannya Masks 2-1 Brookgate Wanderers",
+         "Fallen Heirlooms 2-0 Glazed Dreams",
+         "Xeno Hunters 2-0 Doom Knights",
+         "Star Guardians 3-2 Northern Lords",
+         "Pain FC 0-3 Icefire Ballad",
+         "Ocean Stars 1-2 Blazing Shadows",
+         "Thunder Rangers 1-1 Dark Side of the Moon",
+         "Solford Town 1-1 Zero Returners",
+         "Midnight Tales 6-0 Ruined Legion",
+         "Royal Junction 1-0 Void Relics"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 10,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 10,
+        "results": [
+         "Chaos Overture 1-1 Gaia's Revenge",
+         "Ancient Dragonfire 3-0 Supersonic Knights",
+         "Celestial Vanguard 2-1 Crownfield Athletic",
+         "Kingsmeadow Rovers 1-1 Yellowjackets FC",
+         "Shadow Eaters 0-0 Sentinels of Light",
+         "Ravenhill 1-3 Miracle Makers",
+         "Hands of Fate 1-1 Ironvale FC",
+         "Crystal Roses 2-0 Thorned Reliquary",
+         "Nightingales 1-3 Glorious Vision",
+         "Crimson Moon 1-2 Polaris FC"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 10,
+        "results": [
+         "Glazed Dreams 2-3 Hannya Masks",
+         "Doom Knights 3-0 Brookgate Wanderers",
+         "Northern Lords 3-3 Fallen Heirlooms",
+         "Icefire Ballad 1-0 Xeno Hunters",
+         "Blazing Shadows 1-0 Star Guardians",
+         "Dark Side of the Moon 6-3 Pain FC",
+         "Zero Returners 2-2 Ocean Stars",
+         "Ruined Legion 3-1 Thunder Rangers",
+         "Void Relics 1-5 Solford Town",
+         "Royal Junction 5-0 Midnight Tales"
+        ]
+       }
+      ],
+      "cup_matchdays": [
+       {
+        "round": 3,
+        "results": [
+         "Miracle Makers 2-1 Supersonic Knights",
+         "Nightingales 4-5 Ravenhill",
+         "Shadow Eaters 1-0 Yellowjackets FC",
+         "Celestial Vanguard 1-2 Sentinels of Light",
+         "Crimson Moon 1-1 Ironvale FC",
+         "Kingsmeadow Rovers 1-0 Gaia's Revenge",
+         "Crownfield Athletic 1-2 Hands of Fate",
+         "Crystal Roses 0-0 Chaos Overture"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 11,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 11,
+        "results": [
+         "Gaia's Revenge 3-2 Ancient Dragonfire",
+         "Chaos Overture 2-1 Celestial Vanguard",
+         "Supersonic Knights 2-1 Kingsmeadow Rovers",
+         "Crownfield Athletic 1-1 Shadow Eaters",
+         "Yellowjackets FC 2-1 Ravenhill",
+         "Sentinels of Light 0-0 Hands of Fate",
+         "Miracle Makers 2-1 Crystal Roses",
+         "Ironvale FC 3-0 Nightingales",
+         "Thorned Reliquary 1-2 Crimson Moon",
+         "Glorious Vision 3-1 Polaris FC"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 11,
+        "results": [
+         "Hannya Masks 5-2 Doom Knights",
+         "Glazed Dreams 1-0 Northern Lords",
+         "Brookgate Wanderers 6-2 Icefire Ballad",
+         "Fallen Heirlooms 2-1 Blazing Shadows",
+         "Xeno Hunters 2-3 Dark Side of the Moon",
+         "Star Guardians 1-2 Zero Returners",
+         "Pain FC 1-1 Ruined Legion",
+         "Ocean Stars 2-0 Void Relics",
+         "Thunder Rangers 1-2 Royal Junction",
+         "Solford Town 6-2 Midnight Tales"
+        ]
+       }
+      ],
+      "cup_matchdays": [
+       {
+        "round": 2,
+        "results": [
+         "Ironvale FC 4-1 Northern Lords",
+         "Ancient Dragonfire 2-0 Xeno Hunters",
+         "Yellowjackets FC 3-2 Polaris FC",
+         "Crystal Roses 3-1 Hannya Masks",
+         "Miracle Makers 3-1 Chaos Overture",
+         "Kingsmeadow Rovers 1-1 Blazing Shadows",
+         "Celestial Vanguard 1-1 Sentinels of Light",
+         "Crimson Moon 2-4 Nightingales"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 12,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 12,
+        "results": [
+         "Celestial Vanguard 3-2 Gaia's Revenge",
+         "Kingsmeadow Rovers 2-0 Ancient Dragonfire",
+         "Shadow Eaters 2-0 Chaos Overture",
+         "Ravenhill 1-1 Supersonic Knights",
+         "Hands of Fate 1-1 Crownfield Athletic",
+         "Crystal Roses 1-1 Yellowjackets FC",
+         "Nightingales 5-0 Sentinels of Light",
+         "Crimson Moon 4-0 Miracle Makers",
+         "Polaris FC 0-2 Ironvale FC",
+         "Glorious Vision 3-0 Thorned Reliquary"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 12,
+        "results": [
+         "Northern Lords 6-2 Hannya Masks",
+         "Icefire Ballad 2-2 Doom Knights",
+         "Blazing Shadows 1-1 Glazed Dreams",
+         "Dark Side of the Moon 1-2 Brookgate Wanderers",
+         "Zero Returners 2-2 Fallen Heirlooms",
+         "Ruined Legion 2-0 Xeno Hunters",
+         "Void Relics 1-1 Star Guardians",
+         "Royal Junction 1-1 Pain FC",
+         "Midnight Tales 2-0 Ocean Stars",
+         "Solford Town 4-1 Thunder Rangers"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 13,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 13,
+        "results": [
+         "Gaia's Revenge 1-1 Kingsmeadow Rovers",
+         "Celestial Vanguard 2-1 Shadow Eaters",
+         "Ancient Dragonfire 4-1 Ravenhill",
+         "Chaos Overture 3-0 Hands of Fate",
+         "Supersonic Knights 2-0 Crystal Roses",
+         "Crownfield Athletic 2-2 Nightingales",
+         "Yellowjackets FC 1-4 Crimson Moon",
+         "Sentinels of Light 2-2 Polaris FC",
+         "Miracle Makers 2-0 Glorious Vision",
+         "Ironvale FC 3-1 Thorned Reliquary"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 13,
+        "results": [
+         "Hannya Masks 2-1 Icefire Ballad",
+         "Northern Lords 4-3 Blazing Shadows",
+         "Doom Knights 1-1 Dark Side of the Moon",
+         "Glazed Dreams 1-3 Zero Returners",
+         "Brookgate Wanderers 2-4 Ruined Legion",
+         "Fallen Heirlooms 2-0 Void Relics",
+         "Xeno Hunters 5-1 Royal Junction",
+         "Star Guardians 1-1 Midnight Tales",
+         "Pain FC 2-5 Solford Town",
+         "Ocean Stars 5-2 Thunder Rangers"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 14,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 14,
+        "results": [
+         "Shadow Eaters 1-0 Gaia's Revenge",
+         "Ravenhill 0-1 Kingsmeadow Rovers",
+         "Hands of Fate 2-0 Celestial Vanguard",
+         "Crystal Roses 1-4 Ancient Dragonfire",
+         "Nightingales 3-2 Chaos Overture",
+         "Crimson Moon 6-0 Supersonic Knights",
+         "Polaris FC 1-1 Crownfield Athletic",
+         "Glorious Vision 3-0 Yellowjackets FC",
+         "Thorned Reliquary 0-2 Sentinels of Light",
+         "Ironvale FC 3-2 Miracle Makers"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 14,
+        "results": [
+         "Blazing Shadows 1-1 Hannya Masks",
+         "Dark Side of the Moon 1-3 Icefire Ballad",
+         "Zero Returners 2-2 Northern Lords",
+         "Ruined Legion 1-3 Doom Knights",
+         "Void Relics 4-1 Glazed Dreams",
+         "Royal Junction 2-2 Brookgate Wanderers",
+         "Midnight Tales 2-2 Fallen Heirlooms",
+         "Solford Town 6-1 Xeno Hunters",
+         "Thunder Rangers 2-0 Star Guardians",
+         "Ocean Stars 1-1 Pain FC"
+        ]
+       }
+      ],
+      "cup_matchdays": [
+       {
+        "round": 4,
+        "results": [
+         "Ravenhill 3-1 Miracle Makers",
+         "Nightingales 1-1 Supersonic Knights",
+         "Sentinels of Light 2-1 Shadow Eaters",
+         "Celestial Vanguard 3-4 Yellowjackets FC",
+         "Gaia's Revenge 2-2 Crimson Moon",
+         "Kingsmeadow Rovers 2-3 Ironvale FC",
+         "Chaos Overture 2-3 Crownfield Athletic",
+         "Crystal Roses 0-2 Hands of Fate"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 15,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 15,
+        "results": [
+         "Gaia's Revenge 1-0 Ravenhill",
+         "Shadow Eaters 2-0 Hands of Fate",
+         "Kingsmeadow Rovers 1-0 Crystal Roses",
+         "Celestial Vanguard 1-1 Nightingales",
+         "Ancient Dragonfire 2-2 Crimson Moon",
+         "Chaos Overture 0-0 Polaris FC",
+         "Supersonic Knights 1-3 Glorious Vision",
+         "Crownfield Athletic 2-2 Thorned Reliquary",
+         "Yellowjackets FC 1-3 Ironvale FC",
+         "Sentinels of Light 1-1 Miracle Makers"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 15,
+        "results": [
+         "Hannya Masks 3-1 Dark Side of the Moon",
+         "Blazing Shadows 1-1 Zero Returners",
+         "Icefire Ballad 5-0 Ruined Legion",
+         "Northern Lords 2-0 Void Relics",
+         "Doom Knights 2-1 Royal Junction",
+         "Glazed Dreams 0-0 Midnight Tales",
+         "Brookgate Wanderers 2-5 Solford Town",
+         "Fallen Heirlooms 3-2 Thunder Rangers",
+         "Xeno Hunters 3-0 Ocean Stars",
+         "Star Guardians 2-1 Pain FC"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 16,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 16,
+        "results": [
+         "Hands of Fate 1-0 Gaia's Revenge",
+         "Crystal Roses 2-0 Ravenhill",
+         "Nightingales 2-1 Shadow Eaters",
+         "Crimson Moon 1-1 Kingsmeadow Rovers",
+         "Polaris FC 1-2 Celestial Vanguard",
+         "Glorious Vision 1-3 Ancient Dragonfire",
+         "Thorned Reliquary 1-1 Chaos Overture",
+         "Ironvale FC 1-2 Supersonic Knights",
+         "Miracle Makers 0-1 Crownfield Athletic",
+         "Sentinels of Light 2-3 Yellowjackets FC"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 16,
+        "results": [
+         "Zero Returners 1-3 Hannya Masks",
+         "Ruined Legion 2-2 Dark Side of the Moon",
+         "Void Relics 1-2 Blazing Shadows",
+         "Royal Junction 1-1 Icefire Ballad",
+         "Midnight Tales 1-2 Northern Lords",
+         "Solford Town 5-0 Doom Knights",
+         "Thunder Rangers 6-0 Glazed Dreams",
+         "Ocean Stars 2-0 Brookgate Wanderers",
+         "Pain FC 2-0 Fallen Heirlooms",
+         "Star Guardians 2-4 Xeno Hunters"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 17,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 17,
+        "results": [
+         "Gaia's Revenge 1-0 Crystal Roses",
+         "Hands of Fate 5-1 Nightingales",
+         "Ravenhill 3-2 Crimson Moon",
+         "Shadow Eaters 1-0 Polaris FC",
+         "Kingsmeadow Rovers 2-0 Glorious Vision",
+         "Celestial Vanguard 1-0 Thorned Reliquary",
+         "Ancient Dragonfire 2-3 Ironvale FC",
+         "Chaos Overture 2-3 Miracle Makers",
+         "Supersonic Knights 3-2 Sentinels of Light",
+         "Crownfield Athletic 3-1 Yellowjackets FC"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 17,
+        "results": [
+         "Hannya Masks 3-1 Ruined Legion",
+         "Zero Returners 3-0 Void Relics",
+         "Dark Side of the Moon 2-1 Royal Junction",
+         "Blazing Shadows 4-1 Midnight Tales",
+         "Icefire Ballad 4-2 Solford Town",
+         "Northern Lords 0-1 Thunder Rangers",
+         "Doom Knights 1-0 Ocean Stars",
+         "Glazed Dreams 1-1 Pain FC",
+         "Brookgate Wanderers 1-2 Star Guardians",
+         "Fallen Heirlooms 1-0 Xeno Hunters"
+        ]
+       }
+      ],
+      "cup_matchdays": [
+       {
+        "round": 3,
+        "results": [
+         "Crystal Roses 1-3 Ancient Dragonfire",
+         "Yellowjackets FC 2-3 Ironvale FC",
+         "Miracle Makers 1-0 Sentinels of Light",
+         "Nightingales 2-1 Blazing Shadows"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 18,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 18,
+        "results": [
+         "Nightingales 3-2 Gaia's Revenge",
+         "Crimson Moon 2-0 Crystal Roses",
+         "Polaris FC 0-2 Hands of Fate",
+         "Glorious Vision 0-1 Ravenhill",
+         "Thorned Reliquary 0-2 Shadow Eaters",
+         "Ironvale FC 2-1 Kingsmeadow Rovers",
+         "Miracle Makers 4-2 Celestial Vanguard",
+         "Sentinels of Light 3-1 Ancient Dragonfire",
+         "Yellowjackets FC 0-1 Chaos Overture",
+         "Crownfield Athletic 5-0 Supersonic Knights"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 18,
+        "results": [
+         "Void Relics 2-1 Hannya Masks",
+         "Royal Junction 4-3 Ruined Legion",
+         "Midnight Tales 1-1 Zero Returners",
+         "Solford Town 2-3 Dark Side of the Moon",
+         "Thunder Rangers 3-4 Blazing Shadows",
+         "Ocean Stars 2-0 Icefire Ballad",
+         "Pain FC 5-1 Northern Lords",
+         "Star Guardians 1-0 Doom Knights",
+         "Xeno Hunters 2-4 Glazed Dreams",
+         "Fallen Heirlooms 5-2 Brookgate Wanderers"
+        ]
+       }
+      ],
+      "cup_matchdays": [
+       {
+        "round": 5,
+        "results": [
+         "Supersonic Knights 2-2 Ravenhill",
+         "Miracle Makers 5-1 Nightingales",
+         "Yellowjackets FC 3-0 Sentinels of Light",
+         "Shadow Eaters 1-1 Celestial Vanguard",
+         "Ironvale FC 5-2 Gaia's Revenge",
+         "Crimson Moon 1-1 Kingsmeadow Rovers",
+         "Hands of Fate 2-0 Chaos Overture",
+         "Crownfield Athletic 2-2 Crystal Roses"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 19,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 19,
+        "results": [
+         "Gaia's Revenge 3-2 Crimson Moon",
+         "Nightingales 2-1 Polaris FC",
+         "Crystal Roses 3-2 Glorious Vision",
+         "Hands of Fate 4-0 Thorned Reliquary",
+         "Ravenhill 3-4 Ironvale FC",
+         "Shadow Eaters 1-1 Miracle Makers",
+         "Kingsmeadow Rovers 2-1 Sentinels of Light",
+         "Celestial Vanguard 4-1 Yellowjackets FC",
+         "Ancient Dragonfire 2-3 Crownfield Athletic",
+         "Chaos Overture 3-1 Supersonic Knights"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 19,
+        "results": [
+         "Hannya Masks 5-2 Royal Junction",
+         "Void Relics 1-1 Midnight Tales",
+         "Ruined Legion 6-2 Solford Town",
+         "Zero Returners 1-1 Thunder Rangers",
+         "Dark Side of the Moon 2-3 Ocean Stars",
+         "Blazing Shadows 1-2 Pain FC",
+         "Icefire Ballad 1-1 Star Guardians",
+         "Northern Lords 2-0 Xeno Hunters",
+         "Doom Knights 1-2 Fallen Heirlooms",
+         "Glazed Dreams 6-2 Brookgate Wanderers"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 20,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 20,
+        "results": [
+         "Polaris FC 0-1 Gaia's Revenge",
+         "Glorious Vision 0-1 Crimson Moon",
+         "Thorned Reliquary 0-0 Nightingales",
+         "Ironvale FC 4-1 Crystal Roses",
+         "Miracle Makers 1-0 Hands of Fate",
+         "Sentinels of Light 2-1 Ravenhill",
+         "Yellowjackets FC 1-2 Shadow Eaters",
+         "Crownfield Athletic 1-0 Kingsmeadow Rovers",
+         "Supersonic Knights 2-0 Celestial Vanguard",
+         "Chaos Overture 3-3 Ancient Dragonfire"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 20,
+        "results": [
+         "Midnight Tales 6-0 Hannya Masks",
+         "Solford Town 1-1 Royal Junction",
+         "Thunder Rangers 1-4 Void Relics",
+         "Ocean Stars 5-1 Ruined Legion",
+         "Pain FC 4-2 Zero Returners",
+         "Star Guardians 1-0 Dark Side of the Moon",
+         "Xeno Hunters 6-3 Blazing Shadows",
+         "Fallen Heirlooms 1-1 Icefire Ballad",
+         "Brookgate Wanderers 1-3 Northern Lords",
+         "Glazed Dreams 6-0 Doom Knights"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 21,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 21,
+        "results": [
+         "Gaia's Revenge 1-0 Glorious Vision",
+         "Polaris FC 3-0 Thorned Reliquary",
+         "Crimson Moon 3-1 Ironvale FC",
+         "Nightingales 0-1 Miracle Makers",
+         "Crystal Roses 0-0 Sentinels of Light",
+         "Hands of Fate 0-2 Yellowjackets FC",
+         "Ravenhill 3-1 Crownfield Athletic",
+         "Shadow Eaters 4-0 Supersonic Knights",
+         "Kingsmeadow Rovers 3-1 Chaos Overture",
+         "Celestial Vanguard 1-5 Ancient Dragonfire"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 21,
+        "results": [
+         "Hannya Masks 1-1 Solford Town",
+         "Midnight Tales 6-2 Thunder Rangers",
+         "Royal Junction 2-1 Ocean Stars",
+         "Void Relics 2-3 Pain FC",
+         "Ruined Legion 1-2 Star Guardians",
+         "Zero Returners 1-1 Xeno Hunters",
+         "Dark Side of the Moon 2-0 Fallen Heirlooms",
+         "Blazing Shadows 1-2 Brookgate Wanderers",
+         "Icefire Ballad 6-2 Glazed Dreams",
+         "Northern Lords 2-2 Doom Knights"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 22,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 22,
+        "results": [
+         "Thorned Reliquary 0-1 Gaia's Revenge",
+         "Ironvale FC 3-0 Glorious Vision",
+         "Miracle Makers 1-0 Polaris FC",
+         "Sentinels of Light 1-0 Crimson Moon",
+         "Yellowjackets FC 2-1 Nightingales",
+         "Crownfield Athletic 3-0 Crystal Roses",
+         "Supersonic Knights 2-2 Hands of Fate",
+         "Chaos Overture 1-1 Ravenhill",
+         "Ancient Dragonfire 2-2 Shadow Eaters",
+         "Celestial Vanguard 2-1 Kingsmeadow Rovers"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 22,
+        "results": [
+         "Thunder Rangers 6-2 Hannya Masks",
+         "Ocean Stars 2-2 Solford Town",
+         "Pain FC 4-2 Midnight Tales",
+         "Star Guardians 1-1 Royal Junction",
+         "Xeno Hunters 1-4 Void Relics",
+         "Fallen Heirlooms 3-2 Ruined Legion",
+         "Brookgate Wanderers 1-0 Zero Returners",
+         "Glazed Dreams 5-1 Dark Side of the Moon",
+         "Doom Knights 1-3 Blazing Shadows",
+         "Northern Lords 1-3 Icefire Ballad"
+        ]
+       }
+      ],
+      "cup_matchdays": [
+       {
+        "round": 6,
+        "results": [
+         "Supersonic Knights 2-1 Miracle Makers",
+         "Ravenhill 1-1 Nightingales",
+         "Yellowjackets FC 1-1 Shadow Eaters",
+         "Sentinels of Light 0-2 Celestial Vanguard",
+         "Ironvale FC 2-0 Crimson Moon",
+         "Gaia's Revenge 2-1 Kingsmeadow Rovers",
+         "Hands of Fate 1-0 Crownfield Athletic",
+         "Chaos Overture 0-2 Crystal Roses"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 23,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 23,
+        "results": [
+         "Gaia's Revenge 1-0 Ironvale FC",
+         "Thorned Reliquary 2-1 Miracle Makers",
+         "Glorious Vision 1-3 Sentinels of Light",
+         "Polaris FC 0-2 Yellowjackets FC",
+         "Crimson Moon 2-1 Crownfield Athletic",
+         "Nightingales 2-2 Supersonic Knights",
+         "Crystal Roses 1-1 Chaos Overture",
+         "Hands of Fate 1-3 Ancient Dragonfire",
+         "Ravenhill 0-3 Celestial Vanguard",
+         "Shadow Eaters 3-1 Kingsmeadow Rovers"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 23,
+        "results": [
+         "Hannya Masks 3-1 Ocean Stars",
+         "Thunder Rangers 3-2 Pain FC",
+         "Solford Town 1-2 Star Guardians",
+         "Midnight Tales 2-3 Xeno Hunters",
+         "Royal Junction 6-1 Fallen Heirlooms",
+         "Void Relics 1-2 Brookgate Wanderers",
+         "Ruined Legion 6-0 Glazed Dreams",
+         "Zero Returners 2-1 Doom Knights",
+         "Dark Side of the Moon 5-2 Northern Lords",
+         "Blazing Shadows 6-1 Icefire Ballad"
+        ]
+       }
+      ],
+      "cup_matchdays": [
+       {
+        "round": 4,
+        "results": [
+         "Miracle Makers 2-4 Nightingales",
+         "Ironvale FC 1-3 Ancient Dragonfire"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 24,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 24,
+        "results": [
+         "Miracle Makers 3-2 Gaia's Revenge",
+         "Sentinels of Light 2-0 Ironvale FC",
+         "Yellowjackets FC 2-0 Thorned Reliquary",
+         "Crownfield Athletic 4-0 Glorious Vision",
+         "Supersonic Knights 1-1 Polaris FC",
+         "Chaos Overture 1-2 Crimson Moon",
+         "Ancient Dragonfire 3-2 Nightingales",
+         "Celestial Vanguard 1-3 Crystal Roses",
+         "Kingsmeadow Rovers 1-1 Hands of Fate",
+         "Shadow Eaters 3-5 Ravenhill"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 24,
+        "results": [
+         "Pain FC 3-1 Hannya Masks",
+         "Star Guardians 6-3 Ocean Stars",
+         "Xeno Hunters 1-0 Thunder Rangers",
+         "Fallen Heirlooms 2-5 Solford Town",
+         "Brookgate Wanderers 3-0 Midnight Tales",
+         "Glazed Dreams 2-0 Royal Junction",
+         "Doom Knights 5-1 Void Relics",
+         "Northern Lords 1-3 Ruined Legion",
+         "Icefire Ballad 2-1 Zero Returners",
+         "Blazing Shadows 1-0 Dark Side of the Moon"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 25,
+     "kind": "winter_break",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 26,
+     "kind": "winter_break",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 27,
+     "kind": "winter_break",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 28,
+     "kind": "cup_week",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 29,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 25,
+        "results": [
+         "Gaia's Revenge 1-1 Sentinels of Light",
+         "Miracle Makers 2-1 Yellowjackets FC",
+         "Ironvale FC 3-2 Crownfield Athletic",
+         "Thorned Reliquary 1-0 Supersonic Knights",
+         "Glorious Vision 0-1 Chaos Overture",
+         "Polaris FC 1-1 Ancient Dragonfire",
+         "Crimson Moon 5-2 Celestial Vanguard",
+         "Nightingales 1-2 Kingsmeadow Rovers",
+         "Crystal Roses 1-1 Shadow Eaters",
+         "Hands of Fate 1-2 Ravenhill"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 25,
+        "results": [
+         "Hannya Masks 6-1 Star Guardians",
+         "Pain FC 1-3 Xeno Hunters",
+         "Ocean Stars 2-0 Fallen Heirlooms",
+         "Thunder Rangers 1-1 Brookgate Wanderers",
+         "Solford Town 6-3 Glazed Dreams",
+         "Midnight Tales 4-0 Doom Knights",
+         "Royal Junction 1-0 Northern Lords",
+         "Void Relics 2-3 Icefire Ballad",
+         "Ruined Legion 3-2 Blazing Shadows",
+         "Zero Returners 2-3 Dark Side of the Moon"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 30,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 26,
+        "results": [
+         "Yellowjackets FC 3-2 Gaia's Revenge",
+         "Crownfield Athletic 3-0 Sentinels of Light",
+         "Supersonic Knights 2-2 Miracle Makers",
+         "Chaos Overture 1-1 Ironvale FC",
+         "Ancient Dragonfire 2-0 Thorned Reliquary",
+         "Celestial Vanguard 1-1 Glorious Vision",
+         "Kingsmeadow Rovers 1-1 Polaris FC",
+         "Shadow Eaters 2-0 Crimson Moon",
+         "Ravenhill 1-2 Nightingales",
+         "Hands of Fate 2-1 Crystal Roses"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 26,
+        "results": [
+         "Xeno Hunters 3-0 Hannya Masks",
+         "Fallen Heirlooms 2-1 Star Guardians",
+         "Brookgate Wanderers 4-1 Pain FC",
+         "Glazed Dreams 4-2 Ocean Stars",
+         "Doom Knights 0-1 Thunder Rangers",
+         "Northern Lords 1-0 Solford Town",
+         "Icefire Ballad 1-1 Midnight Tales",
+         "Blazing Shadows 1-2 Royal Junction",
+         "Dark Side of the Moon 1-0 Void Relics",
+         "Zero Returners 5-1 Ruined Legion"
+        ]
+       }
+      ],
+      "cup_matchdays": [
+       {
+        "round": 7,
+        "results": [
+         "Yellowjackets FC 4-3 Ravenhill",
+         "Miracle Makers 6-0 Sentinels of Light",
+         "Crystal Roses 1-1 Ironvale FC",
+         "Crimson Moon 3-1 Hands of Fate"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 31,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 27,
+        "results": [
+         "Gaia's Revenge 3-2 Crownfield Athletic",
+         "Yellowjackets FC 3-0 Supersonic Knights",
+         "Sentinels of Light 1-0 Chaos Overture",
+         "Miracle Makers 1-1 Ancient Dragonfire",
+         "Ironvale FC 2-2 Celestial Vanguard",
+         "Thorned Reliquary 0-0 Kingsmeadow Rovers",
+         "Glorious Vision 1-1 Shadow Eaters",
+         "Polaris FC 0-0 Ravenhill",
+         "Crimson Moon 1-1 Hands of Fate",
+         "Nightingales 0-2 Crystal Roses"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 27,
+        "results": [
+         "Hannya Masks 0-1 Fallen Heirlooms",
+         "Xeno Hunters 1-2 Brookgate Wanderers",
+         "Star Guardians 1-1 Glazed Dreams",
+         "Pain FC 1-1 Doom Knights",
+         "Ocean Stars 3-1 Northern Lords",
+         "Thunder Rangers 2-1 Icefire Ballad",
+         "Solford Town 1-3 Blazing Shadows",
+         "Midnight Tales 3-4 Dark Side of the Moon",
+         "Royal Junction 1-2 Zero Returners",
+         "Void Relics 6-2 Ruined Legion"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 32,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 28,
+        "results": [
+         "Supersonic Knights 1-1 Gaia's Revenge",
+         "Chaos Overture 3-0 Crownfield Athletic",
+         "Ancient Dragonfire 2-1 Yellowjackets FC",
+         "Celestial Vanguard 1-0 Sentinels of Light",
+         "Kingsmeadow Rovers 0-0 Miracle Makers",
+         "Shadow Eaters 3-1 Ironvale FC",
+         "Ravenhill 2-1 Thorned Reliquary",
+         "Hands of Fate 0-0 Glorious Vision",
+         "Crystal Roses 4-0 Polaris FC",
+         "Nightingales 4-1 Crimson Moon"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 28,
+        "results": [
+         "Brookgate Wanderers 2-0 Hannya Masks",
+         "Glazed Dreams 3-1 Fallen Heirlooms",
+         "Doom Knights 4-1 Xeno Hunters",
+         "Northern Lords 1-0 Star Guardians",
+         "Icefire Ballad 2-0 Pain FC",
+         "Blazing Shadows 1-2 Ocean Stars",
+         "Dark Side of the Moon 4-2 Thunder Rangers",
+         "Zero Returners 1-1 Solford Town",
+         "Ruined Legion 6-2 Midnight Tales",
+         "Void Relics 2-1 Royal Junction"
+        ]
+       }
+      ],
+      "cup_matchdays": [
+       {
+        "round": 8,
+        "results": [
+         "Ravenhill 4-2 Yellowjackets FC",
+         "Sentinels of Light 2-3 Miracle Makers",
+         "Ironvale FC 0-0 Crystal Roses",
+         "Hands of Fate 2-1 Crimson Moon"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 33,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 29,
+        "results": [
+         "Gaia's Revenge 1-1 Chaos Overture",
+         "Supersonic Knights 2-1 Ancient Dragonfire",
+         "Crownfield Athletic 1-1 Celestial Vanguard",
+         "Yellowjackets FC 3-0 Kingsmeadow Rovers",
+         "Sentinels of Light 0-0 Shadow Eaters",
+         "Miracle Makers 1-1 Ravenhill",
+         "Ironvale FC 2-1 Hands of Fate",
+         "Thorned Reliquary 1-1 Crystal Roses",
+         "Glorious Vision 2-0 Nightingales",
+         "Polaris FC 4-3 Crimson Moon"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 29,
+        "results": [
+         "Hannya Masks 1-3 Glazed Dreams",
+         "Brookgate Wanderers 1-0 Doom Knights",
+         "Fallen Heirlooms 5-2 Northern Lords",
+         "Xeno Hunters 1-0 Icefire Ballad",
+         "Star Guardians 1-0 Blazing Shadows",
+         "Pain FC 3-2 Dark Side of the Moon",
+         "Ocean Stars 3-0 Zero Returners",
+         "Thunder Rangers 3-0 Ruined Legion",
+         "Solford Town 6-2 Void Relics",
+         "Midnight Tales 5-0 Royal Junction"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 34,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 30,
+        "results": [
+         "Ancient Dragonfire 3-2 Gaia's Revenge",
+         "Celestial Vanguard 3-0 Chaos Overture",
+         "Kingsmeadow Rovers 1-0 Supersonic Knights",
+         "Shadow Eaters 3-0 Crownfield Athletic",
+         "Ravenhill 2-2 Yellowjackets FC",
+         "Hands of Fate 2-1 Sentinels of Light",
+         "Crystal Roses 1-1 Miracle Makers",
+         "Nightingales 1-3 Ironvale FC",
+         "Crimson Moon 1-0 Thorned Reliquary",
+         "Polaris FC 0-2 Glorious Vision"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 30,
+        "results": [
+         "Doom Knights 6-3 Hannya Masks",
+         "Northern Lords 5-1 Glazed Dreams",
+         "Icefire Ballad 2-2 Brookgate Wanderers",
+         "Blazing Shadows 6-2 Fallen Heirlooms",
+         "Dark Side of the Moon 2-1 Xeno Hunters",
+         "Zero Returners 4-2 Star Guardians",
+         "Ruined Legion 1-1 Pain FC",
+         "Void Relics 1-4 Ocean Stars",
+         "Royal Junction 3-2 Thunder Rangers",
+         "Midnight Tales 1-0 Solford Town"
+        ]
+       }
+      ],
+      "cup_matchdays": [
+       {
+        "round": 9,
+        "results": [
+         "Ironvale FC 3-3 Ravenhill",
+         "Crimson Moon 2-3 Miracle Makers"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 35,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 31,
+        "results": [
+         "Gaia's Revenge 3-2 Celestial Vanguard",
+         "Ancient Dragonfire 2-1 Kingsmeadow Rovers",
+         "Chaos Overture 0-2 Shadow Eaters",
+         "Supersonic Knights 1-0 Ravenhill",
+         "Crownfield Athletic 2-2 Hands of Fate",
+         "Yellowjackets FC 2-1 Crystal Roses",
+         "Sentinels of Light 0-0 Nightingales",
+         "Miracle Makers 2-4 Crimson Moon",
+         "Ironvale FC 3-0 Polaris FC",
+         "Thorned Reliquary 2-1 Glorious Vision"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 31,
+        "results": [
+         "Hannya Masks 3-1 Northern Lords",
+         "Doom Knights 2-2 Icefire Ballad",
+         "Glazed Dreams 1-2 Blazing Shadows",
+         "Brookgate Wanderers 2-3 Dark Side of the Moon",
+         "Fallen Heirlooms 6-1 Zero Returners",
+         "Xeno Hunters 1-2 Ruined Legion",
+         "Star Guardians 6-0 Void Relics",
+         "Pain FC 2-1 Royal Junction",
+         "Ocean Stars 5-2 Midnight Tales",
+         "Thunder Rangers 6-1 Solford Town"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 36,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 32,
+        "results": [
+         "Kingsmeadow Rovers 2-1 Gaia's Revenge",
+         "Shadow Eaters 3-1 Celestial Vanguard",
+         "Ravenhill 0-0 Ancient Dragonfire",
+         "Hands of Fate 1-1 Chaos Overture",
+         "Crystal Roses 0-0 Supersonic Knights",
+         "Nightingales 2-3 Crownfield Athletic",
+         "Crimson Moon 4-3 Yellowjackets FC",
+         "Polaris FC 0-1 Sentinels of Light",
+         "Glorious Vision 0-1 Miracle Makers",
+         "Thorned Reliquary 1-2 Ironvale FC"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 32,
+        "results": [
+         "Icefire Ballad 2-0 Hannya Masks",
+         "Blazing Shadows 5-1 Northern Lords",
+         "Dark Side of the Moon 1-0 Doom Knights",
+         "Zero Returners 2-4 Glazed Dreams",
+         "Ruined Legion 5-2 Brookgate Wanderers",
+         "Void Relics 1-1 Fallen Heirlooms",
+         "Royal Junction 1-2 Xeno Hunters",
+         "Midnight Tales 6-2 Star Guardians",
+         "Solford Town 4-1 Pain FC",
+         "Thunder Rangers 6-2 Ocean Stars"
+        ]
+       }
+      ],
+      "cup_matchdays": [
+       {
+        "round": 10,
+        "results": [
+         "Ravenhill 1-2 Ironvale FC",
+         "Miracle Makers 1-3 Crimson Moon"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 37,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 33,
+        "results": [
+         "Gaia's Revenge 0-0 Shadow Eaters",
+         "Kingsmeadow Rovers 2-1 Ravenhill",
+         "Celestial Vanguard 1-1 Hands of Fate",
+         "Ancient Dragonfire 3-0 Crystal Roses",
+         "Chaos Overture 0-2 Nightingales",
+         "Supersonic Knights 1-1 Crimson Moon",
+         "Crownfield Athletic 0-0 Polaris FC",
+         "Yellowjackets FC 1-2 Glorious Vision",
+         "Sentinels of Light 0-3 Thorned Reliquary",
+         "Miracle Makers 4-4 Ironvale FC"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 33,
+        "results": [
+         "Hannya Masks 2-2 Blazing Shadows",
+         "Icefire Ballad 1-1 Dark Side of the Moon",
+         "Northern Lords 1-3 Zero Returners",
+         "Doom Knights 2-2 Ruined Legion",
+         "Glazed Dreams 1-3 Void Relics",
+         "Brookgate Wanderers 4-1 Royal Junction",
+         "Fallen Heirlooms 2-2 Midnight Tales",
+         "Xeno Hunters 2-3 Solford Town",
+         "Star Guardians 5-1 Thunder Rangers",
+         "Pain FC 2-0 Ocean Stars"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 38,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 34,
+        "results": [
+         "Ravenhill 1-1 Gaia's Revenge",
+         "Hands of Fate 3-0 Shadow Eaters",
+         "Crystal Roses 0-0 Kingsmeadow Rovers",
+         "Nightingales 4-1 Celestial Vanguard",
+         "Crimson Moon 2-4 Ancient Dragonfire",
+         "Polaris FC 0-1 Chaos Overture",
+         "Glorious Vision 1-1 Supersonic Knights",
+         "Thorned Reliquary 3-3 Crownfield Athletic",
+         "Ironvale FC 3-0 Yellowjackets FC",
+         "Miracle Makers 2-2 Sentinels of Light"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 34,
+        "results": [
+         "Dark Side of the Moon 1-3 Hannya Masks",
+         "Zero Returners 6-0 Blazing Shadows",
+         "Ruined Legion 2-0 Icefire Ballad",
+         "Void Relics 3-1 Northern Lords",
+         "Royal Junction 6-1 Doom Knights",
+         "Midnight Tales 1-0 Glazed Dreams",
+         "Solford Town 2-3 Brookgate Wanderers",
+         "Thunder Rangers 2-0 Fallen Heirlooms",
+         "Ocean Stars 1-0 Xeno Hunters",
+         "Pain FC 4-1 Star Guardians"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 39,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 35,
+        "results": [
+         "Gaia's Revenge 2-1 Hands of Fate",
+         "Ravenhill 2-2 Crystal Roses",
+         "Shadow Eaters 2-2 Nightingales",
+         "Kingsmeadow Rovers 2-2 Crimson Moon",
+         "Celestial Vanguard 2-0 Polaris FC",
+         "Ancient Dragonfire 4-2 Glorious Vision",
+         "Chaos Overture 3-1 Thorned Reliquary",
+         "Supersonic Knights 2-2 Ironvale FC",
+         "Crownfield Athletic 1-4 Miracle Makers",
+         "Yellowjackets FC 4-3 Sentinels of Light"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 35,
+        "results": [
+         "Hannya Masks 1-0 Zero Returners",
+         "Dark Side of the Moon 2-0 Ruined Legion",
+         "Blazing Shadows 2-2 Void Relics",
+         "Icefire Ballad 3-1 Royal Junction",
+         "Northern Lords 6-5 Midnight Tales",
+         "Doom Knights 2-1 Solford Town",
+         "Glazed Dreams 1-0 Thunder Rangers",
+         "Brookgate Wanderers 3-1 Ocean Stars",
+         "Fallen Heirlooms 2-2 Pain FC",
+         "Xeno Hunters 2-0 Star Guardians"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 40,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 36,
+        "results": [
+         "Crystal Roses 2-1 Gaia's Revenge",
+         "Nightingales 1-2 Hands of Fate",
+         "Crimson Moon 5-0 Ravenhill",
+         "Polaris FC 0-2 Shadow Eaters",
+         "Glorious Vision 0-1 Kingsmeadow Rovers",
+         "Thorned Reliquary 3-3 Celestial Vanguard",
+         "Ironvale FC 1-1 Ancient Dragonfire",
+         "Miracle Makers 0-2 Chaos Overture",
+         "Sentinels of Light 3-0 Supersonic Knights",
+         "Yellowjackets FC 3-2 Crownfield Athletic"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 36,
+        "results": [
+         "Ruined Legion 1-1 Hannya Masks",
+         "Void Relics 1-3 Zero Returners",
+         "Royal Junction 2-2 Dark Side of the Moon",
+         "Midnight Tales 1-3 Blazing Shadows",
+         "Solford Town 5-1 Icefire Ballad",
+         "Thunder Rangers 2-2 Northern Lords",
+         "Ocean Stars 2-3 Doom Knights",
+         "Pain FC 5-1 Glazed Dreams",
+         "Star Guardians 2-0 Brookgate Wanderers",
+         "Xeno Hunters 1-1 Fallen Heirlooms"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 41,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 37,
+        "results": [
+         "Gaia's Revenge 3-2 Nightingales",
+         "Crystal Roses 2-1 Crimson Moon",
+         "Hands of Fate 1-1 Polaris FC",
+         "Ravenhill 4-0 Glorious Vision",
+         "Shadow Eaters 1-0 Thorned Reliquary",
+         "Kingsmeadow Rovers 1-2 Ironvale FC",
+         "Celestial Vanguard 3-3 Miracle Makers",
+         "Ancient Dragonfire 1-1 Sentinels of Light",
+         "Chaos Overture 0-0 Yellowjackets FC",
+         "Supersonic Knights 2-2 Crownfield Athletic"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 37,
+        "results": [
+         "Hannya Masks 1-2 Void Relics",
+         "Ruined Legion 2-3 Royal Junction",
+         "Zero Returners 6-1 Midnight Tales",
+         "Dark Side of the Moon 1-3 Solford Town",
+         "Blazing Shadows 6-0 Thunder Rangers",
+         "Icefire Ballad 2-1 Ocean Stars",
+         "Northern Lords 5-2 Pain FC",
+         "Doom Knights 6-1 Star Guardians",
+         "Glazed Dreams 1-3 Xeno Hunters",
+         "Brookgate Wanderers 2-0 Fallen Heirlooms"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 42,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 38,
+        "results": [
+         "Crimson Moon 3-2 Gaia's Revenge",
+         "Polaris FC 2-0 Nightingales",
+         "Glorious Vision 0-3 Crystal Roses",
+         "Thorned Reliquary 0-0 Hands of Fate",
+         "Ironvale FC 4-3 Ravenhill",
+         "Miracle Makers 0-1 Shadow Eaters",
+         "Sentinels of Light 2-0 Kingsmeadow Rovers",
+         "Yellowjackets FC 1-4 Celestial Vanguard",
+         "Crownfield Athletic 0-3 Ancient Dragonfire",
+         "Supersonic Knights 3-2 Chaos Overture"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 38,
+        "results": [
+         "Royal Junction 3-4 Hannya Masks",
+         "Midnight Tales 4-1 Void Relics",
+         "Solford Town 3-2 Ruined Legion",
+         "Thunder Rangers 1-2 Zero Returners",
+         "Ocean Stars 2-3 Dark Side of the Moon",
+         "Pain FC 6-1 Blazing Shadows",
+         "Star Guardians 1-2 Icefire Ballad",
+         "Xeno Hunters 6-0 Northern Lords",
+         "Fallen Heirlooms 2-1 Doom Knights",
+         "Brookgate Wanderers 5-2 Glazed Dreams"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 43,
+     "kind": "cup_week",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [
+       {
+        "round": 5,
+        "results": [
+         "Nightingales 3-0 Ancient Dragonfire"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 44,
+     "kind": "cup_week",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [
+       {
+        "round": 11,
+        "results": [
+         "Crimson Moon 1-2 Ironvale FC"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 45,
+     "kind": "cup_week",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [
+       {
+        "round": 12,
+        "results": [
+         "Ironvale FC 1-2 Crimson Moon"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 46,
+     "kind": "promotion_playoff",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": [
+       {
+        "round": 1,
+        "results": [
+         "Dark Side of the Moon 6-1 Solford Town",
+         "Icefire Ballad 1-1 Brookgate Wanderers"
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "week_number": 47,
+     "kind": "promotion_playoff",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": [
+       {
+        "round": 2,
+        "results": [
+         "Solford Town 6-1 Dark Side of the Moon",
+         "Brookgate Wanderers 1-1 Icefire Ballad"
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "week_number": 48,
+     "kind": "promotion_playoff",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": [
+       {
+        "round": 3,
+        "results": [
+         "Brookgate Wanderers 6-1 Solford Town"
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "week_number": 49,
+     "kind": "promotion_playoff",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": [
+       {
+        "round": 4,
+        "results": [
+         "Solford Town 6-1 Brookgate Wanderers"
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "week_number": 50,
+     "kind": "summer_break",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 51,
+     "kind": "summer_break",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 52,
+     "kind": "summer_break",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    }
+   ],
+   "final": {
+    "premier_table": [
+     [
+      "Ironvale FC",
+      81,
+      85,
+      53
+     ],
+     [
+      "Shadow Eaters",
+      75,
+      62,
+      32
+     ],
+     [
+      "Crimson Moon",
+      66,
+      84,
+      57
+     ],
+     [
+      "Miracle Makers",
+      65,
+      67,
+      53
+     ],
+     [
+      "Ancient Dragonfire",
+      62,
+      82,
+      58
+     ],
+     [
+      "Gaia's Revenge",
+      60,
+      56,
+      51
+     ],
+     [
+      "Crownfield Athletic",
+      57,
+      68,
+      58
+     ],
+     [
+      "Hands of Fate",
+      53,
+      55,
+      42
+     ],
+     [
+      "Celestial Vanguard",
+      52,
+      63,
+      70
+     ],
+     [
+      "Yellowjackets FC",
+      51,
+      58,
+      64
+     ],
+     [
+      "Sentinels of Light",
+      49,
+      46,
+      51
+     ],
+     [
+      "Kingsmeadow Rovers",
+      49,
+      40,
+      48
+     ],
+     [
+      "Chaos Overture",
+      48,
+      49,
+      46
+     ],
+     [
+      "Supersonic Knights",
+      47,
+      42,
+      62
+     ],
+     [
+      "Nightingales",
+      43,
+      62,
+      70
+     ],
+     [
+      "Crystal Roses",
+      42,
+      43,
+      55
+     ],
+     [
+      "Ravenhill",
+      39,
+      52,
+      64
+     ],
+     [
+      "Glorious Vision",
+      33,
+      37,
+      63
+     ],
+     [
+      "Thorned Reliquary",
+      32,
+      35,
+      60
+     ],
+     [
+      "Polaris FC",
+      31,
+      28,
+      57
+     ]
+    ],
+    "second_table": [
+     [
+      "Fallen Heirlooms",
+      65,
+      72,
+      72
+     ],
+     [
+      "Blazing Shadows",
+      63,
+      87,
+      66
+     ],
+     [
+      "Solford Town",
+      62,
+      105,
+      77
+     ],
+     [
+      "Brookgate Wanderers",
+      62,
+      81,
+      72
+     ],
+     [
+      "Icefire Ballad",
+      61,
+      74,
+      61
+     ],
+     [
+      "Dark Side of the Moon",
+      61,
+      80,
+      75
+     ],
+     [
+      "Pain FC",
+      57,
+      77,
+      74
+     ],
+     [
+      "Zero Returners",
+      55,
+      77,
+      63
+     ],
+     [
+      "Midnight Tales",
+      55,
+      95,
+      83
+     ],
+     [
+      "Ocean Stars",
+      54,
+      77,
+      69
+     ],
+     [
+      "Xeno Hunters",
+      53,
+      67,
+      69
+     ],
+     [
+      "Hannya Masks",
+      52,
+      71,
+      81
+     ],
+     [
+      "Thunder Rangers",
+      50,
+      85,
+      85
+     ],
+     [
+      "Ruined Legion",
+      49,
+      80,
+      84
+     ],
+     [
+      "Northern Lords",
+      49,
+      73,
+      89
+     ],
+     [
+      "Star Guardians",
+      48,
+      63,
+      82
+     ],
+     [
+      "Glazed Dreams",
+      47,
+      69,
+      82
+     ],
+     [
+      "Doom Knights",
+      47,
+      68,
+      82
+     ],
+     [
+      "Royal Junction",
+      46,
+      73,
+      80
+     ],
+     [
+      "Void Relics",
+      35,
+      56,
+      84
+     ]
+    ],
+    "cup_champions": {
+     "优胜者杯": "Crimson Moon",
+     "挑战杯": "Nightingales",
+     "超级杯": null
+    },
+    "last_transition": {
+     "season_number": 2,
+     "relegated": [
+      "Glorious Vision",
+      "Thorned Reliquary",
+      "Polaris FC"
+     ],
+     "promoted_direct": [
+      "Fallen Heirlooms",
+      "Blazing Shadows"
+     ],
+     "playoff_winner": "Solford Town",
+     "cup_champions": {
+      "优胜者杯": "Crimson Moon",
+      "挑战杯": "Nightingales",
+      "超级杯": null
+     }
+    },
+    "top20": [
+     [
+      1,
+      "Evan Ferguson",
+      "Yellowjackets FC",
+      1020.76
+     ],
+     [
+      2,
+      "Joshua Zirkzee",
+      "Ancient Dragonfire",
+      978.9
+     ],
+     [
+      3,
+      "Roberto Firmino",
+      "Crimson Moon",
+      978.8
+     ],
+     [
+      4,
+      "Estevao Willian",
+      "Miracle Makers",
+      958.78
+     ],
+     [
+      5,
+      "Xavi Simons",
+      "Ironvale FC",
+      953.13
+     ],
+     [
+      6,
+      "Deniz Undav",
+      "Ravenhill",
+      946.32
+     ],
+     [
+      7,
+      "Benjamin Sesko",
+      "Ironvale FC",
+      945.8
+     ],
+     [
+      8,
+      "Sadio Mane",
+      "Crownfield Athletic",
+      943.9
+     ],
+     [
+      9,
+      "Julian Alvarez",
+      "Ironvale FC",
+      928.22
+     ],
+     [
+      10,
+      "Dominik Szoboszlai",
+      "Crimson Moon",
+      924.32
+     ],
+     [
+      11,
+      "Bukayo Saka",
+      "Miracle Makers",
+      885.08
+     ],
+     [
+      12,
+      "Anthony Elanga",
+      "Ancient Dragonfire",
+      874.96
+     ],
+     [
+      13,
+      "Rafael Leao",
+      "Crimson Moon",
+      864.34
+     ],
+     [
+      14,
+      "Nicolas Jackson",
+      "Celestial Vanguard",
+      860.1
+     ],
+     [
+      15,
+      "Carlos Baleba",
+      "Celestial Vanguard",
+      843.18
+     ],
+     [
+      16,
+      "Manuel Ugarte",
+      "Gaia's Revenge",
+      836.9
+     ],
+     [
+      17,
+      "Kai Havertz",
+      "Nightingales",
+      821.9
+     ],
+     [
+      18,
+      "Nick Woltemade",
+      "Nightingales",
+      818.63
+     ],
+     [
+      19,
+      "Granit Xhaka",
+      "Hands of Fate",
+      800.13
+     ],
+     [
+      20,
+      "Bradley Barcola",
+      "Thorned Reliquary",
+      798.73
+     ]
+    ],
+    "competition_awards": {
+     "一级联赛": {
+      "top_scorer": "Joshua Zirkzee",
+      "assist_leader": "Manuel Ugarte",
+      "mvp": "Joshua Zirkzee"
+     },
+     "优胜者杯": {
+      "top_scorer": "Deniz Undav",
+      "assist_leader": "Dominik Szoboszlai",
+      "mvp": "Deniz Undav"
+     },
+     "挑战杯": {
+      "top_scorer": "Kai Havertz",
+      "assist_leader": "Karim Benzema",
+      "mvp": "Karim Benzema"
+     }
+    },
+    "next_premier_team_names": [
+     "Gaia's Revenge",
+     "Crimson Moon",
+     "Nightingales",
+     "Crystal Roses",
+     "Hands of Fate",
+     "Ravenhill",
+     "Shadow Eaters",
+     "Kingsmeadow Rovers",
+     "Celestial Vanguard",
+     "Ancient Dragonfire",
+     "Chaos Overture",
+     "Supersonic Knights",
+     "Crownfield Athletic",
+     "Yellowjackets FC",
+     "Sentinels of Light",
+     "Miracle Makers",
+     "Ironvale FC",
+     "Fallen Heirlooms",
+     "Blazing Shadows",
+     "Solford Town"
+    ],
+    "next_second_team_names": [
+     "Hannya Masks",
+     "Royal Junction",
+     "Void Relics",
+     "Ruined Legion",
+     "Zero Returners",
+     "Dark Side of the Moon",
+     "Icefire Ballad",
+     "Northern Lords",
+     "Doom Knights",
+     "Glazed Dreams",
+     "Brookgate Wanderers",
+     "Xeno Hunters",
+     "Star Guardians",
+     "Pain FC",
+     "Ocean Stars",
+     "Thunder Rangers",
+     "Midnight Tales",
+     "Glorious Vision",
+     "Thorned Reliquary",
+     "Polaris FC"
+    ]
+   }
+  },
+  {
+   "season_number": 3,
+   "weeks": [
+    {
+     "week_number": 1,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 1,
+        "results": [
+         "Gaia's Revenge 1-0 Solford Town",
+         "Crimson Moon 3-1 Blazing Shadows",
+         "Nightingales 3-1 Fallen Heirlooms",
+         "Crystal Roses 2-2 Ironvale FC",
+         "Hands of Fate 1-1 Miracle Makers",
+         "Ravenhill 0-1 Sentinels of Light",
+         "Shadow Eaters 3-2 Yellowjackets FC",
+         "Kingsmeadow Rovers 1-1 Crownfield Athletic",
+         "Celestial Vanguard 3-3 Supersonic Knights",
+         "Ancient Dragonfire 1-2 Chaos Overture"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 1,
+        "results": [
+         "Hannya Masks 1-2 Polaris FC",
+         "Royal Junction 1-5 Thorned Reliquary",
+         "Void Relics 3-2 Glorious Vision",
+         "Ruined Legion 1-0 Midnight Tales",
+         "Zero Returners 5-1 Thunder Rangers",
+         "Dark Side of the Moon 1-3 Ocean Stars",
+         "Icefire Ballad 1-3 Pain FC",
+         "Northern Lords 2-2 Star Guardians",
+         "Doom Knights 1-2 Xeno Hunters",
+         "Glazed Dreams 1-1 Brookgate Wanderers"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 2,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 2,
+        "results": [
+         "Blazing Shadows 0-1 Gaia's Revenge",
+         "Fallen Heirlooms 1-1 Solford Town",
+         "Ironvale FC 3-1 Crimson Moon",
+         "Miracle Makers 3-2 Nightingales",
+         "Sentinels of Light 3-0 Crystal Roses",
+         "Yellowjackets FC 0-3 Hands of Fate",
+         "Crownfield Athletic 3-1 Ravenhill",
+         "Supersonic Knights 2-2 Shadow Eaters",
+         "Chaos Overture 4-0 Kingsmeadow Rovers",
+         "Ancient Dragonfire 2-3 Celestial Vanguard"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 2,
+        "results": [
+         "Thorned Reliquary 1-2 Hannya Masks",
+         "Glorious Vision 1-0 Polaris FC",
+         "Midnight Tales 2-0 Royal Junction",
+         "Thunder Rangers 1-1 Void Relics",
+         "Ocean Stars 2-1 Ruined Legion",
+         "Pain FC 2-0 Zero Returners",
+         "Star Guardians 3-1 Dark Side of the Moon",
+         "Xeno Hunters 2-1 Icefire Ballad",
+         "Brookgate Wanderers 1-3 Northern Lords",
+         "Glazed Dreams 1-1 Doom Knights"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 3,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 3,
+        "results": [
+         "Gaia's Revenge 1-0 Fallen Heirlooms",
+         "Blazing Shadows 3-0 Ironvale FC",
+         "Solford Town 1-3 Miracle Makers",
+         "Crimson Moon 1-0 Sentinels of Light",
+         "Nightingales 1-2 Yellowjackets FC",
+         "Crystal Roses 1-1 Crownfield Athletic",
+         "Hands of Fate 2-0 Supersonic Knights",
+         "Ravenhill 2-0 Chaos Overture",
+         "Shadow Eaters 1-2 Ancient Dragonfire",
+         "Kingsmeadow Rovers 1-3 Celestial Vanguard"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 3,
+        "results": [
+         "Hannya Masks 0-4 Glorious Vision",
+         "Thorned Reliquary 6-1 Midnight Tales",
+         "Polaris FC 5-1 Thunder Rangers",
+         "Royal Junction 1-0 Ocean Stars",
+         "Void Relics 5-3 Pain FC",
+         "Ruined Legion 2-1 Star Guardians",
+         "Zero Returners 3-2 Xeno Hunters",
+         "Dark Side of the Moon 6-2 Brookgate Wanderers",
+         "Icefire Ballad 2-2 Glazed Dreams",
+         "Northern Lords 3-0 Doom Knights"
+        ]
+       }
+      ],
+      "cup_matchdays": [
+       {
+        "round": 1,
+        "results": [
+         "Miracle Makers 3-1 Nightingales",
+         "Hands of Fate 1-1 Kingsmeadow Rovers",
+         "Ironvale FC 1-3 Chaos Overture",
+         "Ancient Dragonfire 2-1 Sentinels of Light",
+         "Shadow Eaters 1-0 Supersonic Knights",
+         "Gaia's Revenge 3-4 Yellowjackets FC",
+         "Crimson Moon 2-4 Crystal Roses",
+         "Crownfield Athletic 1-3 Celestial Vanguard"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 4,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 4,
+        "results": [
+         "Ironvale FC 3-2 Gaia's Revenge",
+         "Miracle Makers 3-0 Fallen Heirlooms",
+         "Sentinels of Light 3-1 Blazing Shadows",
+         "Yellowjackets FC 2-1 Solford Town",
+         "Crownfield Athletic 2-1 Crimson Moon",
+         "Supersonic Knights 0-2 Nightingales",
+         "Chaos Overture 2-3 Crystal Roses",
+         "Ancient Dragonfire 1-3 Hands of Fate",
+         "Celestial Vanguard 2-0 Ravenhill",
+         "Kingsmeadow Rovers 1-2 Shadow Eaters"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 4,
+        "results": [
+         "Midnight Tales 4-2 Hannya Masks",
+         "Thunder Rangers 6-2 Glorious Vision",
+         "Ocean Stars 2-2 Thorned Reliquary",
+         "Pain FC 3-1 Polaris FC",
+         "Star Guardians 2-1 Royal Junction",
+         "Xeno Hunters 5-4 Void Relics",
+         "Brookgate Wanderers 2-1 Ruined Legion",
+         "Glazed Dreams 4-3 Zero Returners",
+         "Doom Knights 1-1 Dark Side of the Moon",
+         "Northern Lords 1-3 Icefire Ballad"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 5,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 5,
+        "results": [
+         "Gaia's Revenge 2-1 Miracle Makers",
+         "Ironvale FC 2-1 Sentinels of Light",
+         "Fallen Heirlooms 1-0 Yellowjackets FC",
+         "Blazing Shadows 0-2 Crownfield Athletic",
+         "Solford Town 1-1 Supersonic Knights",
+         "Crimson Moon 1-1 Chaos Overture",
+         "Nightingales 5-0 Ancient Dragonfire",
+         "Crystal Roses 4-0 Celestial Vanguard",
+         "Hands of Fate 3-1 Kingsmeadow Rovers",
+         "Ravenhill 1-1 Shadow Eaters"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 5,
+        "results": [
+         "Hannya Masks 1-1 Thunder Rangers",
+         "Midnight Tales 6-3 Ocean Stars",
+         "Glorious Vision 4-0 Pain FC",
+         "Thorned Reliquary 2-0 Star Guardians",
+         "Polaris FC 3-3 Xeno Hunters",
+         "Royal Junction 3-2 Brookgate Wanderers",
+         "Void Relics 2-3 Glazed Dreams",
+         "Ruined Legion 5-0 Doom Knights",
+         "Zero Returners 0-2 Northern Lords",
+         "Dark Side of the Moon 6-2 Icefire Ballad"
+        ]
+       }
+      ],
+      "cup_matchdays": [
+       {
+        "round": 1,
+        "results": [
+         "Brookgate Wanderers 0-1 Pain FC",
+         "Miracle Makers 1-0 Gaia's Revenge",
+         "Chaos Overture 4-1 Icefire Ballad",
+         "Nightingales 1-3 Crystal Roses",
+         "Hands of Fate 1-0 Xeno Hunters",
+         "Yellowjackets FC 3-1 Midnight Tales",
+         "Kingsmeadow Rovers 1-0 Supersonic Knights",
+         "Ironvale FC 1-1 Ravenhill",
+         "Shadow Eaters 1-2 Blazing Shadows",
+         "Celestial Vanguard 2-2 Thorned Reliquary",
+         "Ancient Dragonfire 3-0 Fallen Heirlooms",
+         "Crownfield Athletic 2-2 Zero Returners",
+         "Sentinels of Light 5-1 Dark Side of the Moon",
+         "Solford Town 1-0 Hannya Masks",
+         "Glorious Vision 1-1 Polaris FC",
+         "Crimson Moon 2-1 Ocean Stars"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 6,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 6,
+        "results": [
+         "Sentinels of Light 1-1 Gaia's Revenge",
+         "Yellowjackets FC 3-0 Miracle Makers",
+         "Crownfield Athletic 2-1 Ironvale FC",
+         "Supersonic Knights 1-0 Fallen Heirlooms",
+         "Chaos Overture 2-0 Blazing Shadows",
+         "Ancient Dragonfire 1-1 Solford Town",
+         "Celestial Vanguard 2-2 Crimson Moon",
+         "Kingsmeadow Rovers 0-2 Nightingales",
+         "Shadow Eaters 2-0 Crystal Roses",
+         "Ravenhill 2-1 Hands of Fate"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 6,
+        "results": [
+         "Ocean Stars 2-4 Hannya Masks",
+         "Pain FC 1-2 Thunder Rangers",
+         "Star Guardians 6-3 Midnight Tales",
+         "Xeno Hunters 1-3 Glorious Vision",
+         "Brookgate Wanderers 3-1 Thorned Reliquary",
+         "Glazed Dreams 4-3 Polaris FC",
+         "Doom Knights 5-0 Royal Junction",
+         "Northern Lords 1-2 Void Relics",
+         "Icefire Ballad 1-2 Ruined Legion",
+         "Dark Side of the Moon 3-0 Zero Returners"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 7,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 7,
+        "results": [
+         "Gaia's Revenge 1-0 Yellowjackets FC",
+         "Sentinels of Light 0-4 Crownfield Athletic",
+         "Miracle Makers 2-0 Supersonic Knights",
+         "Ironvale FC 3-1 Chaos Overture",
+         "Fallen Heirlooms 1-1 Ancient Dragonfire",
+         "Blazing Shadows 1-1 Celestial Vanguard",
+         "Solford Town 3-1 Kingsmeadow Rovers",
+         "Crimson Moon 2-2 Shadow Eaters",
+         "Nightingales 2-2 Ravenhill",
+         "Crystal Roses 3-2 Hands of Fate"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 7,
+        "results": [
+         "Hannya Masks 1-0 Pain FC",
+         "Ocean Stars 5-1 Star Guardians",
+         "Thunder Rangers 3-0 Xeno Hunters",
+         "Midnight Tales 2-1 Brookgate Wanderers",
+         "Glorious Vision 2-1 Glazed Dreams",
+         "Thorned Reliquary 6-1 Doom Knights",
+         "Polaris FC 3-0 Northern Lords",
+         "Royal Junction 1-3 Icefire Ballad",
+         "Void Relics 5-3 Dark Side of the Moon",
+         "Ruined Legion 1-2 Zero Returners"
+        ]
+       }
+      ],
+      "cup_matchdays": [
+       {
+        "round": 2,
+        "results": [
+         "Nightingales 2-2 Hands of Fate",
+         "Kingsmeadow Rovers 1-1 Miracle Makers",
+         "Chaos Overture 1-1 Ancient Dragonfire",
+         "Sentinels of Light 2-2 Ironvale FC",
+         "Supersonic Knights 1-0 Gaia's Revenge",
+         "Yellowjackets FC 2-3 Shadow Eaters",
+         "Crystal Roses 1-3 Crownfield Athletic",
+         "Celestial Vanguard 0-3 Crimson Moon"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 8,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 8,
+        "results": [
+         "Crownfield Athletic 3-2 Gaia's Revenge",
+         "Supersonic Knights 2-0 Yellowjackets FC",
+         "Chaos Overture 3-0 Sentinels of Light",
+         "Ancient Dragonfire 0-1 Miracle Makers",
+         "Celestial Vanguard 2-2 Ironvale FC",
+         "Kingsmeadow Rovers 0-1 Fallen Heirlooms",
+         "Shadow Eaters 1-2 Blazing Shadows",
+         "Ravenhill 0-0 Solford Town",
+         "Hands of Fate 4-0 Crimson Moon",
+         "Crystal Roses 0-2 Nightingales"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 8,
+        "results": [
+         "Star Guardians 1-3 Hannya Masks",
+         "Xeno Hunters 2-4 Pain FC",
+         "Brookgate Wanderers 1-2 Ocean Stars",
+         "Glazed Dreams 6-2 Thunder Rangers",
+         "Doom Knights 2-1 Midnight Tales",
+         "Northern Lords 3-5 Glorious Vision",
+         "Icefire Ballad 1-0 Thorned Reliquary",
+         "Dark Side of the Moon 4-2 Polaris FC",
+         "Zero Returners 1-1 Royal Junction",
+         "Ruined Legion 3-0 Void Relics"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 9,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 9,
+        "results": [
+         "Gaia's Revenge 1-0 Supersonic Knights",
+         "Crownfield Athletic 1-3 Chaos Overture",
+         "Yellowjackets FC 1-0 Ancient Dragonfire",
+         "Sentinels of Light 2-1 Celestial Vanguard",
+         "Miracle Makers 3-1 Kingsmeadow Rovers",
+         "Ironvale FC 2-2 Shadow Eaters",
+         "Fallen Heirlooms 1-1 Ravenhill",
+         "Blazing Shadows 0-1 Hands of Fate",
+         "Solford Town 2-1 Crystal Roses",
+         "Crimson Moon 4-5 Nightingales"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 9,
+        "results": [
+         "Hannya Masks 1-1 Xeno Hunters",
+         "Star Guardians 4-4 Brookgate Wanderers",
+         "Pain FC 2-3 Glazed Dreams",
+         "Ocean Stars 3-1 Doom Knights",
+         "Thunder Rangers 1-2 Northern Lords",
+         "Midnight Tales 2-0 Icefire Ballad",
+         "Glorious Vision 4-0 Dark Side of the Moon",
+         "Thorned Reliquary 5-0 Zero Returners",
+         "Polaris FC 1-4 Ruined Legion",
+         "Royal Junction 2-4 Void Relics"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 10,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 10,
+        "results": [
+         "Chaos Overture 3-2 Gaia's Revenge",
+         "Ancient Dragonfire 2-0 Supersonic Knights",
+         "Celestial Vanguard 3-1 Crownfield Athletic",
+         "Kingsmeadow Rovers 0-1 Yellowjackets FC",
+         "Shadow Eaters 2-0 Sentinels of Light",
+         "Ravenhill 0-0 Miracle Makers",
+         "Hands of Fate 6-2 Ironvale FC",
+         "Crystal Roses 4-1 Fallen Heirlooms",
+         "Nightingales 4-1 Blazing Shadows",
+         "Crimson Moon 2-2 Solford Town"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 10,
+        "results": [
+         "Brookgate Wanderers 1-0 Hannya Masks",
+         "Glazed Dreams 6-2 Xeno Hunters",
+         "Doom Knights 2-1 Star Guardians",
+         "Northern Lords 2-3 Pain FC",
+         "Icefire Ballad 1-2 Ocean Stars",
+         "Dark Side of the Moon 1-2 Thunder Rangers",
+         "Zero Returners 2-0 Midnight Tales",
+         "Ruined Legion 0-2 Glorious Vision",
+         "Void Relics 6-2 Thorned Reliquary",
+         "Royal Junction 2-2 Polaris FC"
+        ]
+       }
+      ],
+      "cup_matchdays": [
+       {
+        "round": 3,
+        "results": [
+         "Miracle Makers 3-1 Hands of Fate",
+         "Kingsmeadow Rovers 0-2 Nightingales",
+         "Ironvale FC 1-2 Ancient Dragonfire",
+         "Sentinels of Light 1-1 Chaos Overture",
+         "Shadow Eaters 4-0 Gaia's Revenge",
+         "Yellowjackets FC 0-4 Supersonic Knights",
+         "Crimson Moon 6-3 Crownfield Athletic",
+         "Celestial Vanguard 4-1 Crystal Roses"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 11,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 11,
+        "results": [
+         "Gaia's Revenge 1-0 Ancient Dragonfire",
+         "Chaos Overture 2-3 Celestial Vanguard",
+         "Supersonic Knights 2-1 Kingsmeadow Rovers",
+         "Crownfield Athletic 0-0 Shadow Eaters",
+         "Yellowjackets FC 2-1 Ravenhill",
+         "Sentinels of Light 1-1 Hands of Fate",
+         "Miracle Makers 3-1 Crystal Roses",
+         "Ironvale FC 2-3 Nightingales",
+         "Fallen Heirlooms 2-1 Crimson Moon",
+         "Blazing Shadows 1-2 Solford Town"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 11,
+        "results": [
+         "Hannya Masks 2-2 Glazed Dreams",
+         "Brookgate Wanderers 3-0 Doom Knights",
+         "Xeno Hunters 2-1 Northern Lords",
+         "Star Guardians 5-4 Icefire Ballad",
+         "Pain FC 2-1 Dark Side of the Moon",
+         "Ocean Stars 4-3 Zero Returners",
+         "Thunder Rangers 1-1 Ruined Legion",
+         "Midnight Tales 2-3 Void Relics",
+         "Glorious Vision 3-4 Royal Junction",
+         "Thorned Reliquary 2-0 Polaris FC"
+        ]
+       }
+      ],
+      "cup_matchdays": [
+       {
+        "round": 2,
+        "results": [
+         "Ancient Dragonfire 2-2 Hands of Fate",
+         "Crownfield Athletic 1-1 Ravenhill",
+         "Sentinels of Light 2-3 Chaos Overture",
+         "Miracle Makers 4-2 Celestial Vanguard",
+         "Blazing Shadows 2-3 Solford Town",
+         "Crimson Moon 1-0 Yellowjackets FC",
+         "Crystal Roses 0-2 Pain FC",
+         "Kingsmeadow Rovers 1-3 Glorious Vision"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 12,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 12,
+        "results": [
+         "Celestial Vanguard 3-2 Gaia's Revenge",
+         "Kingsmeadow Rovers 2-0 Ancient Dragonfire",
+         "Shadow Eaters 2-1 Chaos Overture",
+         "Ravenhill 2-0 Supersonic Knights",
+         "Hands of Fate 2-1 Crownfield Athletic",
+         "Crystal Roses 1-1 Yellowjackets FC",
+         "Nightingales 1-0 Sentinels of Light",
+         "Crimson Moon 2-2 Miracle Makers",
+         "Solford Town 2-3 Ironvale FC",
+         "Blazing Shadows 3-0 Fallen Heirlooms"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 12,
+        "results": [
+         "Doom Knights 1-4 Hannya Masks",
+         "Northern Lords 3-1 Glazed Dreams",
+         "Icefire Ballad 1-1 Brookgate Wanderers",
+         "Dark Side of the Moon 5-0 Xeno Hunters",
+         "Zero Returners 2-0 Star Guardians",
+         "Ruined Legion 2-1 Pain FC",
+         "Void Relics 1-0 Ocean Stars",
+         "Royal Junction 2-5 Thunder Rangers",
+         "Polaris FC 3-1 Midnight Tales",
+         "Thorned Reliquary 4-0 Glorious Vision"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 13,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 13,
+        "results": [
+         "Gaia's Revenge 1-1 Kingsmeadow Rovers",
+         "Celestial Vanguard 2-1 Shadow Eaters",
+         "Ancient Dragonfire 2-1 Ravenhill",
+         "Chaos Overture 1-0 Hands of Fate",
+         "Supersonic Knights 2-1 Crystal Roses",
+         "Crownfield Athletic 2-3 Nightingales",
+         "Yellowjackets FC 1-4 Crimson Moon",
+         "Sentinels of Light 0-2 Solford Town",
+         "Miracle Makers 4-0 Blazing Shadows",
+         "Ironvale FC 3-1 Fallen Heirlooms"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 13,
+        "results": [
+         "Hannya Masks 2-1 Northern Lords",
+         "Doom Knights 4-3 Icefire Ballad",
+         "Glazed Dreams 1-1 Dark Side of the Moon",
+         "Brookgate Wanderers 1-3 Zero Returners",
+         "Xeno Hunters 2-4 Ruined Legion",
+         "Star Guardians 2-0 Void Relics",
+         "Pain FC 5-1 Royal Junction",
+         "Ocean Stars 1-1 Polaris FC",
+         "Thunder Rangers 2-5 Thorned Reliquary",
+         "Midnight Tales 5-2 Glorious Vision"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 14,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 14,
+        "results": [
+         "Shadow Eaters 1-0 Gaia's Revenge",
+         "Ravenhill 0-1 Kingsmeadow Rovers",
+         "Hands of Fate 2-0 Celestial Vanguard",
+         "Crystal Roses 1-2 Ancient Dragonfire",
+         "Nightingales 1-2 Chaos Overture",
+         "Crimson Moon 2-0 Supersonic Knights",
+         "Solford Town 1-2 Crownfield Athletic",
+         "Blazing Shadows 2-1 Yellowjackets FC",
+         "Fallen Heirlooms 2-1 Sentinels of Light",
+         "Ironvale FC 2-3 Miracle Makers"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 14,
+        "results": [
+         "Icefire Ballad 2-2 Hannya Masks",
+         "Dark Side of the Moon 1-1 Northern Lords",
+         "Zero Returners 1-3 Doom Knights",
+         "Ruined Legion 2-2 Glazed Dreams",
+         "Void Relics 1-3 Brookgate Wanderers",
+         "Royal Junction 4-1 Xeno Hunters",
+         "Polaris FC 2-2 Star Guardians",
+         "Thorned Reliquary 2-2 Pain FC",
+         "Glorious Vision 6-1 Ocean Stars",
+         "Midnight Tales 2-0 Thunder Rangers"
+        ]
+       }
+      ],
+      "cup_matchdays": [
+       {
+        "round": 4,
+        "results": [
+         "Nightingales 3-2 Miracle Makers",
+         "Kingsmeadow Rovers 0-3 Hands of Fate",
+         "Chaos Overture 2-0 Ironvale FC",
+         "Sentinels of Light 4-0 Ancient Dragonfire",
+         "Supersonic Knights 0-3 Shadow Eaters",
+         "Yellowjackets FC 1-0 Gaia's Revenge",
+         "Crystal Roses 0-2 Crimson Moon",
+         "Celestial Vanguard 2-3 Crownfield Athletic"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 15,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 15,
+        "results": [
+         "Gaia's Revenge 1-1 Ravenhill",
+         "Shadow Eaters 2-1 Hands of Fate",
+         "Kingsmeadow Rovers 4-1 Crystal Roses",
+         "Celestial Vanguard 0-2 Nightingales",
+         "Ancient Dragonfire 1-3 Crimson Moon",
+         "Chaos Overture 2-2 Solford Town",
+         "Supersonic Knights 0-1 Blazing Shadows",
+         "Crownfield Athletic 0-3 Fallen Heirlooms",
+         "Yellowjackets FC 2-4 Ironvale FC",
+         "Sentinels of Light 2-4 Miracle Makers"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 15,
+        "results": [
+         "Hannya Masks 1-0 Dark Side of the Moon",
+         "Icefire Ballad 1-4 Zero Returners",
+         "Northern Lords 1-1 Ruined Legion",
+         "Doom Knights 4-4 Void Relics",
+         "Glazed Dreams 2-3 Royal Junction",
+         "Brookgate Wanderers 3-1 Polaris FC",
+         "Xeno Hunters 1-2 Thorned Reliquary",
+         "Star Guardians 2-0 Glorious Vision",
+         "Pain FC 3-1 Midnight Tales",
+         "Ocean Stars 4-0 Thunder Rangers"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 16,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 16,
+        "results": [
+         "Hands of Fate 1-0 Gaia's Revenge",
+         "Crystal Roses 1-2 Ravenhill",
+         "Nightingales 1-2 Shadow Eaters",
+         "Crimson Moon 1-0 Kingsmeadow Rovers",
+         "Solford Town 0-3 Celestial Vanguard",
+         "Blazing Shadows 1-1 Ancient Dragonfire",
+         "Fallen Heirlooms 3-2 Chaos Overture",
+         "Ironvale FC 2-2 Supersonic Knights",
+         "Miracle Makers 3-0 Crownfield Athletic",
+         "Sentinels of Light 2-1 Yellowjackets FC"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 16,
+        "results": [
+         "Zero Returners 3-2 Hannya Masks",
+         "Ruined Legion 2-3 Dark Side of the Moon",
+         "Void Relics 5-0 Icefire Ballad",
+         "Royal Junction 0-2 Northern Lords",
+         "Polaris FC 6-2 Doom Knights",
+         "Thorned Reliquary 1-1 Glazed Dreams",
+         "Glorious Vision 1-2 Brookgate Wanderers",
+         "Midnight Tales 2-0 Xeno Hunters",
+         "Thunder Rangers 6-2 Star Guardians",
+         "Ocean Stars 1-0 Pain FC"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 17,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 17,
+        "results": [
+         "Gaia's Revenge 1-0 Crystal Roses",
+         "Hands of Fate 2-2 Nightingales",
+         "Ravenhill 1-0 Crimson Moon",
+         "Shadow Eaters 3-0 Solford Town",
+         "Kingsmeadow Rovers 3-0 Blazing Shadows",
+         "Celestial Vanguard 1-1 Fallen Heirlooms",
+         "Ancient Dragonfire 2-1 Ironvale FC",
+         "Chaos Overture 0-4 Miracle Makers",
+         "Supersonic Knights 2-1 Sentinels of Light",
+         "Crownfield Athletic 2-1 Yellowjackets FC"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 17,
+        "results": [
+         "Hannya Masks 2-2 Ruined Legion",
+         "Zero Returners 3-1 Void Relics",
+         "Dark Side of the Moon 2-0 Royal Junction",
+         "Icefire Ballad 6-2 Polaris FC",
+         "Northern Lords 2-1 Thorned Reliquary",
+         "Doom Knights 1-3 Glorious Vision",
+         "Glazed Dreams 2-1 Midnight Tales",
+         "Brookgate Wanderers 6-1 Thunder Rangers",
+         "Xeno Hunters 5-1 Ocean Stars",
+         "Star Guardians 2-1 Pain FC"
+        ]
+       }
+      ],
+      "cup_matchdays": [
+       {
+        "round": 3,
+        "results": [
+         "Crownfield Athletic 3-1 Glorious Vision",
+         "Crimson Moon 1-3 Solford Town",
+         "Miracle Makers 4-1 Pain FC",
+         "Hands of Fate 3-2 Chaos Overture"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 18,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 18,
+        "results": [
+         "Nightingales 3-2 Gaia's Revenge",
+         "Crimson Moon 3-0 Crystal Roses",
+         "Solford Town 1-0 Hands of Fate",
+         "Blazing Shadows 2-0 Ravenhill",
+         "Fallen Heirlooms 0-1 Shadow Eaters",
+         "Ironvale FC 1-2 Kingsmeadow Rovers",
+         "Miracle Makers 4-2 Celestial Vanguard",
+         "Sentinels of Light 2-2 Ancient Dragonfire",
+         "Yellowjackets FC 2-1 Chaos Overture",
+         "Crownfield Athletic 3-1 Supersonic Knights"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 18,
+        "results": [
+         "Void Relics 1-0 Hannya Masks",
+         "Royal Junction 1-4 Ruined Legion",
+         "Polaris FC 1-1 Zero Returners",
+         "Thorned Reliquary 5-4 Dark Side of the Moon",
+         "Glorious Vision 2-3 Icefire Ballad",
+         "Midnight Tales 4-1 Northern Lords",
+         "Thunder Rangers 1-2 Doom Knights",
+         "Ocean Stars 2-0 Glazed Dreams",
+         "Pain FC 3-0 Brookgate Wanderers",
+         "Star Guardians 4-0 Xeno Hunters"
+        ]
+       }
+      ],
+      "cup_matchdays": [
+       {
+        "round": 5,
+        "results": [
+         "Hands of Fate 1-3 Nightingales",
+         "Miracle Makers 1-1 Kingsmeadow Rovers",
+         "Ancient Dragonfire 1-1 Chaos Overture",
+         "Ironvale FC 4-0 Sentinels of Light",
+         "Gaia's Revenge 3-5 Supersonic Knights",
+         "Shadow Eaters 2-0 Yellowjackets FC",
+         "Crownfield Athletic 5-0 Crystal Roses",
+         "Crimson Moon 3-2 Celestial Vanguard"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 19,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 19,
+        "results": [
+         "Gaia's Revenge 3-2 Crimson Moon",
+         "Nightingales 2-1 Solford Town",
+         "Crystal Roses 3-2 Blazing Shadows",
+         "Hands of Fate 1-0 Fallen Heirlooms",
+         "Ravenhill 2-3 Ironvale FC",
+         "Shadow Eaters 0-1 Miracle Makers",
+         "Kingsmeadow Rovers 2-1 Sentinels of Light",
+         "Celestial Vanguard 3-3 Yellowjackets FC",
+         "Ancient Dragonfire 1-4 Crownfield Athletic",
+         "Chaos Overture 0-4 Supersonic Knights"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 19,
+        "results": [
+         "Hannya Masks 6-3 Royal Junction",
+         "Void Relics 5-1 Polaris FC",
+         "Ruined Legion 2-2 Thorned Reliquary",
+         "Zero Returners 6-3 Glorious Vision",
+         "Dark Side of the Moon 2-2 Midnight Tales",
+         "Icefire Ballad 4-2 Thunder Rangers",
+         "Northern Lords 1-1 Ocean Stars",
+         "Doom Knights 1-4 Pain FC",
+         "Glazed Dreams 3-2 Star Guardians",
+         "Brookgate Wanderers 1-0 Xeno Hunters"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 20,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 20,
+        "results": [
+         "Solford Town 3-2 Gaia's Revenge",
+         "Blazing Shadows 2-0 Crimson Moon",
+         "Fallen Heirlooms 0-3 Nightingales",
+         "Ironvale FC 0-1 Crystal Roses",
+         "Miracle Makers 2-1 Hands of Fate",
+         "Sentinels of Light 1-1 Ravenhill",
+         "Yellowjackets FC 2-2 Shadow Eaters",
+         "Crownfield Athletic 4-0 Kingsmeadow Rovers",
+         "Supersonic Knights 1-2 Celestial Vanguard",
+         "Chaos Overture 2-1 Ancient Dragonfire"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 20,
+        "results": [
+         "Polaris FC 2-2 Hannya Masks",
+         "Thorned Reliquary 3-1 Royal Junction",
+         "Glorious Vision 3-0 Void Relics",
+         "Midnight Tales 6-2 Ruined Legion",
+         "Thunder Rangers 3-1 Zero Returners",
+         "Ocean Stars 1-3 Dark Side of the Moon",
+         "Pain FC 2-0 Icefire Ballad",
+         "Star Guardians 6-0 Northern Lords",
+         "Xeno Hunters 5-1 Doom Knights",
+         "Brookgate Wanderers 2-1 Glazed Dreams"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 21,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 21,
+        "results": [
+         "Gaia's Revenge 1-0 Blazing Shadows",
+         "Solford Town 3-0 Fallen Heirlooms",
+         "Crimson Moon 3-1 Ironvale FC",
+         "Nightingales 0-1 Miracle Makers",
+         "Crystal Roses 1-1 Sentinels of Light",
+         "Hands of Fate 1-1 Yellowjackets FC",
+         "Ravenhill 1-1 Crownfield Athletic",
+         "Shadow Eaters 2-0 Supersonic Knights",
+         "Kingsmeadow Rovers 1-2 Chaos Overture",
+         "Celestial Vanguard 3-0 Ancient Dragonfire"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 21,
+        "results": [
+         "Hannya Masks 1-2 Thorned Reliquary",
+         "Polaris FC 2-3 Glorious Vision",
+         "Royal Junction 1-1 Midnight Tales",
+         "Void Relics 1-1 Thunder Rangers",
+         "Ruined Legion 1-0 Ocean Stars",
+         "Zero Returners 3-3 Pain FC",
+         "Dark Side of the Moon 3-1 Star Guardians",
+         "Icefire Ballad 1-4 Xeno Hunters",
+         "Northern Lords 3-1 Brookgate Wanderers",
+         "Doom Knights 1-1 Glazed Dreams"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 22,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 22,
+        "results": [
+         "Fallen Heirlooms 0-1 Gaia's Revenge",
+         "Ironvale FC 3-0 Blazing Shadows",
+         "Miracle Makers 2-0 Solford Town",
+         "Sentinels of Light 2-0 Crimson Moon",
+         "Yellowjackets FC 0-5 Nightingales",
+         "Crownfield Athletic 0-2 Crystal Roses",
+         "Supersonic Knights 2-1 Hands of Fate",
+         "Chaos Overture 0-3 Ravenhill",
+         "Ancient Dragonfire 3-1 Shadow Eaters",
+         "Celestial Vanguard 1-2 Kingsmeadow Rovers"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 22,
+        "results": [
+         "Glorious Vision 3-3 Hannya Masks",
+         "Midnight Tales 2-0 Thorned Reliquary",
+         "Thunder Rangers 3-1 Polaris FC",
+         "Ocean Stars 4-1 Royal Junction",
+         "Pain FC 1-0 Void Relics",
+         "Star Guardians 2-0 Ruined Legion",
+         "Xeno Hunters 1-2 Zero Returners",
+         "Brookgate Wanderers 5-2 Dark Side of the Moon",
+         "Glazed Dreams 1-0 Icefire Ballad",
+         "Doom Knights 6-2 Northern Lords"
+        ]
+       }
+      ],
+      "cup_matchdays": [
+       {
+        "round": 6,
+        "results": [
+         "Hands of Fate 1-4 Miracle Makers",
+         "Nightingales 2-2 Kingsmeadow Rovers",
+         "Ancient Dragonfire 1-2 Ironvale FC",
+         "Chaos Overture 3-0 Sentinels of Light",
+         "Gaia's Revenge 3-1 Shadow Eaters",
+         "Supersonic Knights 2-4 Yellowjackets FC",
+         "Crownfield Athletic 2-2 Crimson Moon",
+         "Crystal Roses 2-3 Celestial Vanguard"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 23,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 23,
+        "results": [
+         "Gaia's Revenge 3-2 Ironvale FC",
+         "Fallen Heirlooms 2-1 Miracle Makers",
+         "Blazing Shadows 1-2 Sentinels of Light",
+         "Solford Town 1-1 Yellowjackets FC",
+         "Crimson Moon 2-2 Crownfield Athletic",
+         "Nightingales 1-1 Supersonic Knights",
+         "Crystal Roses 3-2 Chaos Overture",
+         "Hands of Fate 3-1 Ancient Dragonfire",
+         "Ravenhill 0-2 Celestial Vanguard",
+         "Shadow Eaters 1-1 Kingsmeadow Rovers"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 23,
+        "results": [
+         "Hannya Masks 6-2 Midnight Tales",
+         "Glorious Vision 2-2 Thunder Rangers",
+         "Thorned Reliquary 1-1 Ocean Stars",
+         "Polaris FC 2-2 Pain FC",
+         "Royal Junction 2-2 Star Guardians",
+         "Void Relics 2-0 Xeno Hunters",
+         "Ruined Legion 1-1 Brookgate Wanderers",
+         "Zero Returners 1-1 Glazed Dreams",
+         "Dark Side of the Moon 2-0 Doom Knights",
+         "Icefire Ballad 3-0 Northern Lords"
+        ]
+       }
+      ],
+      "cup_matchdays": [
+       {
+        "round": 4,
+        "results": [
+         "Crownfield Athletic 2-4 Hands of Fate",
+         "Miracle Makers 2-1 Solford Town"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 24,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 24,
+        "results": [
+         "Miracle Makers 1-0 Gaia's Revenge",
+         "Sentinels of Light 0-4 Ironvale FC",
+         "Yellowjackets FC 2-1 Fallen Heirlooms",
+         "Crownfield Athletic 3-0 Blazing Shadows",
+         "Supersonic Knights 1-1 Solford Town",
+         "Chaos Overture 1-2 Crimson Moon",
+         "Ancient Dragonfire 1-1 Nightingales",
+         "Celestial Vanguard 1-2 Crystal Roses",
+         "Kingsmeadow Rovers 0-2 Hands of Fate",
+         "Shadow Eaters 3-0 Ravenhill"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 24,
+        "results": [
+         "Thunder Rangers 2-1 Hannya Masks",
+         "Ocean Stars 1-5 Midnight Tales",
+         "Pain FC 3-2 Glorious Vision",
+         "Star Guardians 1-0 Thorned Reliquary",
+         "Xeno Hunters 5-1 Polaris FC",
+         "Brookgate Wanderers 1-3 Royal Junction",
+         "Glazed Dreams 1-3 Void Relics",
+         "Doom Knights 2-2 Ruined Legion",
+         "Northern Lords 1-2 Zero Returners",
+         "Icefire Ballad 1-1 Dark Side of the Moon"
+        ]
+       }
+      ],
+      "cup_matchdays": [
+       {
+        "round": 1,
+        "results": [
+         "Crimson Moon 2-3 Shadow Eaters",
+         "Nightingales 3-2 Ironvale FC"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 25,
+     "kind": "winter_break",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 26,
+     "kind": "winter_break",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 27,
+     "kind": "winter_break",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 28,
+     "kind": "cup_week",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [
+       {
+        "round": 2,
+        "results": [
+         "Shadow Eaters 2-2 Nightingales"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 29,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 25,
+        "results": [
+         "Gaia's Revenge 1-1 Sentinels of Light",
+         "Miracle Makers 2-1 Yellowjackets FC",
+         "Ironvale FC 2-1 Crownfield Athletic",
+         "Fallen Heirlooms 1-0 Supersonic Knights",
+         "Blazing Shadows 0-0 Chaos Overture",
+         "Solford Town 2-2 Ancient Dragonfire",
+         "Crimson Moon 3-3 Celestial Vanguard",
+         "Nightingales 1-4 Kingsmeadow Rovers",
+         "Crystal Roses 3-1 Shadow Eaters",
+         "Hands of Fate 6-2 Ravenhill"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 25,
+        "results": [
+         "Hannya Masks 3-1 Ocean Stars",
+         "Thunder Rangers 1-2 Pain FC",
+         "Midnight Tales 1-2 Star Guardians",
+         "Glorious Vision 1-0 Xeno Hunters",
+         "Thorned Reliquary 6-1 Brookgate Wanderers",
+         "Polaris FC 6-2 Glazed Dreams",
+         "Royal Junction 1-2 Doom Knights",
+         "Void Relics 2-0 Northern Lords",
+         "Ruined Legion 3-0 Icefire Ballad",
+         "Zero Returners 6-0 Dark Side of the Moon"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 30,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 26,
+        "results": [
+         "Yellowjackets FC 3-2 Gaia's Revenge",
+         "Crownfield Athletic 3-0 Sentinels of Light",
+         "Supersonic Knights 2-2 Miracle Makers",
+         "Chaos Overture 1-1 Ironvale FC",
+         "Ancient Dragonfire 2-0 Fallen Heirlooms",
+         "Celestial Vanguard 1-1 Blazing Shadows",
+         "Kingsmeadow Rovers 1-1 Solford Town",
+         "Shadow Eaters 3-0 Crimson Moon",
+         "Ravenhill 1-2 Nightingales",
+         "Hands of Fate 3-0 Crystal Roses"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 26,
+        "results": [
+         "Pain FC 1-4 Hannya Masks",
+         "Star Guardians 3-1 Ocean Stars",
+         "Xeno Hunters 1-1 Thunder Rangers",
+         "Brookgate Wanderers 5-1 Midnight Tales",
+         "Glazed Dreams 2-0 Glorious Vision",
+         "Doom Knights 2-1 Thorned Reliquary",
+         "Northern Lords 0-0 Polaris FC",
+         "Icefire Ballad 2-4 Royal Junction",
+         "Dark Side of the Moon 3-1 Void Relics",
+         "Zero Returners 3-0 Ruined Legion"
+        ]
+       }
+      ],
+      "cup_matchdays": [
+       {
+        "round": 7,
+        "results": [
+         "Ancient Dragonfire 4-2 Miracle Makers",
+         "Nightingales 2-1 Chaos Overture",
+         "Crownfield Athletic 1-2 Shadow Eaters",
+         "Supersonic Knights 1-1 Crimson Moon"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 31,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 27,
+        "results": [
+         "Gaia's Revenge 3-2 Crownfield Athletic",
+         "Yellowjackets FC 2-0 Supersonic Knights",
+         "Sentinels of Light 1-1 Chaos Overture",
+         "Miracle Makers 1-0 Ancient Dragonfire",
+         "Ironvale FC 2-3 Celestial Vanguard",
+         "Fallen Heirlooms 0-1 Kingsmeadow Rovers",
+         "Blazing Shadows 1-0 Shadow Eaters",
+         "Solford Town 4-0 Ravenhill",
+         "Crimson Moon 2-3 Hands of Fate",
+         "Nightingales 2-1 Crystal Roses"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 27,
+        "results": [
+         "Hannya Masks 2-2 Star Guardians",
+         "Pain FC 3-1 Xeno Hunters",
+         "Ocean Stars 2-0 Brookgate Wanderers",
+         "Thunder Rangers 6-2 Glazed Dreams",
+         "Midnight Tales 3-1 Doom Knights",
+         "Glorious Vision 1-3 Northern Lords",
+         "Thorned Reliquary 2-0 Icefire Ballad",
+         "Polaris FC 6-0 Dark Side of the Moon",
+         "Royal Junction 5-1 Zero Returners",
+         "Void Relics 2-1 Ruined Legion"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 32,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 28,
+        "results": [
+         "Supersonic Knights 1-1 Gaia's Revenge",
+         "Chaos Overture 3-0 Crownfield Athletic",
+         "Ancient Dragonfire 1-1 Yellowjackets FC",
+         "Celestial Vanguard 2-1 Sentinels of Light",
+         "Kingsmeadow Rovers 1-3 Miracle Makers",
+         "Shadow Eaters 2-4 Ironvale FC",
+         "Ravenhill 1-0 Fallen Heirlooms",
+         "Hands of Fate 4-0 Blazing Shadows",
+         "Crystal Roses 1-2 Solford Town",
+         "Nightingales 4-0 Crimson Moon"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 28,
+        "results": [
+         "Xeno Hunters 5-1 Hannya Masks",
+         "Brookgate Wanderers 2-2 Star Guardians",
+         "Glazed Dreams 6-2 Pain FC",
+         "Doom Knights 2-1 Ocean Stars",
+         "Northern Lords 4-2 Thunder Rangers",
+         "Icefire Ballad 1-2 Midnight Tales",
+         "Dark Side of the Moon 1-5 Glorious Vision",
+         "Zero Returners 3-2 Thorned Reliquary",
+         "Ruined Legion 1-0 Polaris FC",
+         "Void Relics 5-1 Royal Junction"
+        ]
+       }
+      ],
+      "cup_matchdays": [
+       {
+        "round": 8,
+        "results": [
+         "Miracle Makers 2-3 Ancient Dragonfire",
+         "Chaos Overture 0-1 Nightingales",
+         "Shadow Eaters 1-0 Crownfield Athletic",
+         "Crimson Moon 2-1 Supersonic Knights"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 33,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 29,
+        "results": [
+         "Gaia's Revenge 1-2 Chaos Overture",
+         "Supersonic Knights 3-0 Ancient Dragonfire",
+         "Crownfield Athletic 2-1 Celestial Vanguard",
+         "Yellowjackets FC 1-0 Kingsmeadow Rovers",
+         "Sentinels of Light 1-0 Shadow Eaters",
+         "Miracle Makers 2-1 Ravenhill",
+         "Ironvale FC 1-1 Hands of Fate",
+         "Fallen Heirlooms 1-2 Crystal Roses",
+         "Blazing Shadows 2-0 Nightingales",
+         "Solford Town 2-1 Crimson Moon"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 29,
+        "results": [
+         "Hannya Masks 2-2 Brookgate Wanderers",
+         "Xeno Hunters 2-0 Glazed Dreams",
+         "Star Guardians 1-1 Doom Knights",
+         "Pain FC 1-1 Northern Lords",
+         "Ocean Stars 2-0 Icefire Ballad",
+         "Thunder Rangers 4-0 Dark Side of the Moon",
+         "Midnight Tales 1-3 Zero Returners",
+         "Glorious Vision 2-2 Ruined Legion",
+         "Thorned Reliquary 1-1 Void Relics",
+         "Polaris FC 2-1 Royal Junction"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 34,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 30,
+        "results": [
+         "Ancient Dragonfire 3-2 Gaia's Revenge",
+         "Celestial Vanguard 3-0 Chaos Overture",
+         "Kingsmeadow Rovers 1-0 Supersonic Knights",
+         "Shadow Eaters 2-0 Crownfield Athletic",
+         "Ravenhill 1-2 Yellowjackets FC",
+         "Hands of Fate 1-1 Sentinels of Light",
+         "Crystal Roses 3-3 Miracle Makers",
+         "Nightingales 4-1 Ironvale FC",
+         "Crimson Moon 1-0 Fallen Heirlooms",
+         "Solford Town 0-0 Blazing Shadows"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 30,
+        "results": [
+         "Glazed Dreams 6-0 Hannya Masks",
+         "Doom Knights 5-1 Brookgate Wanderers",
+         "Northern Lords 2-1 Xeno Hunters",
+         "Icefire Ballad 2-0 Star Guardians",
+         "Dark Side of the Moon 2-0 Pain FC",
+         "Zero Returners 3-2 Ocean Stars",
+         "Ruined Legion 0-3 Thunder Rangers",
+         "Void Relics 1-2 Midnight Tales",
+         "Royal Junction 1-1 Glorious Vision",
+         "Polaris FC 1-1 Thorned Reliquary"
+        ]
+       }
+      ],
+      "cup_matchdays": [
+       {
+        "round": 9,
+        "results": [
+         "Shadow Eaters 2-1 Ancient Dragonfire",
+         "Crimson Moon 1-3 Nightingales"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 35,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 31,
+        "results": [
+         "Gaia's Revenge 3-2 Celestial Vanguard",
+         "Ancient Dragonfire 2-1 Kingsmeadow Rovers",
+         "Chaos Overture 2-1 Shadow Eaters",
+         "Supersonic Knights 2-0 Ravenhill",
+         "Crownfield Athletic 3-1 Hands of Fate",
+         "Yellowjackets FC 1-1 Crystal Roses",
+         "Sentinels of Light 1-1 Nightingales",
+         "Miracle Makers 4-0 Crimson Moon",
+         "Ironvale FC 3-2 Solford Town",
+         "Fallen Heirlooms 1-0 Blazing Shadows"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 31,
+        "results": [
+         "Hannya Masks 3-2 Doom Knights",
+         "Glazed Dreams 6-2 Northern Lords",
+         "Brookgate Wanderers 2-2 Icefire Ballad",
+         "Xeno Hunters 3-0 Dark Side of the Moon",
+         "Star Guardians 2-1 Zero Returners",
+         "Pain FC 5-4 Ruined Legion",
+         "Ocean Stars 2-1 Void Relics",
+         "Thunder Rangers 5-3 Royal Junction",
+         "Midnight Tales 1-1 Polaris FC",
+         "Glorious Vision 1-3 Thorned Reliquary"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 36,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 32,
+        "results": [
+         "Kingsmeadow Rovers 1-1 Gaia's Revenge",
+         "Shadow Eaters 3-0 Celestial Vanguard",
+         "Ravenhill 2-1 Ancient Dragonfire",
+         "Hands of Fate 1-0 Chaos Overture",
+         "Crystal Roses 1-2 Supersonic Knights",
+         "Nightingales 0-2 Crownfield Athletic",
+         "Crimson Moon 4-1 Yellowjackets FC",
+         "Solford Town 2-1 Sentinels of Light",
+         "Blazing Shadows 0-1 Miracle Makers",
+         "Fallen Heirlooms 1-3 Ironvale FC"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 32,
+        "results": [
+         "Northern Lords 1-3 Hannya Masks",
+         "Icefire Ballad 1-1 Doom Knights",
+         "Dark Side of the Moon 1-3 Glazed Dreams",
+         "Zero Returners 5-1 Brookgate Wanderers",
+         "Ruined Legion 2-2 Xeno Hunters",
+         "Void Relics 3-4 Star Guardians",
+         "Royal Junction 3-1 Pain FC",
+         "Polaris FC 3-2 Ocean Stars",
+         "Thorned Reliquary 1-2 Thunder Rangers",
+         "Glorious Vision 2-3 Midnight Tales"
+        ]
+       }
+      ],
+      "cup_matchdays": [
+       {
+        "round": 10,
+        "results": [
+         "Ancient Dragonfire 2-1 Shadow Eaters",
+         "Nightingales 1-2 Crimson Moon"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 37,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 33,
+        "results": [
+         "Gaia's Revenge 0-0 Shadow Eaters",
+         "Kingsmeadow Rovers 2-0 Ravenhill",
+         "Celestial Vanguard 1-1 Hands of Fate",
+         "Ancient Dragonfire 3-0 Crystal Roses",
+         "Chaos Overture 1-3 Nightingales",
+         "Supersonic Knights 1-1 Crimson Moon",
+         "Crownfield Athletic 1-0 Solford Town",
+         "Yellowjackets FC 3-0 Blazing Shadows",
+         "Sentinels of Light 2-2 Fallen Heirlooms",
+         "Miracle Makers 1-2 Ironvale FC"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 33,
+        "results": [
+         "Hannya Masks 2-2 Icefire Ballad",
+         "Northern Lords 1-1 Dark Side of the Moon",
+         "Doom Knights 1-2 Zero Returners",
+         "Glazed Dreams 2-2 Ruined Legion",
+         "Brookgate Wanderers 2-0 Void Relics",
+         "Xeno Hunters 1-1 Royal Junction",
+         "Star Guardians 1-1 Polaris FC",
+         "Pain FC 2-1 Thorned Reliquary",
+         "Ocean Stars 3-1 Glorious Vision",
+         "Thunder Rangers 1-3 Midnight Tales"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 38,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 34,
+        "results": [
+         "Ravenhill 2-1 Gaia's Revenge",
+         "Hands of Fate 2-2 Shadow Eaters",
+         "Crystal Roses 2-2 Kingsmeadow Rovers",
+         "Nightingales 2-3 Celestial Vanguard",
+         "Crimson Moon 2-2 Ancient Dragonfire",
+         "Solford Town 2-2 Chaos Overture",
+         "Blazing Shadows 0-2 Supersonic Knights",
+         "Fallen Heirlooms 1-3 Crownfield Athletic",
+         "Ironvale FC 3-2 Yellowjackets FC",
+         "Miracle Makers 1-1 Sentinels of Light"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 34,
+        "results": [
+         "Dark Side of the Moon 1-3 Hannya Masks",
+         "Zero Returners 3-2 Icefire Ballad",
+         "Ruined Legion 0-2 Northern Lords",
+         "Void Relics 1-3 Doom Knights",
+         "Royal Junction 2-0 Glazed Dreams",
+         "Polaris FC 1-1 Brookgate Wanderers",
+         "Thorned Reliquary 1-1 Xeno Hunters",
+         "Glorious Vision 3-2 Star Guardians",
+         "Midnight Tales 2-4 Pain FC",
+         "Thunder Rangers 6-1 Ocean Stars"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 39,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 35,
+        "results": [
+         "Gaia's Revenge 2-1 Hands of Fate",
+         "Ravenhill 1-5 Crystal Roses",
+         "Shadow Eaters 1-1 Nightingales",
+         "Kingsmeadow Rovers 2-2 Crimson Moon",
+         "Celestial Vanguard 1-3 Solford Town",
+         "Ancient Dragonfire 3-0 Blazing Shadows",
+         "Chaos Overture 4-0 Fallen Heirlooms",
+         "Supersonic Knights 3-3 Ironvale FC",
+         "Crownfield Athletic 1-3 Miracle Makers",
+         "Yellowjackets FC 1-2 Sentinels of Light"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 35,
+        "results": [
+         "Hannya Masks 3-4 Zero Returners",
+         "Dark Side of the Moon 3-1 Ruined Legion",
+         "Icefire Ballad 2-2 Void Relics",
+         "Northern Lords 1-2 Royal Junction",
+         "Doom Knights 2-3 Polaris FC",
+         "Glazed Dreams 6-1 Thorned Reliquary",
+         "Brookgate Wanderers 1-3 Glorious Vision",
+         "Xeno Hunters 6-0 Midnight Tales",
+         "Star Guardians 2-1 Thunder Rangers",
+         "Pain FC 5-2 Ocean Stars"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 40,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 36,
+        "results": [
+         "Crystal Roses 3-2 Gaia's Revenge",
+         "Nightingales 3-0 Hands of Fate",
+         "Crimson Moon 2-2 Ravenhill",
+         "Solford Town 1-0 Shadow Eaters",
+         "Blazing Shadows 1-1 Kingsmeadow Rovers",
+         "Fallen Heirlooms 1-1 Celestial Vanguard",
+         "Ironvale FC 3-0 Ancient Dragonfire",
+         "Miracle Makers 2-2 Chaos Overture",
+         "Sentinels of Light 1-1 Supersonic Knights",
+         "Yellowjackets FC 2-1 Crownfield Athletic"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 36,
+        "results": [
+         "Ruined Legion 1-2 Hannya Masks",
+         "Void Relics 3-3 Zero Returners",
+         "Royal Junction 4-1 Dark Side of the Moon",
+         "Polaris FC 2-2 Icefire Ballad",
+         "Thorned Reliquary 3-1 Northern Lords",
+         "Glorious Vision 3-0 Doom Knights",
+         "Midnight Tales 6-2 Glazed Dreams",
+         "Thunder Rangers 3-1 Brookgate Wanderers",
+         "Ocean Stars 1-3 Xeno Hunters",
+         "Pain FC 2-0 Star Guardians"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 41,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 37,
+        "results": [
+         "Gaia's Revenge 3-2 Nightingales",
+         "Crystal Roses 2-1 Crimson Moon",
+         "Hands of Fate 3-1 Solford Town",
+         "Ravenhill 1-1 Blazing Shadows",
+         "Shadow Eaters 3-0 Fallen Heirlooms",
+         "Kingsmeadow Rovers 1-2 Ironvale FC",
+         "Celestial Vanguard 3-2 Miracle Makers",
+         "Ancient Dragonfire 3-0 Sentinels of Light",
+         "Chaos Overture 0-3 Yellowjackets FC",
+         "Supersonic Knights 3-1 Crownfield Athletic"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 37,
+        "results": [
+         "Hannya Masks 3-3 Void Relics",
+         "Ruined Legion 3-1 Royal Junction",
+         "Zero Returners 1-5 Polaris FC",
+         "Dark Side of the Moon 3-1 Thorned Reliquary",
+         "Icefire Ballad 1-1 Glorious Vision",
+         "Northern Lords 5-1 Midnight Tales",
+         "Doom Knights 2-0 Thunder Rangers",
+         "Glazed Dreams 2-1 Ocean Stars",
+         "Brookgate Wanderers 1-0 Pain FC",
+         "Xeno Hunters 2-4 Star Guardians"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 42,
+     "kind": "league_week",
+     "matches": {
+      "premier_matchdays": [
+       {
+        "round": 38,
+        "results": [
+         "Crimson Moon 3-2 Gaia's Revenge",
+         "Solford Town 2-0 Nightingales",
+         "Blazing Shadows 0-3 Crystal Roses",
+         "Fallen Heirlooms 1-1 Hands of Fate",
+         "Ironvale FC 1-1 Ravenhill",
+         "Miracle Makers 1-0 Shadow Eaters",
+         "Sentinels of Light 2-2 Kingsmeadow Rovers",
+         "Yellowjackets FC 2-2 Celestial Vanguard",
+         "Crownfield Athletic 0-2 Ancient Dragonfire",
+         "Supersonic Knights 2-0 Chaos Overture"
+        ]
+       }
+      ],
+      "second_matchdays": [
+       {
+        "round": 38,
+        "results": [
+         "Royal Junction 3-1 Hannya Masks",
+         "Polaris FC 4-0 Void Relics",
+         "Thorned Reliquary 2-1 Ruined Legion",
+         "Glorious Vision 5-1 Zero Returners",
+         "Midnight Tales 5-2 Dark Side of the Moon",
+         "Thunder Rangers 1-0 Icefire Ballad",
+         "Ocean Stars 1-0 Northern Lords",
+         "Pain FC 1-1 Doom Knights",
+         "Star Guardians 1-2 Glazed Dreams",
+         "Xeno Hunters 1-0 Brookgate Wanderers"
+        ]
+       }
+      ],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 43,
+     "kind": "cup_week",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [
+       {
+        "round": 5,
+        "results": [
+         "Miracle Makers 1-0 Hands of Fate"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 44,
+     "kind": "cup_week",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [
+       {
+        "round": 11,
+        "results": [
+         "Shadow Eaters 2-0 Nightingales"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 45,
+     "kind": "cup_week",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [
+       {
+        "round": 12,
+        "results": [
+         "Nightingales 1-0 Shadow Eaters"
+        ]
+       }
+      ],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 46,
+     "kind": "promotion_playoff",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": [
+       {
+        "round": 1,
+        "results": [
+         "Glorious Vision 6-1 Glazed Dreams",
+         "Thorned Reliquary 1-1 Midnight Tales"
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "week_number": 47,
+     "kind": "promotion_playoff",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": [
+       {
+        "round": 2,
+        "results": [
+         "Glazed Dreams 6-1 Glorious Vision",
+         "Midnight Tales 1-1 Thorned Reliquary"
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "week_number": 48,
+     "kind": "promotion_playoff",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": [
+       {
+        "round": 3,
+        "results": [
+         "Midnight Tales 6-1 Glazed Dreams"
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "week_number": 49,
+     "kind": "promotion_playoff",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": [
+       {
+        "round": 4,
+        "results": [
+         "Glazed Dreams 6-1 Midnight Tales"
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "week_number": 50,
+     "kind": "summer_break",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 51,
+     "kind": "summer_break",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    },
+    {
+     "week_number": 52,
+     "kind": "summer_break",
+     "matches": {
+      "premier_matchdays": [],
+      "second_matchdays": [],
+      "cup_matchdays": [],
+      "playoff_matchdays": []
+     }
+    }
+   ],
+   "final": {
+    "premier_table": [
+     [
+      "Miracle Makers",
+      85,
+      80,
+      39
+     ],
+     [
+      "Nightingales",
+      69,
+      81,
+      51
+     ],
+     [
+      "Hands of Fate",
+      66,
+      72,
+      43
+     ],
+     [
+      "Ironvale FC",
+      62,
+      82,
+      71
+     ],
+     [
+      "Crownfield Athletic",
+      59,
+      64,
+      56
+     ],
+     [
+      "Celestial Vanguard",
+      59,
+      72,
+      66
+     ],
+     [
+      "Shadow Eaters",
+      58,
+      57,
+      42
+     ],
+     [
+      "Gaia's Revenge",
+      55,
+      56,
+      55
+     ],
+     [
+      "Solford Town",
+      54,
+      55,
+      51
+     ],
+     [
+      "Yellowjackets FC",
+      53,
+      56,
+      61
+     ],
+     [
+      "Crystal Roses",
+      52,
+      63,
+      65
+     ],
+     [
+      "Supersonic Knights",
+      50,
+      49,
+      49
+     ],
+     [
+      "Chaos Overture",
+      49,
+      57,
+      64
+     ],
+     [
+      "Crimson Moon",
+      47,
+      64,
+      71
+     ],
+     [
+      "Ancient Dragonfire",
+      47,
+      51,
+      61
+     ],
+     [
+      "Kingsmeadow Rovers",
+      42,
+      46,
+      58
+     ],
+     [
+      "Sentinels of Light",
+      40,
+      42,
+      60
+     ],
+     [
+      "Ravenhill",
+      38,
+      39,
+      61
+     ],
+     [
+      "Fallen Heirlooms",
+      34,
+      31,
+      62
+     ],
+     [
+      "Blazing Shadows",
+      34,
+      30,
+      61
+     ]
+    ],
+    "second_table": [
+     [
+      "Zero Returners",
+      68,
+      90,
+      78
+     ],
+     [
+      "Pain FC",
+      65,
+      82,
+      68
+     ],
+     [
+      "Glazed Dreams",
+      61,
+      91,
+      76
+     ],
+     [
+      "Midnight Tales",
+      60,
+      88,
+      85
+     ],
+     [
+      "Thorned Reliquary",
+      59,
+      86,
+      62
+     ],
+     [
+      "Glorious Vision",
+      59,
+      91,
+      75
+     ],
+     [
+      "Star Guardians",
+      59,
+      80,
+      72
+     ],
+     [
+      "Thunder Rangers",
+      57,
+      85,
+      80
+     ],
+     [
+      "Hannya Masks",
+      56,
+      81,
+      77
+     ],
+     [
+      "Void Relics",
+      55,
+      84,
+      77
+     ],
+     [
+      "Ocean Stars",
+      52,
+      68,
+      79
+     ],
+     [
+      "Brookgate Wanderers",
+      50,
+      68,
+      77
+     ],
+     [
+      "Polaris FC",
+      49,
+      82,
+      76
+     ],
+     [
+      "Ruined Legion",
+      49,
+      67,
+      66
+     ],
+     [
+      "Xeno Hunters",
+      48,
+      75,
+      77
+     ],
+     [
+      "Dark Side of the Moon",
+      48,
+      74,
+      89
+     ],
+     [
+      "Doom Knights",
+      47,
+      67,
+      86
+     ],
+     [
+      "Northern Lords",
+      46,
+      61,
+      75
+     ],
+     [
+      "Royal Junction",
+      45,
+      70,
+      93
+     ],
+     [
+      "Icefire Ballad",
+      34,
+      61,
+      83
+     ]
+    ],
+    "cup_champions": {
+     "优胜者杯": "Shadow Eaters",
+     "挑战杯": "Miracle Makers",
+     "超级杯": "Shadow Eaters"
+    },
+    "last_transition": {
+     "season_number": 3,
+     "relegated": [
+      "Ravenhill",
+      "Fallen Heirlooms",
+      "Blazing Shadows"
+     ],
+     "promoted_direct": [
+      "Zero Returners",
+      "Pain FC"
+     ],
+     "playoff_winner": "Glazed Dreams",
+     "cup_champions": {
+      "优胜者杯": "Shadow Eaters",
+      "挑战杯": "Miracle Makers",
+      "超级杯": "Shadow Eaters"
+     }
+    },
+    "top20": [
+     [
+      1,
+      "Estevao Willian",
+      "Miracle Makers",
+      970.64
+     ],
+     [
+      2,
+      "Bukayo Saka",
+      "Miracle Makers",
+      956.12
+     ],
+     [
+      3,
+      "Evan Ferguson",
+      "Yellowjackets FC",
+      937.88
+     ],
+     [
+      4,
+      "Marcus Thuram",
+      "Ironvale FC",
+      914.72
+     ],
+     [
+      5,
+      "Benjamin Sesko",
+      "Ironvale FC",
+      901.28
+     ],
+     [
+      6,
+      "Xavi Simons",
+      "Solford Town",
+      898.87
+     ],
+     [
+      7,
+      "Sadio Mane",
+      "Crownfield Athletic",
+      894.82
+     ],
+     [
+      8,
+      "Nick Woltemade",
+      "Nightingales",
+      892.45
+     ],
+     [
+      9,
+      "Roberto Firmino",
+      "Crimson Moon",
+      882.84
+     ],
+     [
+      10,
+      "Marcus Rashford",
+      "Chaos Overture",
+      882.41
+     ],
+     [
+      11,
+      "Julian Alvarez",
+      "Ancient Dragonfire",
+      880.24
+     ],
+     [
+      12,
+      "Cody Gakpo",
+      "Solford Town",
+      857.73
+     ],
+     [
+      13,
+      "Kenan Yildiz",
+      "Kingsmeadow Rovers",
+      852.83
+     ],
+     [
+      14,
+      "Adrien Rabiot",
+      "Nightingales",
+      848.4
+     ],
+     [
+      15,
+      "Manuel Ugarte",
+      "Gaia's Revenge",
+      843.64
+     ],
+     [
+      16,
+      "Rodrygo",
+      "Celestial Vanguard",
+      840.6
+     ],
+     [
+      17,
+      "Karim Benzema",
+      "Glorious Vision",
+      838.06
+     ],
+     [
+      18,
+      "Bradley Barcola",
+      "Thorned Reliquary",
+      829.29
+     ],
+     [
+      19,
+      "Carlos Baleba",
+      "Supersonic Knights",
+      827.32
+     ],
+     [
+      20,
+      "Joshua Zirkzee",
+      "Ancient Dragonfire",
+      821.45
+     ]
+    ],
+    "competition_awards": {
+     "一级联赛": {
+      "top_scorer": "Estevao Willian",
+      "assist_leader": "Manuel Ugarte",
+      "mvp": "Estevao Willian"
+     },
+     "优胜者杯": {
+      "top_scorer": "Roberto Firmino",
+      "assist_leader": "Roberto Firmino",
+      "mvp": "Roberto Firmino"
+     },
+     "挑战杯": {
+      "top_scorer": "Marcus Rashford",
+      "assist_leader": "Marcus Rashford",
+      "mvp": "Marcus Rashford"
+     },
+     "超级杯": {
+      "top_scorer": "Kai Havertz",
+      "assist_leader": "Pedri",
+      "mvp": "Pedri"
+     }
+    },
+    "next_premier_team_names": [
+     "Gaia's Revenge",
+     "Crimson Moon",
+     "Nightingales",
+     "Crystal Roses",
+     "Hands of Fate",
+     "Shadow Eaters",
+     "Kingsmeadow Rovers",
+     "Celestial Vanguard",
+     "Ancient Dragonfire",
+     "Chaos Overture",
+     "Supersonic Knights",
+     "Crownfield Athletic",
+     "Yellowjackets FC",
+     "Sentinels of Light",
+     "Miracle Makers",
+     "Ironvale FC",
+     "Solford Town",
+     "Zero Returners",
+     "Pain FC",
+     "Glazed Dreams"
+    ],
+    "next_second_team_names": [
+     "Hannya Masks",
+     "Royal Junction",
+     "Void Relics",
+     "Ruined Legion",
+     "Dark Side of the Moon",
+     "Icefire Ballad",
+     "Northern Lords",
+     "Doom Knights",
+     "Brookgate Wanderers",
+     "Xeno Hunters",
+     "Star Guardians",
+     "Ocean Stars",
+     "Thunder Rangers",
+     "Midnight Tales",
+     "Glorious Vision",
+     "Thorned Reliquary",
+     "Polaris FC",
+     "Ravenhill",
+     "Fallen Heirlooms",
+     "Blazing Shadows"
+    ]
+   }
+  }
+ ]
+}

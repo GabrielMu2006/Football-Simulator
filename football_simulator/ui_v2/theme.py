@@ -77,7 +77,7 @@ QTableWidget {
     alternate-background-color: #13243a;
 }
 QTableWidget::item {
-    padding: 7px;
+    padding: 10px 8px;
 }
 QTableWidget::item:hover {
     background: #1d3555;
@@ -111,5 +111,18 @@ QLabel#badgeLabel {
     padding: 4px 8px;
     font-weight: 800;
     color: #06111f;
+}
+QPushButton#reviewDecisionApprove, QPushButton#reviewDecisionReject {
+    min-height: 34px;
+    padding: 8px 18px;
+    border-radius: 8px;
+}
+QPushButton#reviewDecisionApprove:checked {
+    background: #16a34a;
+    color: #ffffff;
+}
+QPushButton#reviewDecisionReject:checked {
+    background: #dc2626;
+    color: #ffffff;
 }
 """

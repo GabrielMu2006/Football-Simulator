@@ -1,296 +1,267 @@
+"""球队目录页（阶段 4 · 实施方案 §8.6）。
+
+- 全高 EntityTable 主表：40 支球队各一行，附该赛季积分榜行与注册阵容摘要；
+- 筛选：分区（全部/一级联赛/次级联赛）+ 队名搜索（FilterBar，300ms 防抖）
+  + 页面内赛季下拉（状态经 ``save_state`` 保存，不进入路由参数）；
+- 行激活（双击 / Enter）→ ``Route("team", team=<team_id>, season=<所选赛季>)``；
+- 当前赛季默认取 ``base.resolve_current_season``。
+
+滚动硬规则（§8.2）：本页唯一纵向滚动面是球队目录 EntityTable，
+外层不套 QScrollArea；空结果时整页替换为 EmptyState（无滚动区）。
+"""
+
 from __future__ import annotations
 
-from typing import Callable
+import sqlite3
+from dataclasses import dataclass
+from typing import Any, Callable, List, Optional, Sequence, Tuple
 
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QComboBox,
-    QGridLayout,
-    QHeaderView,
     QLabel,
-    QListWidget,
-    QListWidgetItem,
-    QSplitter,
-    QTableWidget,
-    QTabWidget,
-    QTextEdit,
+    QStackedWidget,
     QVBoxLayout,
     QWidget,
 )
-from PySide6.QtCore import Qt
 
-from football_simulator.state import (
-    SaveSnapshot,
-    get_team_history_totals,
-    get_team_single_season_records,
+from football_simulator.queries import base, team_queries
+from football_simulator.ui_v2 import navigation
+from football_simulator.ui_v2.components import (
+    ColumnSpec,
+    EmptyState,
+    EntityTable,
+    FilterBar,
+    PageHeader,
+    TEXT_COLOR_MUTED,
 )
-from football_simulator.ui_v2.services import SimulatorUIService
-from football_simulator.ui_v2.widgets import (
-    build_metric_card,
-    color_position_items,
-    money_text,
-    player_stat_line,
-    setup_table,
-    set_table_row,
+from football_simulator.ui_v2.pages.entity_page_base import (
+    EntityPageBase,
+    PageContext,
+    PageState,
+)
+
+_DIVISION_ALL = "全部"
+_DIVISION_OPTIONS = (_DIVISION_ALL, base.COMPETITION_PREMIER, base.COMPETITION_SECOND)
+
+_DIRECTORY_COLUMNS: Tuple[ColumnSpec, ...] = (
+    ColumnSpec("team_name", "球队", width=210),
+    ColumnSpec("season_division", "分区", width=92),
+    ColumnSpec("played", "赛", width=52, alignment=Qt.AlignmentFlag.AlignRight),
+    ColumnSpec("wins", "胜", width=52, alignment=Qt.AlignmentFlag.AlignRight),
+    ColumnSpec("draws", "平", width=52, alignment=Qt.AlignmentFlag.AlignRight),
+    ColumnSpec("losses", "负", width=52, alignment=Qt.AlignmentFlag.AlignRight),
+    ColumnSpec("goals_for", "进球", width=60, alignment=Qt.AlignmentFlag.AlignRight),
+    ColumnSpec("goals_against", "失球", width=60, alignment=Qt.AlignmentFlag.AlignRight),
+    ColumnSpec("points", "积分", width=64, alignment=Qt.AlignmentFlag.AlignRight),
+    ColumnSpec("rank", "名次", width=60, alignment=Qt.AlignmentFlag.AlignRight),
+    ColumnSpec("real_player_count", "真实球员数", width=94, alignment=Qt.AlignmentFlag.AlignRight),
+    ColumnSpec("roster_total_ability", "阵容总能力", width=96, alignment=Qt.AlignmentFlag.AlignRight),
 )
 
 
-class TeamsPage(QWidget):
-    def __init__(
+@dataclass(frozen=True)
+class _DirectoryRow:
+    """目录表行 DTO；属性名与 ``_DIRECTORY_COLUMNS`` 的 ``key`` 一一对应。
+
+    ``rank`` 为 ``None``（该队本赛季尚未赛过）时 EntityTable 显示"—"。
+    """
+
+    team_id: int
+    team_name: str
+    season_division: str
+    played: int
+    wins: int
+    draws: int
+    losses: int
+    goals_for: int
+    goals_against: int
+    points: int
+    rank: Optional[int]
+    real_player_count: int
+    roster_total_ability: int
+
+
+class TeamsPage(EntityPageBase):
+    """球队目录：``Route("teams")``，查询层主数据源为 ``team_queries.list_teams``。"""
+
+    def __init__(self, context: PageContext, parent: Optional[QWidget] = None) -> None:
+        super().__init__(context, parent)
+
+    # -- UI 骨架 -------------------------------------------------------------
+
+    def _build_ui(self) -> None:
+        root = QVBoxLayout(self)
+        root.setContentsMargins(0, 0, 0, 0)
+        root.setSpacing(12)
+
+        self._page_header = PageHeader(
+            "球队",
+            navigation.breadcrumbs(navigation.Route("teams")),
+            self._context.navigate,
+        )
+        season_caption = QLabel("赛季")
+        season_caption.setObjectName("seasonCaption")
+        season_caption.setStyleSheet(f"color: {TEXT_COLOR_MUTED}; background: transparent;")
+        self._season_combo = QComboBox(self)
+        self._season_combo.setObjectName("seasonFilter")
+        self._season_combo.currentIndexChanged.connect(self._on_filters_changed)
+        self._page_header.add_action(season_caption)
+        self._page_header.add_action(self._season_combo)
+        root.addWidget(self._page_header)
+
+        self._filter_bar = FilterBar(on_search_changed=self._on_filters_changed)
+        self._division_combo = self._filter_bar.add_combo(
+            "分区", list(_DIVISION_OPTIONS), "divisionFilter"
+        )
+        self._division_combo.currentIndexChanged.connect(self._on_filters_changed)
+        self._search_edit = self._filter_bar.add_search("搜索球队名…")
+        root.addWidget(self._filter_bar)
+
+        self._stack = QStackedWidget(self)
+        self._table = EntityTable(_DIRECTORY_COLUMNS, navigator=self._context.navigate, parent=self)
+        self._empty = EmptyState("暂无球队数据", "当前存档还没有球队数据。")
+        self._stack.addWidget(self._table)
+        self._stack.addWidget(self._empty)
+        root.addWidget(self._stack, 1)
+
+    # -- 契约入口 -------------------------------------------------------------
+
+    def refresh(self) -> None:
+        """按当前路由与最新存档数据重建目录（幂等）。"""
+
+        season_context = self._load_season_context()
+        state = self.stored_state()
+        self._rebuild_season_combo(season_context, state.get("season"))
+        self._filter_bar.restore(state)
+        self._load_rows()
+        self._persist_state()
+
+    def route_context(self) -> dict:
+        return {}
+
+    # -- 数据装载 -------------------------------------------------------------
+
+    def _selected_season(self) -> Optional[int]:
+        data = self._season_combo.currentData()
+        return int(data) if data is not None else None
+
+    def _load_season_context(self) -> Optional[Tuple[List[base.SeasonRef], int]]:
+        """（赛季列表, 当前赛季号）；存档不可读时返回 ``None``。"""
+
+        def _read(conn: sqlite3.Connection) -> Tuple[List[base.SeasonRef], int]:
+            seasons = base.load_seasons(conn)
+            current = base.resolve_current_season(conn)
+            return seasons, current.season_number
+
+        return self._with_connection(_read)
+
+    def _rebuild_season_combo(
         self,
-        service: SimulatorUIService,
-        open_player_callback: Callable[[str | None, str | None], None],
+        season_context: Optional[Tuple[List[base.SeasonRef], int]],
+        preferred: object,
     ) -> None:
-        super().__init__()
-        self.service = service
-        self.snapshot: SaveSnapshot | None = None
-        self.team_chinese_names: dict[str, str] = {}
-        self.open_player_callback = open_player_callback
+        """重建赛季下拉：优先恢复保存的赛季，否则落到当前赛季。"""
 
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        splitter = QSplitter(Qt.Horizontal)
+        self._season_combo.blockSignals(True)
+        try:
+            self._season_combo.clear()
+            seasons: List[base.SeasonRef] = []
+            current_number: Optional[int] = None
+            if season_context is not None:
+                seasons, current_number = season_context
+            for season in seasons:
+                self._season_combo.addItem(f"第 {season.season_number} 赛季", season.season_number)
+            numbers = [season.season_number for season in seasons]
+            index = -1
+            if isinstance(preferred, int) and preferred in numbers:
+                index = numbers.index(preferred)
+            elif current_number is not None and current_number in numbers:
+                index = numbers.index(current_number)
+            if index >= 0:
+                self._season_combo.setCurrentIndex(index)
+        finally:
+            self._season_combo.blockSignals(False)
 
-        self.league_filter = QComboBox()
-        self.league_filter.addItems(["全部球队", "一级联赛", "次级联赛"])
-        self.league_filter.currentIndexChanged.connect(self._populate_team_list)
-        self.team_list = QListWidget()
-        self.team_list.currentItemChanged.connect(self._refresh_details)
-
-        left_panel = QWidget()
-        left_layout = QVBoxLayout(left_panel)
-        left_layout.addWidget(self.league_filter)
-        left_layout.addWidget(self.team_list)
-
-        right_panel = QWidget()
-        right_layout = QVBoxLayout(right_panel)
-        right_layout.setContentsMargins(0, 0, 0, 0)
-        right_layout.setSpacing(14)
-
-        cards = QGridLayout()
-        cards.setSpacing(12)
-        self.division_card = build_metric_card("所属联赛", "-", "当前球队所在级别")
-        self.record_card = build_metric_card("本季战绩", "-", "胜 / 平 / 负")
-        self.market_card = build_metric_card("总身价", "-", "仅统计已结算真实球员身价")
-        self.real_count_card = build_metric_card("真实球员", "-", "当前阵容真实球员数量")
-        cards.addWidget(self.division_card, 0, 0)
-        cards.addWidget(self.record_card, 0, 1)
-        cards.addWidget(self.market_card, 0, 2)
-        cards.addWidget(self.real_count_card, 0, 3)
-        right_layout.addLayout(cards)
-
-        self.tabs = QTabWidget()
-        self.current_text = QTextEdit()
-        self.current_text.setReadOnly(True)
-        self.history_text = QTextEdit()
-        self.history_text.setReadOnly(True)
-        self.seasons_table = QTableWidget()
-        setup_table(self.seasons_table, ["赛季", "联赛", "联赛成绩", "优胜者杯", "挑战杯", "超级杯", "荣誉积分"])
-        self.seasons_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-        self.seasons_table.horizontalHeader().setStretchLastSection(True)
-        self.recent_table = QTableWidget()
-        setup_table(self.recent_table, ["周次", "赛事", "主客", "对手", "比分", "结果"])
-        self.recent_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-        self.recent_table.horizontalHeader().setStretchLastSection(True)
-        self.players_table = QTableWidget()
-        setup_table(self.players_table, ["球员", "位置", "能力", "类型", "本赛季数据", "评分", "身价"])
-        self.players_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-        self.players_table.horizontalHeader().setStretchLastSection(True)
-        self.players_table.itemDoubleClicked.connect(self._open_selected_player)
-
-        self.tabs.addTab(self.current_text, "球队总览")
-        self.tabs.addTab(self.players_table, "阵容与球员")
-        self.tabs.addTab(self.recent_table, "近期比赛")
-        self.tabs.addTab(self.seasons_table, "历季记录")
-        self.tabs.addTab(self.history_text, "历史与荣誉")
-        right_layout.addWidget(self.tabs, 1)
-
-        splitter.addWidget(left_panel)
-        splitter.addWidget(right_panel)
-        splitter.setSizes([280, 980])
-        layout.addWidget(splitter)
-
-    def set_snapshot(self, snapshot: SaveSnapshot | None) -> None:
-        self.snapshot = snapshot
-        self.team_chinese_names = self.service.team_chinese_names(snapshot.save_name) if snapshot is not None else {}
-        self._populate_team_list()
-
-    def focus_team(self, team_name: str) -> None:
-        if self.snapshot is None:
+    def _load_rows(self) -> None:
+        season = self._selected_season()
+        if season is None:
+            self._show_empty("暂无球队数据", "当前存档还没有赛季数据。")
             return
-        target_team = next((team for team in self.snapshot.teams if team.name == team_name), None)
-        if target_team is None:
-            return
-        desired_filter = target_team.division if self.league_filter.findText(target_team.division) != -1 else "全部球队"
-        if self.league_filter.currentText() != desired_filter:
-            self.league_filter.setCurrentText(desired_filter)
-        else:
-            self._populate_team_list()
-        for index in range(self.team_list.count()):
-            item = self.team_list.item(index)
-            if item.data(Qt.UserRole) == team_name:
-                self.team_list.setCurrentRow(index)
-                return
-
-    def _populate_team_list(self) -> None:
-        self.team_list.clear()
-        if self.snapshot is None or not self.snapshot.teams:
-            return
-        teams = self.snapshot.teams
-        filter_label = self.league_filter.currentText()
-        if filter_label != "全部球队":
-            teams = [team for team in teams if team.division == filter_label]
-        for team in teams:
-            item = QListWidgetItem(self._team_display_name(team.name))
-            item.setData(Qt.UserRole, team.name)
-            self.team_list.addItem(item)
-        if self.team_list.count():
-            self.team_list.setCurrentRow(0)
-
-    def _refresh_details(self) -> None:
-        if self.snapshot is None or not self.snapshot.teams:
-            return
-        item = self.team_list.currentItem()
-        if item is None:
-            return
-        team_name = item.data(Qt.UserRole)
-        team = next(team for team in self.snapshot.teams if team.name == team_name)
-        team_row = next(row for row in self.snapshot.team_stats if row.team_name == team_name)
-        real_count = sum(1 for player in team.roster if player.is_real)
-        chinese_name = self.team_chinese_names.get(team_name, "-")
-
-        self.division_card.value_label.setText(team.division)  # type: ignore[attr-defined]
-        self.record_card.value_label.setText(f"{team_row.wins}/{team_row.draws}/{team_row.losses}")  # type: ignore[attr-defined]
-        self.market_card.value_label.setText(money_text(team_row.total_market_value))  # type: ignore[attr-defined]
-        self.real_count_card.value_label.setText(f"{real_count}/11")  # type: ignore[attr-defined]
-
-        self.current_text.setPlainText(
-            "\n".join(
-                [
-                    f"球队：{team_name}",
-                    f"中文名：{chinese_name}",
-                    f"联赛：{team.division}",
-                    f"战绩：{team_row.played} 赛 {team_row.wins} 胜 {team_row.draws} 平 {team_row.losses} 负",
-                    f"进失球：{team_row.goals_for}/{team_row.goals_against}（净胜球 {team_row.goal_diff}）",
-                    f"积分：{team_row.points}",
-                    f"真实球员：{real_count}/11",
-                    f"平均能力：{team.rating:.1f}",
-                    f"总身价：{money_text(team_row.total_market_value)}",
-                ]
+        division = self._division_combo.currentText()
+        search = str(self._filter_bar.state().get("search") or "").strip()
+        rows = self._with_connection(
+            lambda conn: team_queries.list_teams(
+                conn,
+                season,
+                division=None if division == _DIVISION_ALL else division,
+                search=search or None,
             )
         )
-
-        history_totals = next((row for row in get_team_history_totals(self.snapshot) if row["team_name"] == team_name), None)
-        if history_totals is None:
-            self.history_text.setPlainText("还没有历史总览。")
-        else:
-            self.history_text.setPlainText(
-                "\n".join(
-                    [
-                        f"总赛季数：{history_totals['seasons']}",
-                        f"历史总战绩：{history_totals['wins']} 胜 {history_totals['draws']} 平 {history_totals['losses']} 负",
-                        f"历史总进失球：{history_totals['goals_for']}/{history_totals['goals_against']}",
-                        f"总冠军：{history_totals['total_titles']}",
-                        f"荣誉积分：{history_totals['honor_points']}",
-                    ]
-                )
-            )
-
-        season_rows = [row for row in get_team_single_season_records(self.snapshot) if row["team_name"] == team_name]
-        self.seasons_table.setRowCount(0)
-        for row in sorted(season_rows, key=lambda item: item["season_number"], reverse=True):
-            set_table_row(
-                self.seasons_table,
-                self.seasons_table.rowCount(),
-                [
-                    f"S{row['season_number']}",
-                    row.get("division", "-"),
-                    row.get("league_result", "-"),
-                    row.get("winners_cup_result", "未参赛"),
-                    row.get("challenge_cup_result", "未参赛"),
-                    row.get("super_cup_result", "未参赛"),
-                    str(row.get("honor_points", 0)),
-                ],
-            )
-
-        self._populate_recent_matches(team_name)
-        player_rows = [row for row in self.snapshot.player_stats if row.team_name == team_name]
-        self.players_table.setRowCount(0)
-        for row in sorted(player_rows, key=lambda item: (item.player.is_real, item.player.ability), reverse=True):
-            row_index = self.players_table.rowCount()
-            set_table_row(
-                self.players_table,
-                row_index,
-                [
-                    row.player.label,
-                    row.player.position,
-                    str(row.player.ability),
-                    "真实球员" if row.player.is_real else "默认球员",
-                    player_stat_line(row),
-                    "待结算" if row.season_rating is None else f"{row.season_rating:.2f}",
-                    money_text(row.market_value) if row.player.is_real else "-",
-                ],
-            )
-            self.players_table.item(row_index, 0).setData(Qt.UserRole, row.player.player_id)
-            self.players_table.item(row_index, 0).setData(Qt.UserRole + 1, row.player.label)
-        color_position_items(self.players_table, 1)
-
-    def _populate_recent_matches(self, team_name: str) -> None:
-        self.recent_table.setRowCount(0)
-        if self.snapshot is None:
+        if rows is None:
+            self._show_empty("暂无球队数据", "存档不可读或还没有球队数据。")
             return
-        for match in _team_recent_matches(self.snapshot, team_name):
-            set_table_row(
-                self.recent_table,
-                self.recent_table.rowCount(),
-                [
-                    f"W{match['week_number']}",
-                    match["competition"],
-                    match["side"],
-                    self._team_display_name(match["opponent"]),
-                    match["score"],
-                    match["result"],
-                ],
+        if not rows:
+            self._show_empty(
+                "没有匹配的球队",
+                "当前分区与搜索条件下没有球队。",
+                "调整分区筛选或清空搜索关键词后重试。",
             )
-
-    def _team_display_name(self, team_name: str) -> str:
-        chinese_name = self.team_chinese_names.get(team_name)
-        return f"{chinese_name} / {team_name}" if chinese_name else team_name
-
-    def _open_selected_player(self, *_args) -> None:
-        selected = self.players_table.selectionModel().selectedRows()
-        if not selected:
             return
-        row_index = selected[0].row()
-        player_item = self.players_table.item(row_index, 0)
-        if player_item is None:
-            return
-        self.open_player_callback(
-            player_item.data(Qt.UserRole),
-            player_item.data(Qt.UserRole + 1),
-        )
+        directory_rows = [
+            _DirectoryRow(
+                team_id=row.team.team_id,
+                team_name=row.team.display_name,
+                season_division=row.season_division,
+                played=row.played,
+                wins=row.wins,
+                draws=row.draws,
+                losses=row.losses,
+                goals_for=row.goals_for,
+                goals_against=row.goals_against,
+                points=row.points,
+                rank=row.rank,
+                real_player_count=row.real_player_count,
+                roster_total_ability=row.roster_total_ability,
+            )
+            for row in rows
+        ]
+        self._table.set_rows(directory_rows, route_for_row=self._team_route_for_row)
+        self._stack.setCurrentWidget(self._table)
 
+    def _team_route_for_row(self, row: _DirectoryRow) -> Optional[navigation.Route]:
+        season = self._selected_season()
+        if season is None:
+            return None
+        return navigation.Route("team", team=row.team_id, season=season)
 
-def _team_recent_matches(snapshot: SaveSnapshot, team_name: str) -> list[dict]:
-    matches: list[dict] = []
-    for week in snapshot.simulated_weeks:
-        for key in ("premier_matchdays", "second_matchdays", "cup_matchdays", "playoff_matchdays"):
-            for matchday in week.get(key, []):
-                competition = matchday.get("competition", "赛事")
-                for result in matchday.get("results", []):
-                    if result["home_team"] != team_name and result["away_team"] != team_name:
-                        continue
-                    is_home = result["home_team"] == team_name
-                    goals_for = int(result["home_goals"] if is_home else result["away_goals"])
-                    goals_against = int(result["away_goals"] if is_home else result["home_goals"])
-                    outcome = "胜" if goals_for > goals_against else "平" if goals_for == goals_against else "负"
-                    matches.append(
-                        {
-                            "week_number": week.get("week_number", "-"),
-                            "competition": competition,
-                            "side": "主场" if is_home else "客场",
-                            "opponent": result["away_team"] if is_home else result["home_team"],
-                            "score": f"{goals_for}-{goals_against}",
-                            "result": outcome,
-                        }
-                    )
-    return matches[-12:][::-1]
+    # -- 状态 ------------------------------------------------------------------
+
+    def _persist_state(self) -> None:
+        state: PageState = {"season": self._selected_season()}
+        state.update(self._filter_bar.state())
+        self.save_state(state)
+
+    def _on_filters_changed(self, *_args: object) -> None:
+        self._load_rows()
+        self._persist_state()
+
+    # -- 空状态 / 连接辅助 -------------------------------------------------------
+
+    def _show_empty(self, title: str, description: str, hint: Optional[str] = None) -> None:
+        previous = self._empty
+        self._empty = EmptyState(title, description, hint)
+        self._stack.addWidget(self._empty)
+        self._stack.setCurrentWidget(self._empty)
+        if previous is not None:
+            self._stack.removeWidget(previous)
+            previous.deleteLater()
+
+    def _with_connection(self, fn: Callable[[sqlite3.Connection], Any]) -> Any:
+        """只读连接中执行 ``fn``；存档缺失 / 赛季缺失 / SQL 错误时返回 ``None``。"""
+
+        try:
+            with base.open_read_connection(self.save_name()) as conn:
+                return fn(conn)
+        except (base.MissingSaveError, KeyError, sqlite3.Error):
+            return None

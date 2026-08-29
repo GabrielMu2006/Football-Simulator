@@ -1,282 +1,354 @@
+"""本周战报（阶段 5 重写，实施方案 §8.7 周报语义）。
+
+Route：``Route("weekly_report", week=<n>)``（week 必填，1..52）。
+
+- 顶部：第 N 周 · 阶段 label + 上一周/下一周按钮（``navigate`` 相邻周；
+  1 / 52 边界禁用）；
+- 主体：该周全部比赛按赛事分组（一级联赛 / 次级联赛 / 杯赛各赛事 /
+  升级附加赛），每组一张完整 ``EntityTable``（主队/比分/客队/结果），
+  行激活（双击 / Enter）→ ``match`` 路由；
+- 该周无比赛（冬窗/夏窗休赛周）时显示明确空状态。
+
+滚动面归属（§8.2 硬规则）：页面唯一主滚动面是单个外层 ``QScrollArea``；
+每组 ``EntityTable`` 按行数完整展开（固定高度，纵向滚动条永不激活），
+不存在“小框内滚动”。这对应 §8.2 规则 3 的内容型布局：外层可滚 +
+内部表格按内容展开。
+
+数据：``match_queries.list_matches(conn, season, week_number=week)``；
+season 取当前赛季（路由无 season 参数）。不虚构数据。
+"""
+
 from __future__ import annotations
 
-from typing import Callable
+from dataclasses import dataclass
+from typing import List, Optional
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
-    QGridLayout,
+    QFrame,
     QHBoxLayout,
-    QHeaderView,
     QLabel,
     QPushButton,
     QScrollArea,
-    QTableWidget,
+    QStackedWidget,
     QVBoxLayout,
     QWidget,
 )
 
-from football_simulator.state import SaveSnapshot
-from football_simulator.ui_v2.widgets import CardFrame, build_metric_card, color_position_items, set_table_row, setup_table
+from football_simulator.queries import base, match_queries
+from football_simulator.schedule import TOTAL_WEEKS, build_week_calendar
+from football_simulator.ui_v2 import navigation
+from football_simulator.ui_v2.components import ColumnSpec, EmptyState, EntityTable, PageHeader
+from football_simulator.ui_v2.navigation import Route
+from football_simulator.ui_v2.pages.entity_page_base import EntityPageBase
+
+# 联赛赛历固定为 38 轮；build_week_calendar 只使用轮数与固定常量推导 52 周日历，
+# 与 initialize_save_state 构建的赛历完全一致（确定性，无随机源）。
+_WEEK_CALENDAR = build_week_calendar([[] for _ in range(38)])
+
+# 分组顺序：一级联赛 → 次级联赛 → 杯赛各赛事 → 升级附加赛。
+_GROUP_ORDER = (
+    base.COMPETITION_PREMIER,
+    base.COMPETITION_SECOND,
+    base.COMPETITION_WINNERS_CUP,
+    base.COMPETITION_CHALLENGE_CUP,
+    base.COMPETITION_SUPER_CUP,
+    base.COMPETITION_PLAYOFF,
+)
+
+_MATCH_COLUMNS = (
+    ColumnSpec("home_name", "主队", width=190),
+    ColumnSpec("score_text", "比分", width=90, alignment=Qt.AlignCenter),
+    ColumnSpec("away_name", "客队", width=190),
+    ColumnSpec("result_text", "结果", width=90, alignment=Qt.AlignCenter),
+)
+
+# 完整展开高度 = 表头 + 行数 × 行高 + 边框/缓冲（保证纵向滚动条永不激活）。
+_ROW_HEIGHT = 34
+_TABLE_HEIGHT_BUFFER = 12
 
 
-class WeeklyReportPage(QWidget):
-    def __init__(
-        self,
-        open_matches_callback: Callable[[], None],
-        open_pending_callback: Callable[[], None],
-    ) -> None:
-        super().__init__()
-        self.snapshot: SaveSnapshot | None = None
-        self.open_matches_callback = open_matches_callback
-        self.open_pending_callback = open_pending_callback
+@dataclass(frozen=True)
+class _WeeklyMatchRow:
+    """周报表格行 DTO（``match_id`` 供行激活导航）。"""
 
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
+    match_id: str
+    home_name: str
+    away_name: str
+    score_text: str
+    result_text: str
 
+
+def _result_text(row: match_queries.MatchRow) -> str:
+    if not row.is_completed or row.home_goals is None or row.away_goals is None:
+        return "未赛"
+    if row.home_goals > row.away_goals:
+        return "主胜"
+    if row.home_goals < row.away_goals:
+        return "客胜"
+    return "平"
+
+
+def _weekly_row(row: match_queries.MatchRow) -> _WeeklyMatchRow:
+    return _WeeklyMatchRow(
+        match_id=row.match_id,
+        home_name=row.home.display_name,
+        away_name=row.away.display_name,
+        score_text=row.score_display or "vs",
+        result_text=_result_text(row),
+    )
+
+
+def _clear_layout(layout) -> None:
+    while layout.count():
+        item = layout.takeAt(0)
+        widget = item.widget()
+        if widget is not None:
+            widget.setParent(None)
+            widget.deleteLater()
+        elif item.layout() is not None:
+            _clear_layout(item.layout())
+
+
+class WeeklyReportPage(EntityPageBase):
+    """周报：第 N 周全部比赛按赛事分组的完整战报。"""
+
+    def __init__(self, context, parent: Optional[QWidget] = None, *_legacy_args: object) -> None:
+        # 外壳在阶段 5 集成前仍用旧签名构造本页（多余位置参数在此被丢弃）。
+        if not isinstance(parent, QWidget):
+            parent = None
+        self._week: int = 1
+        self._season: int = 0
+        self._phase_text: str = ""
+        self._tables: List[EntityTable] = []
+        self._empty: Optional[EmptyState] = None
+        self._prev_button: Optional[QPushButton] = None
+        self._next_button: Optional[QPushButton] = None
+        self._summary_label: Optional[QLabel] = None
+        super().__init__(context, parent)
+
+    # -- UI 骨架（一次构建；内容在 refresh 中重建） ---------------------------
+
+    def _build_ui(self) -> None:
+        page_layout = QVBoxLayout(self)
+        page_layout.setContentsMargins(16, 14, 16, 14)
+        page_layout.setSpacing(0)
+
+        # 外层 stack 仅用于致命错误（无存档等）：此时不渲染周导航。
+        self._stack = QStackedWidget()
+        page_layout.addWidget(self._stack, 1)
+
+        main = QWidget()
+        self._main = main
+        main_layout = QVBoxLayout(main)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(10)
+
+        # 页头（第 N 周 · 阶段 + 上一周/下一周）常驻：休赛周空状态下仍可切换周次。
+        self._header_slot = QVBoxLayout()
+        self._header_slot.setContentsMargins(0, 0, 0, 0)
+        main_layout.addLayout(self._header_slot)
+
+        self._phase_label = QLabel("—")
+        self._phase_label.setObjectName("weeklyPhaseLabel")
+        self._phase_label.setStyleSheet("color: #7dd3fc; background: transparent; font-weight: 800;")
+        main_layout.addWidget(self._phase_label)
+
+        # 主体 stack：分组战报（唯一主滚动面）↔ 休赛周空状态。
+        self._body_stack = QStackedWidget()
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
-        scroll.setFrameShape(QScrollArea.NoFrame)
-        content = QWidget()
-        self.content_layout = QVBoxLayout(content)
-        self.content_layout.setContentsMargins(6, 6, 6, 6)
-        self.content_layout.setSpacing(16)
-        scroll.setWidget(content)
-        layout.addWidget(scroll)
+        scroll.setFrameShape(QFrame.NoFrame)
+        scroll.setObjectName("weeklyScroll")
+        self._groups_host = QWidget()
+        self._groups_layout = QVBoxLayout(self._groups_host)
+        self._groups_layout.setContentsMargins(0, 0, 0, 0)
+        self._groups_layout.setSpacing(12)
+        scroll.setWidget(self._groups_host)
+        self._scroll = scroll
+        self._body_stack.addWidget(scroll)
+        self._empty = EmptyState("第 1 周没有比赛", "", None)
+        self._body_stack.addWidget(self._empty)
+        main_layout.addWidget(self._body_stack, 1)
 
-        summary_grid = QGridLayout()
-        summary_grid.setSpacing(16)
-        self.week_card = build_metric_card("本周", "-", "最近一次已模拟周次。")
-        self.matches_card = build_metric_card("比赛", "-", "本周结算比赛数量。")
-        self.competitions_card = build_metric_card("赛事", "-", "本周涉及赛事类型。")
-        self.pending_card = build_metric_card("待办", "-", "模拟后需要处理的事项。")
-        summary_grid.addWidget(self.week_card, 0, 0)
-        summary_grid.addWidget(self.matches_card, 0, 1)
-        summary_grid.addWidget(self.competitions_card, 0, 2)
-        summary_grid.addWidget(self.pending_card, 0, 3)
-        self.content_layout.addLayout(summary_grid)
+        self._stack.addWidget(main)
+        self._fatal_empty = EmptyState(
+            "还没有可用的存档数据",
+            "当前存档还没有赛季数据。",
+            "请先在顶部选择存档，然后点击“初始化赛季”。",
+        )
+        self._stack.addWidget(self._fatal_empty)
 
-        actions = QHBoxLayout()
-        actions.setContentsMargins(0, 0, 0, 0)
-        self.open_matches_button = QPushButton("查看单场详细赛况")
-        self.open_matches_button.clicked.connect(self.open_matches_callback)
-        self.open_pending_button = QPushButton("处理待办事项")
-        self.open_pending_button.clicked.connect(self.open_pending_callback)
-        actions.addWidget(self.open_matches_button)
-        actions.addWidget(self.open_pending_button)
-        actions.addStretch(1)
-        self.content_layout.addLayout(actions)
+    def set_snapshot(self, snapshot: object) -> None:
+        """外壳 ``_refresh_views`` 的遗留兼容入口（阶段 5 集成后移除）。
 
-        self.headlines_panel = CardFrame("本周焦点")
-        self.headlines_label = QLabel("还没有可显示的战报。")
-        self.headlines_label.setWordWrap(True)
-        self.headlines_panel.body_layout.addWidget(self.headlines_label)
-        self.content_layout.addWidget(self.headlines_panel)
+        新契约页面不消费快照：数据全部由 ``apply_route``/``refresh`` 按路由
+        只读查询得到，这里刻意不做任何事，避免与路由刷新双写。
+        """
+        del snapshot
 
-        self.best_panel = CardFrame("本周最佳表现", "只基于本周已经生成的比赛数据计算，不影响评分、身价或存档。")
-        self.best_table = QTableWidget()
-        setup_table(self.best_table, ["类别", "名称", "说明"])
-        self.best_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-        self.best_table.horizontalHeader().setStretchLastSection(True)
-        self.best_panel.body_layout.addWidget(self.best_table)
-        self.content_layout.addWidget(self.best_panel)
+    # -- 数据刷新 -------------------------------------------------------------
 
-        self.premier_panel, self.premier_table = self._build_results_panel("一级联赛")
-        self.second_panel, self.second_table = self._build_results_panel("次级联赛")
-        self.cups_panel, self.cups_table = self._build_results_panel("杯赛")
-        self.playoff_panel, self.playoff_table = self._build_results_panel("升降级附加赛")
-        self.content_layout.addWidget(self.premier_panel)
-        self.content_layout.addWidget(self.second_panel)
-        self.content_layout.addWidget(self.cups_panel)
-        self.content_layout.addWidget(self.playoff_panel)
-
-        self.pending_panel = CardFrame("本周待办", "模拟后产生的审核、交易、选秀会集中在这里。")
-        self.pending_table = QTableWidget()
-        setup_table(self.pending_table, ["类型", "数量", "说明"])
-        self.pending_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-        self.pending_table.horizontalHeader().setStretchLastSection(True)
-        self.pending_panel.body_layout.addWidget(self.pending_table)
-        self.content_layout.addWidget(self.pending_panel)
-        self.content_layout.addStretch(1)
-
-    def _build_results_panel(self, title: str) -> tuple[CardFrame, QTableWidget]:
-        panel = CardFrame(title)
-        table = QTableWidget()
-        setup_table(table, ["赛事", "轮次", "主队", "比分", "客队", "事件"])
-        table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-        table.horizontalHeader().setStretchLastSection(True)
-        table.setMinimumHeight(180)
-        panel.body_layout.addWidget(table)
-        return panel, table
-
-    def set_snapshot(self, snapshot: SaveSnapshot | None) -> None:
-        self.snapshot = snapshot
-        for table in (
-            self.best_table,
-            self.premier_table,
-            self.second_table,
-            self.cups_table,
-            self.playoff_table,
-            self.pending_table,
-        ):
-            table.setRowCount(0)
-
-        if snapshot is None or not snapshot.simulated_weeks:
-            self._set_cards("-", "-", "-", "-")
-            self.headlines_label.setText("本赛季还没有已模拟周次。")
-            self.open_matches_button.setEnabled(False)
-            self.open_pending_button.setEnabled(False)
+    def refresh(self) -> None:
+        route = self.current_route()
+        if route is None or route.name != "weekly_report":
+            return
+        week = route.int_param("week") or 1
+        week = max(1, min(TOTAL_WEEKS, week))
+        self._week = week
+        navigate = getattr(self._context, "navigate", None)
+        try:
+            with base.open_read_connection(self.save_name()) as conn:
+                season = base.resolve_current_season(conn).season_number
+                matches = match_queries.list_matches(conn, season, week_number=week)
+        except base.MissingSaveError as exc:
+            self._show_fatal("还没有可用的存档数据", str(exc), "请先在顶部选择存档，然后点击“初始化赛季”。")
+            return
+        except Exception as exc:  # 查询层异常统一进空状态
+            self._show_fatal("暂时无法加载周报数据", str(exc), None)
             return
 
-        week_data = snapshot.simulated_weeks[-1]
-        sections = {
-            "premier_matchdays": self.premier_table,
-            "second_matchdays": self.second_table,
-            "cup_matchdays": self.cups_table,
-            "playoff_matchdays": self.playoff_table,
-        }
-
-        match_count = 0
-        competitions = set()
-        headlines: list[str] = []
-        biggest_win: tuple[int, str] | None = None
-        highest_scoring: tuple[int, str] | None = None
-        top_team: tuple[int, int, str, str] | None = None
-        top_player: tuple[int, str, str, str] | None = None
-        upset_line: str | None = None
-        rank_lookup = self._rank_lookup(snapshot)
-        player_lookup = {row.player.player_id: row.player for row in snapshot.player_stats}
-
-        for key, table in sections.items():
-            for matchday in week_data.get(key, []):
-                competition = matchday.get("competition", "赛事")
-                competitions.add(competition)
-                round_number = matchday.get("round_number", "-")
-                for result in matchday.get("results", []):
-                    match_count += 1
-                    home_goals = int(result["home_goals"])
-                    away_goals = int(result["away_goals"])
-                    total_goals = home_goals + away_goals
-                    margin = abs(home_goals - away_goals)
-                    score = f"{home_goals}-{away_goals}"
-                    line = f"{result['home_team']} {score} {result['away_team']}"
-                    event_count = len(result.get("key_events", []))
-                    set_table_row(
-                        table,
-                        table.rowCount(),
-                        [
-                            competition,
-                            str(round_number),
-                            result["home_team"],
-                            score,
-                            result["away_team"],
-                            str(event_count),
-                        ],
-                    )
-                    if biggest_win is None or margin > biggest_win[0]:
-                        biggest_win = (margin, line)
-                    if highest_scoring is None or total_goals > highest_scoring[0]:
-                        highest_scoring = (total_goals, line)
-                    winning_team = None
-                    if home_goals > away_goals:
-                        winning_team = result["home_team"]
-                        losing_team = result["away_team"]
-                    elif away_goals > home_goals:
-                        winning_team = result["away_team"]
-                        losing_team = result["home_team"]
-                    else:
-                        losing_team = None
-                    if winning_team:
-                        team_score = margin * 10 + total_goals
-                        if top_team is None or (team_score, total_goals) > (top_team[0], top_team[1]):
-                            top_team = (
-                                team_score,
-                                total_goals,
-                                winning_team,
-                                f"{line}，净胜 {margin} 球",
-                            )
-                        winner_rank = rank_lookup.get(winning_team)
-                        loser_rank = rank_lookup.get(losing_team) if losing_team else None
-                        if (
-                            winner_rank is not None
-                            and loser_rank is not None
-                            and winner_rank > loser_rank + 4
-                            and upset_line is None
-                        ):
-                            upset_line = f"{winning_team} 击败排名更高的 {losing_team}。"
-
-                    for player_id, delta in result.get("player_stats", {}).items():
-                        player = player_lookup.get(player_id)
-                        player_score = (
-                            int(delta.get("goals", 0)) * 8
-                            + int(delta.get("assists", 0)) * 5
-                            + int(delta.get("chances_created", 0)) * 2
-                            + int(delta.get("successful_defenses", 0)) * 2
-                            + int(delta.get("successful_saves", 0))
-                            + int(delta.get("clean_sheets", 0)) * 4
-                        )
-                        if player_score <= 0:
-                            continue
-                        label = player.label if player else player_id
-                        position = player.position if player else "-"
-                        note = (
-                            f"{position} | 进 {delta.get('goals', 0)} 助 {delta.get('assists', 0)} "
-                            f"创 {delta.get('chances_created', 0)} 防 {delta.get('successful_defenses', 0)} "
-                            f"扑 {delta.get('successful_saves', 0)} 零 {delta.get('clean_sheets', 0)}"
-                        )
-                        if top_player is None or player_score > top_player[0]:
-                            top_player = (player_score, label, position, note)
-
-        pending_rows = self._pending_rows(snapshot)
-        for row in pending_rows:
-            set_table_row(self.pending_table, self.pending_table.rowCount(), row)
-
-        self._set_cards(
-            f"第 {week_data['week_number']} 周",
-            str(match_count),
-            str(len(competitions)),
-            str(sum(int(row[1]) for row in pending_rows)),
+        self._season = season
+        self._phase_text = (
+            _WEEK_CALENDAR[week - 1].label if 1 <= week <= len(_WEEK_CALENDAR) else "赛季已结束"
         )
-        self.open_matches_button.setEnabled(match_count > 0)
-        self.open_pending_button.setEnabled(bool(pending_rows))
+        self._render_header(navigate)
+        if matches:
+            self._render_groups(matches, navigate)
+            self._body_stack.setCurrentWidget(self._scroll)
+        else:
+            self._clear_groups()
+            title, description, hint = self._empty_texts(week)
+            self._show_body_empty(title, description, hint)
 
-        headlines.append(f"{week_data['label']}")
-        if highest_scoring is not None:
-            headlines.append(f"进球最多：{highest_scoring[1]}，共 {highest_scoring[0]} 球。")
-        if biggest_win is not None and biggest_win[0] > 0:
-            headlines.append(f"最大分差：{biggest_win[1]}，净胜 {biggest_win[0]} 球。")
-        if upset_line:
-            headlines.append(f"冷门提醒：{upset_line}")
-        if pending_rows:
-            headlines.append("本周产生了新的待处理事项。")
-        self.headlines_label.setText("\n".join(headlines))
+    def route_context(self) -> dict:
+        return {"week": self._week}
 
-        if top_team is not None:
-            set_table_row(self.best_table, self.best_table.rowCount(), ["最佳球队", top_team[2], top_team[3]])
-        if top_player is not None:
-            set_table_row(self.best_table, self.best_table.rowCount(), ["最佳球员", top_player[1], top_player[3]])
-            color_position_items(self.best_table, 2)
-        if self.best_table.rowCount() == 0:
-            set_table_row(self.best_table, 0, ["暂无", "-", "这一周没有足够的比赛数据。"])
+    # -- 顶部：页头 + 上一周/下一周 -------------------------------------------
 
-    def _pending_rows(self, snapshot: SaveSnapshot) -> list[list[str]]:
-        rows: list[list[str]] = []
-        if snapshot.pending_ability_review:
-            rows.append(["能力变动", str(len(snapshot.pending_ability_review)), "赛季末球员能力调整等待审核"])
-        if snapshot.pending_transfer_review:
-            rows.append(["转会审核", str(len(snapshot.pending_transfer_review)), "窗口期交易提案等待处理"])
-        if snapshot.pending_draft.get("status") == "awaiting_input":
-            rows.append(["选秀", "1", "赛季结束，等待录入新秀名单"])
-        return rows
+    def _render_header(self, navigate) -> None:
+        _clear_layout(self._header_slot)
+        actions = QWidget()
+        actions_layout = QHBoxLayout(actions)
+        actions_layout.setContentsMargins(0, 0, 0, 0)
+        actions_layout.setSpacing(8)
 
-    def _set_cards(self, week: str, matches: str, competitions: str, pending: str) -> None:
-        self.week_card.value_label.setText(week)  # type: ignore[attr-defined]
-        self.matches_card.value_label.setText(matches)  # type: ignore[attr-defined]
-        self.competitions_card.value_label.setText(competitions)  # type: ignore[attr-defined]
-        self.pending_card.value_label.setText(pending)  # type: ignore[attr-defined]
+        self._prev_button = QPushButton("← 上一周")
+        self._prev_button.setObjectName("weeklyPrevButton")
+        self._prev_button.setEnabled(self._week > 1)
+        self._prev_button.clicked.connect(self._go_prev_week)
+        self._next_button = QPushButton("下一周 →")
+        self._next_button.setObjectName("weeklyNextButton")
+        self._next_button.setEnabled(self._week < TOTAL_WEEKS)
+        self._next_button.clicked.connect(self._go_next_week)
+        actions_layout.addWidget(self._prev_button)
+        actions_layout.addWidget(self._next_button)
 
-    def _rank_lookup(self, snapshot: SaveSnapshot) -> dict[str, int]:
-        lookup: dict[str, int] = {}
-        for rows in (snapshot.premier_table, snapshot.second_table):
-            for index, row in enumerate(rows, start=1):
-                lookup[row.team.name] = index
-        return lookup
+        header = PageHeader(
+            f"第 {self._week} 周战报",
+            breadcrumbs=navigation.breadcrumbs(Route("weekly_report", week=self._week)),
+            actions=[actions],
+        )
+        self._header_slot.addWidget(header)
+        self._phase_label.setText(f"第 {self._week} 周 · {self._phase_text}")
+
+    def _go_prev_week(self) -> None:
+        if self._week > 1:
+            self.navigate(Route("weekly_report", week=self._week - 1))
+
+    def _go_next_week(self) -> None:
+        if self._week < TOTAL_WEEKS:
+            self.navigate(Route("weekly_report", week=self._week + 1))
+
+    # -- 主体：赛事分组完整 EntityTable -----------------------------------------
+
+    def _clear_groups(self) -> None:
+        _clear_layout(self._groups_layout)
+        self._tables = []
+
+    def _render_groups(self, matches, navigate) -> None:
+        _clear_layout(self._groups_layout)
+        self._tables = []
+        by_competition = {competition: [] for competition in _GROUP_ORDER}
+        for row in matches:
+            by_competition.setdefault(row.competition, []).append(row)
+
+        total_count = len(matches)
+        group_count = 0
+        for competition in _GROUP_ORDER:
+            rows = by_competition.get(competition) or []
+            if not rows:
+                continue
+            group_count += 1
+            self._groups_layout.addWidget(self._build_group(competition, rows, navigate))
+
+        # 摘要行放在分组内容的最上方（每次刷新重建，避免引用已删除控件）。
+        summary = QLabel(f"共 {total_count} 场 · {group_count} 项赛事")
+        summary.setObjectName("weeklySummaryLabel")
+        summary.setStyleSheet("color: #7dd3fc; background: transparent; font-weight: 800;")
+        self._summary_label = summary
+        self._groups_layout.insertWidget(0, summary)
+        self._groups_layout.addStretch(1)
+
+    def _build_group(self, competition: str, rows: List[match_queries.MatchRow], navigate) -> QWidget:
+        frame = QFrame()
+        frame.setObjectName("cardFrame")
+        layout = QVBoxLayout(frame)
+        layout.setContentsMargins(12, 10, 12, 10)
+        layout.setSpacing(8)
+        title = QLabel(f"{competition}（{len(rows)} 场）")
+        title.setStyleSheet("font-size: 16px; font-weight: 800; background: transparent; color: #f8fbff;")
+        layout.addWidget(title)
+
+        table = EntityTable(_MATCH_COLUMNS, navigator=navigate)
+        table.view.verticalHeader().setDefaultSectionSize(_ROW_HEIGHT)
+        dtos = [_weekly_row(row) for row in rows]
+        table.set_rows(dtos, route_for_row=lambda row: Route("match", match=row.match_id))
+        # 完整展开：固定高度 = 表头 + 行数 × 行高 + 缓冲，纵向滚动条永不激活。
+        header_height = table.view.horizontalHeader().sizeHint().height()
+        table.setFixedHeight(header_height + len(rows) * _ROW_HEIGHT + _TABLE_HEIGHT_BUFFER)
+        self._tables.append(table)
+        layout.addWidget(table)
+        return frame
+
+    # -- 空状态 -----------------------------------------------------------------
+
+    def _empty_texts(self, week: int):
+        label = (
+            _WEEK_CALENDAR[week - 1].label if 1 <= week <= len(_WEEK_CALENDAR) else "休赛期"
+        )
+        if label in ("冬窗休赛期", "夏窗休赛期"):
+            return (
+                f"第 {week} 周为休赛周（冬窗/夏窗）",
+                f"第 {week} 周（{label}）没有安排任何比赛。",
+                "可以使用右上角的“上一周 / 下一周”切换到有比赛的周次。",
+            )
+        return (
+            f"第 {week} 周没有比赛",
+            f"第 {week} 周（{label}）没有安排任何比赛。",
+            "可以使用右上角的“上一周 / 下一周”切换到有比赛的周次。",
+        )
+
+    def _show_body_empty(self, title: str, description: str, hint: Optional[str]) -> None:
+        """休赛周/无比赛周空状态：保留页头与上一周/下一周导航。"""
+        assert self._empty is not None
+        old = self._empty
+        replacement = EmptyState(title, description, hint)
+        self._body_stack.addWidget(replacement)
+        self._body_stack.setCurrentWidget(replacement)
+        self._empty = replacement
+        if old is not None and old is not replacement:
+            self._body_stack.removeWidget(old)
+            old.deleteLater()
+
+    def _show_fatal(self, title: str, description: str, hint: Optional[str]) -> None:
+        """致命错误（无存档等）：整页替换，不渲染周导航。"""
+        assert self._fatal_empty is not None
+        old = self._fatal_empty
+        replacement = EmptyState(title, description, hint)
+        self._stack.addWidget(replacement)
+        self._stack.setCurrentWidget(replacement)
+        self._fatal_empty = replacement
+        if old is not None and old is not replacement:
+            self._stack.removeWidget(old)
+            old.deleteLater()

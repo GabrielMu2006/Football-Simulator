@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 
 .venv/
+.venv-ui-v2/
 .tools/
 .pyinstaller-config*/
 

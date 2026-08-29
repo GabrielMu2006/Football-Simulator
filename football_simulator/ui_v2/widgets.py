@@ -191,7 +191,7 @@ def make_two_column_info(rows: Iterable[tuple[str, str]]) -> QWidget:
     return wrapper
 
 
-def setup_table(table: QTableWidget, headers: list[str]) -> None:
+def setup_table(table: QTableWidget, headers: list[str], row_height: int = 40) -> None:
     table.setColumnCount(len(headers))
     table.setHorizontalHeaderLabels(headers)
     table.verticalHeader().setVisible(False)
@@ -201,7 +201,7 @@ def setup_table(table: QTableWidget, headers: list[str]) -> None:
     table.setEditTriggers(QTableWidget.NoEditTriggers)
     table.setWordWrap(False)
     table.setSortingEnabled(False)
-    table.verticalHeader().setDefaultSectionSize(34)
+    table.verticalHeader().setDefaultSectionSize(row_height)
     table.setShowGrid(False)
 
 

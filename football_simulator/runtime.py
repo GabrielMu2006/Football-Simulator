@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import shutil
 import sys
 from pathlib import Path
@@ -11,6 +12,16 @@ SHARED_CONFIG_FILE_NAME = "足球模拟器总配置.json"
 ALTERNATE_SHARED_CONFIG_FILE_NAMES = ("football_simulator_config.json",)
 SAVE_CONFIG_FILE_NAME = "config.json"
 CURRENT_SAVE_FILE_NAME = "current_save.txt"
+
+# 存档名白名单：中文、字母、数字、空格、下划线、连字符，1–64 个字符，
+# 首字符不能是空格或连字符。任何路径分隔符、盘符、控制字符、点号开头的
+# 形式都会被拒绝；这同时保证了存档目录一定是 save_root 的直接子目录。
+_SAVE_NAME_PATTERN = re.compile(r"^[0-9A-Za-z_\u4e00-\u9fff][0-9A-Za-z_\-\u4e00-\u9fff ]{0,63}$")
+_WINDOWS_RESERVED_DEVICE_NAMES = {
+    "CON", "PRN", "AUX", "NUL",
+    *(f"COM{index}" for index in range(1, 10)),
+    *(f"LPT{index}" for index in range(1, 10)),
+}
 
 
 def resource_root() -> Path:
@@ -79,7 +90,20 @@ def sibling_shared_config_path() -> Optional[Path]:
     return app_bundle.parent / SHARED_CONFIG_FILE_NAME
 
 
+# 测试专用：重定向存档根目录（传 None 恢复默认位置）。生产代码不得调用。
+_SAVE_ROOT_OVERRIDE: Optional[Path] = None
+
+
+def set_save_root_override(path: Optional[Path]) -> None:
+    global _SAVE_ROOT_OVERRIDE
+    _SAVE_ROOT_OVERRIDE = Path(path).resolve() if path is not None else None
+
+
 def save_root() -> Path:
+    if _SAVE_ROOT_OVERRIDE is not None:
+        root = _SAVE_ROOT_OVERRIDE
+        root.mkdir(parents=True, exist_ok=True)
+        return root
     if getattr(sys, "frozen", False):
         root = user_data_root() / "saves"
         root.mkdir(parents=True, exist_ok=True)
@@ -106,9 +130,18 @@ def create_save_directory(save_name: str) -> Path:
 
 def delete_save_directory(save_name: str) -> None:
     normalized_name = normalize_save_name(save_name)
-    path = save_root() / normalized_name
-    if not path.exists():
+    root = save_root().resolve()
+    path = root / normalized_name
+    if not path.exists() and not path.is_symlink():
         raise FileNotFoundError(f"未找到存档 '{normalized_name}'。")
+    # 先检查符号链接再做 resolve 包含性判断，防止借链接越出存档根目录删除。
+    if path.is_symlink():
+        raise ValueError("存档路径不能是符号链接。")
+    resolved = path.resolve()
+    if resolved == root:
+        raise ValueError("不能删除存档根目录本身。")
+    if resolved.parent != root:
+        raise ValueError("只能删除存档根目录下的直接子目录。")
     shutil.rmtree(path)
 
 
@@ -166,8 +199,11 @@ def normalize_save_name(save_name: str) -> str:
     normalized_name = save_name.strip()
     if not normalized_name:
         raise ValueError("存档名不能为空。")
-    if normalized_name in {".", ".."} or "/" in normalized_name:
-        raise ValueError("存档名不能包含路径分隔符。")
+    if not _SAVE_NAME_PATTERN.fullmatch(normalized_name):
+        raise ValueError("存档名只能由中文、字母或数字开头，并仅包含中文、字母、数字、空格、下划线和连字符（1–64 字符）。")
+    stem = normalized_name.split(".")[0].upper()
+    if stem in _WINDOWS_RESERVED_DEVICE_NAMES:
+        raise ValueError("存档名不能使用系统保留设备名。")
     return normalized_name
 
 

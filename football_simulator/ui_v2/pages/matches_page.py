@@ -1,352 +1,381 @@
+"""比赛中心列表页（阶段 4，实施方案 §8.7 比赛列表）。
+
+Route：``Route("matches", season=<赛季号>, competition=<赛事名可选>, week=<周次可选>)``。
+
+布局与滚动（§8.2 硬规则）：
+- 全高 ``EntityTable`` 主表是本页唯一纵向滚动面，占满剩余高度，外层不套
+  ``QScrollArea``；已赛与未赛比赛统一完整呈现，不做"当周前 12 条"截断。
+- 行激活（双击 / 键盘 Enter）→ ``Route("match", match=<match_id>)``：已赛进
+  赛后报告、未赛进赛前页（同一个稳定 match_id 实体页）。
+
+筛选与状态保留（§7.3 / 任务规格明示的选择）：
+- 路由参数优先：``season`` 必填；路由显式携带 ``competition``/``week`` 时以
+  路由为准；无显式参数时恢复页面保存状态（``save_state``）。
+- 赛季下拉变化 → ``navigate`` 新路由（并保留当前具体的赛事/周次参数）：
+  ``season`` 是路由必填参数，若只改页面状态，后退/前进返回时会按"路由参数
+  优先"被旧 ``season`` 覆盖，无法保证"回来时筛选与列表一致"，因此切赛季必须
+  产生新路由。
+- 赛事/周次变化 → 只 ``save_state`` 并重查，不 ``navigate``（避免每次改筛选
+  都污染后退/前进历史；无显式参数的路由返回时恢复这些筛选）。
+- 状态筛选（已赛/未赛）不进路由（路由 schema 无该参数），仅存页面状态；切换
+  赛季产生新路由键时回到"全部状态"。
+
+旧版信息能力对照（整体重写，不丢失信息）：周次/赛事选择 → 筛选条下拉；
+"比赛场数/赛事类型/当前焦点"指标卡 → 表格上方摘要行；"当周比赛列表 + 查看
+完整比赛列表" → 全量主表；"比赛详情面板 + 查看主队/客队 + 完整事件/完整球员
+数据" → 比赛详情页（``Route("match", ...)``，球队/球员以链接跳转）。
+"""
+
 from __future__ import annotations
 
-from typing import Callable
+from dataclasses import dataclass
+from typing import List, Optional
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
-    QHBoxLayout,
     QComboBox,
-    QGridLayout,
-    QHeaderView,
     QLabel,
-    QPushButton,
-    QTableWidget,
-    QTextEdit,
+    QStackedWidget,
     QVBoxLayout,
     QWidget,
 )
 
-from football_simulator.state import SaveSnapshot
-from football_simulator.ui_v2.widgets import CardFrame, build_metric_card, color_position_items, set_table_row, setup_table
+from football_simulator.queries import base
+from football_simulator.queries import match_queries
+from football_simulator.ui_v2.components import (
+    TEXT_COLOR_MUTED,
+    ColumnSpec,
+    EmptyState,
+    EntityTable,
+    FilterBar,
+    PageHeader,
+)
+from football_simulator.ui_v2.navigation import Route
+from football_simulator.ui_v2.pages.entity_page_base import EntityPageBase, PageContext
+
+_ALL_COMPETITION = "全部赛事"
+_ALL_WEEK = "全部周次"
+_ALL_STATUS = "全部状态"
+_STATUS_OPTIONS = (_ALL_STATUS, "已赛", "未赛")
+_STATUS_QUERY = {
+    "已赛": base.MATCH_STATUS_COMPLETED,
+    "未赛": base.MATCH_STATUS_SCHEDULED,
+}
+_MIN_WEEK, _MAX_WEEK = 1, 52
+
+_LIST_COLUMNS = (
+    ColumnSpec("week_text", "周", width=92),
+    ColumnSpec("competition", "赛事", width=118),
+    ColumnSpec("round_text", "轮次", width=92, alignment=Qt.AlignmentFlag.AlignRight),
+    ColumnSpec("home_name", "主队", width=190),
+    ColumnSpec("score_text", "比分/未赛", width=104, alignment=Qt.AlignmentFlag.AlignCenter),
+    ColumnSpec("away_name", "客队", width=190),
+    ColumnSpec("result_text", "结果", width=84, alignment=Qt.AlignmentFlag.AlignCenter),
+)
+
+_MUTED_STYLE = f"color: {TEXT_COLOR_MUTED}; background: transparent;"
 
 
-class MatchCenterPage(QWidget):
-    def __init__(
-        self,
-        open_team_callback: Callable[[str], None],
-        open_player_callback: Callable[[str | None, str | None], None],
-    ) -> None:
-        super().__init__()
-        self.snapshot: SaveSnapshot | None = None
-        self.open_team_callback = open_team_callback
-        self.open_player_callback = open_player_callback
-        self._current_week_data: dict | None = None
-        self._all_match_records: list[dict] = []
-        self._match_records: list[dict] = []
-        self._current_result: dict | None = None
+@dataclass(frozen=True)
+class _ListRow:
+    """列表行视图模型；未赛比赛比分/结果列显示"未赛"，不虚构数据。"""
 
+    match_id: str
+    week_text: str
+    competition: str
+    round_text: str
+    home_name: str
+    score_text: str
+    away_name: str
+    result_text: str
+
+
+def _to_list_row(source: match_queries.MatchRow) -> _ListRow:
+    home_goals = source.home_goals
+    away_goals = source.away_goals
+    if source.is_completed and home_goals is not None and away_goals is not None:
+        score_text = f"{home_goals}-{away_goals}"
+        if home_goals > away_goals:
+            result_text = "胜"
+        elif home_goals == away_goals:
+            result_text = "平"
+        else:
+            result_text = "负"
+    else:
+        score_text = "未赛"
+        result_text = "未赛"
+    return _ListRow(
+        match_id=source.match_id,
+        week_text=f"第 {source.week_number} 周",
+        competition=source.competition,
+        round_text=f"第 {source.round_number} 轮",
+        home_name=source.home.display_name,
+        score_text=score_text,
+        away_name=source.away.display_name,
+        result_text=result_text,
+    )
+
+
+class MatchCenterPage(EntityPageBase):
+    """比赛中心：全高主表 + 赛季 / 赛事 / 周次 / 状态筛选。"""
+
+    def __init__(self, context: PageContext, parent: Optional[QWidget] = None) -> None:
+        self._season: Optional[int] = None
+        self._rows: List[_ListRow] = []
+        self._empty_state: Optional[EmptyState] = None
+        super().__init__(context, parent)
+
+    # -- UI 构建（一次构建；内容在 refresh 中重建） ---------------------------
+
+    def _build_ui(self) -> None:
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(16)
+        layout.setContentsMargins(16, 14, 16, 14)
+        layout.setSpacing(12)
 
-        summary_grid = QGridLayout()
-        summary_grid.setSpacing(16)
-        self.week_card = build_metric_card("查看周次", "-", "选择一周后查看该周所有比赛。")
-        self.match_count_card = build_metric_card("比赛场数", "-", "该周共结算的比赛数量。")
-        self.competition_card = build_metric_card("赛事类型", "-", "该周涉及的赛事种类。")
-        self.focus_card = build_metric_card("当前焦点", "-", "选中比赛后显示当前对阵。")
-        summary_grid.addWidget(self.week_card, 0, 0)
-        summary_grid.addWidget(self.match_count_card, 0, 1)
-        summary_grid.addWidget(self.competition_card, 0, 2)
-        summary_grid.addWidget(self.focus_card, 0, 3)
-        layout.addLayout(summary_grid)
+        self._header = PageHeader("比赛中心", navigator=self._context.navigate)
+        layout.addWidget(self._header)
 
-        controls = CardFrame("周次选择", "支持回看任意已模拟周次，并查看单场详细事件。")
-        self.week_picker = QComboBox()
-        self.week_picker.currentIndexChanged.connect(self._on_week_changed)
-        self.competition_filter = QComboBox()
-        self.competition_filter.currentIndexChanged.connect(self._apply_match_filter)
-        controls.body_layout.addWidget(self.week_picker)
-        controls.body_layout.addWidget(self.competition_filter)
-        layout.addWidget(controls)
-
-        content_grid = QGridLayout()
-        content_grid.setSpacing(16)
-
-        self.matches_panel = CardFrame("当周比赛列表", "先选一场比赛，再在右侧查看详细事件和球员数据。")
-        self.matches_table = QTableWidget()
-        setup_table(self.matches_table, ["编号", "赛事", "轮次", "主队", "比分", "客队"])
-        self.matches_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-        self.matches_table.horizontalHeader().setStretchLastSection(True)
-        self.matches_table.itemSelectionChanged.connect(self._on_match_selected)
-        self.matches_panel.body_layout.addWidget(self.matches_table)
-        content_grid.addWidget(self.matches_panel, 0, 0)
-
-        self.detail_panel = CardFrame("比赛详情", "这里会展示关键事件和这场比赛里产生的数据。")
-        self.detail_title = QLabel("还没有选中比赛。")
-        self.detail_title.setStyleSheet("font-size: 18px; font-weight: 700; color: #f8fbff;")
-        detail_actions = QHBoxLayout()
-        detail_actions.setContentsMargins(0, 0, 0, 0)
-        self.open_home_team_button = QPushButton("查看主队")
-        self.open_away_team_button = QPushButton("查看客队")
-        self.open_home_team_button.clicked.connect(lambda: self._open_current_team("home"))
-        self.open_away_team_button.clicked.connect(lambda: self._open_current_team("away"))
-        detail_actions.addWidget(self.open_home_team_button)
-        detail_actions.addWidget(self.open_away_team_button)
-        detail_actions.addStretch(1)
-        self.events_text = QTextEdit()
-        self.events_text.setReadOnly(True)
-        self.player_stats_table = QTableWidget()
-        setup_table(self.player_stats_table, ["球员", "位置", "进", "助", "机", "防", "扑", "零"])
-        self.player_stats_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-        self.player_stats_table.horizontalHeader().setStretchLastSection(True)
-        self.player_stats_table.itemDoubleClicked.connect(self._open_selected_player)
-        self.detail_panel.body_layout.addWidget(self.detail_title)
-        self.detail_panel.body_layout.addLayout(detail_actions)
-        self.detail_panel.body_layout.addWidget(self.events_text)
-        self.detail_panel.body_layout.addWidget(self.player_stats_table)
-        content_grid.addWidget(self.detail_panel, 0, 1)
-
-        layout.addLayout(content_grid, 1)
-
-    def set_snapshot(self, snapshot: SaveSnapshot | None) -> None:
-        previous_week_label = self.week_picker.currentData(Qt.UserRole)
-        self.snapshot = snapshot
-        self.week_picker.blockSignals(True)
-        self.week_picker.clear()
-        self.week_picker.blockSignals(False)
-        self.matches_table.setRowCount(0)
-        self.player_stats_table.setRowCount(0)
-        self.events_text.setPlainText("")
-        self.detail_title.setText("还没有选中比赛。")
-        self.open_home_team_button.setEnabled(False)
-        self.open_away_team_button.setEnabled(False)
-        self._match_records = []
-        self._all_match_records = []
-        self._current_week_data = None
-        self._current_result = None
-        self.competition_filter.blockSignals(True)
-        self.competition_filter.clear()
-        self.competition_filter.addItem("全部赛事")
-        self.competition_filter.blockSignals(False)
-
-        if snapshot is None or not snapshot.simulated_weeks:
-            self._set_summary("-", "-", "-", "-")
-            self.events_text.setPlainText("当前还没有可查看的已模拟比赛。")
-            return
-
-        for week_data in snapshot.simulated_weeks:
-            label = f"第 {week_data['week_number']} 周 | {week_data['label']}"
-            self.week_picker.addItem(label, week_data["week_number"])
-
-        target_index = self._latest_match_week_index()
-        if previous_week_label is not None:
-            for index in range(self.week_picker.count()):
-                if self.week_picker.itemData(index, Qt.UserRole) == previous_week_label:
-                    target_index = index
-                    break
-        self.week_picker.setCurrentIndex(target_index)
-        self._load_selected_week()
-
-    def focus_latest_week(self) -> None:
-        target_index = self._latest_match_week_index()
-        if target_index >= 0:
-            self.week_picker.setCurrentIndex(target_index)
-            self._load_selected_week()
-
-    def _on_week_changed(self) -> None:
-        self._load_selected_week()
-
-    def _load_selected_week(self) -> None:
-        if self.snapshot is None or self.week_picker.currentIndex() < 0:
-            return
-        week_number = self.week_picker.currentData(Qt.UserRole)
-        week_data = next(
-            (item for item in self.snapshot.simulated_weeks if item.get("week_number") == week_number),
-            None,
+        self._filter_bar = FilterBar()
+        self._season_combo = self._filter_bar.add_combo("赛季", [], "matchesSeasonCombo")
+        self._competition_combo = self._filter_bar.add_combo(
+            "赛事", [_ALL_COMPETITION, *base.ALL_COMPETITIONS], "matchesCompetitionCombo"
         )
-        self._current_week_data = week_data
-        self.matches_table.setRowCount(0)
-        self.player_stats_table.setRowCount(0)
-        self.events_text.setPlainText("")
-        self.detail_title.setText("还没有选中比赛。")
-        self.open_home_team_button.setEnabled(False)
-        self.open_away_team_button.setEnabled(False)
-        self._match_records = []
-        self._all_match_records = []
-        self._current_result = None
+        self._week_combo = self._filter_bar.add_combo("周次", [_ALL_WEEK], "matchesWeekCombo")
+        for week in range(_MIN_WEEK, _MAX_WEEK + 1):
+            self._week_combo.addItem(f"第 {week} 周", week)
+        self._status_combo = self._filter_bar.add_combo(
+            "状态", list(_STATUS_OPTIONS), "matchesStatusCombo"
+        )
+        self._season_combo.currentIndexChanged.connect(self._on_season_changed)
+        self._competition_combo.currentIndexChanged.connect(self._on_filters_changed)
+        self._week_combo.currentIndexChanged.connect(self._on_filters_changed)
+        self._status_combo.currentIndexChanged.connect(self._on_filters_changed)
+        layout.addWidget(self._filter_bar)
 
-        if week_data is None:
-            self._set_summary("-", "-", "-", "-")
+        self._summary_label = QLabel("")
+        self._summary_label.setStyleSheet(_MUTED_STYLE)
+        layout.addWidget(self._summary_label)
+
+        self._table = EntityTable(_LIST_COLUMNS, navigator=self._context.navigate)
+        # 结果列口径：主队视角（胜=主队胜、负=客队胜）。
+        self._table.view.horizontalHeader().setToolTip(
+            "结果列为主队视角：胜=主队胜，平=平局，负=客队胜；未赛=比赛尚未进行。"
+        )
+        table_page = QWidget()
+        table_layout = QVBoxLayout(table_page)
+        table_layout.setContentsMargins(0, 0, 0, 0)
+        table_layout.addWidget(self._table)
+        self._stack = QStackedWidget()
+        self._stack.addWidget(table_page)
+        layout.addWidget(self._stack, 1)
+        self._show_empty("暂无比赛数据", "当前存档还没有比赛数据。请先初始化存档并推进赛程。")
+
+    # -- 数据刷新 -----------------------------------------------------------
+
+    def refresh(self) -> None:
+        """按路由参数与页面状态重建列表（幂等）。"""
+        route = self.current_route()
+        if route is None or route.name != "matches":
             return
+        state = self.stored_state()
+        try:
+            with base.open_read_connection(self.save_name()) as conn:
+                seasons = base.load_seasons(conn)
+                if not seasons:
+                    self._season = None
+                    self._show_empty("存档还没有任何赛季数据", "请先在“存档”页初始化存档并开启一个赛季。")
+                    return
+                season = route.int_param("season")
+                season_valid = season in {entry.season_number for entry in seasons}
+                competition = self._resolve_competition(route, state)
+                week = self._resolve_week(route, state)
+                status_raw = state.get("status")
+                status_text = status_raw if status_raw in _STATUS_OPTIONS else _ALL_STATUS
+                self._season = season
+                self._rebuild_season_combo(seasons, season if season_valid else None)
+                self._set_combo_text(self._competition_combo, competition)
+                self._set_week_combo(week)
+                self._set_combo_text(self._status_combo, status_text)
+                self._load_rows(conn, season, competition, week, status_text, season_valid)
+        except base.MissingSaveError:
+            self._season = None
+            self._show_empty(
+                "未初始化存档",
+                "当前还没有可用的存档数据库。请先在“存档”页新建或选择一个存档。",
+            )
 
-        competitions = set()
-        match_index = 1
-        for key in ("premier_matchdays", "second_matchdays", "cup_matchdays", "playoff_matchdays"):
-            for matchday in week_data.get(key, []):
-                competition = matchday.get("competition", "赛事")
-                competitions.add(competition)
-                round_number = matchday.get("round_number", "-")
-                for result in matchday.get("results", []):
-                    record = {
-                        "competition": competition,
-                        "round_number": round_number,
-                        "result": result,
-                    }
-                    self._all_match_records.append(record)
-                    match_index += 1
+    def route_context(self) -> dict:
+        if self._season is None:
+            return {}
+        context: dict = {"season": int(self._season)}
+        competition = self._competition_combo.currentText()
+        if competition != _ALL_COMPETITION:
+            context["competition_name"] = competition
+        week = self._current_week()
+        if week is not None:
+            context["week"] = week
+        return context
 
-        self.competition_filter.blockSignals(True)
-        self.competition_filter.clear()
-        self.competition_filter.addItem("全部赛事")
-        for competition in sorted(competitions):
-            self.competition_filter.addItem(competition)
-        self.competition_filter.blockSignals(False)
-        self._apply_match_filter()
+    # -- 路由参数 / 页面状态的筛选解析 ---------------------------------------
 
-    def _apply_match_filter(self) -> None:
-        self.matches_table.setRowCount(0)
-        self.player_stats_table.setRowCount(0)
-        self.events_text.setPlainText("")
-        self.detail_title.setText("还没有选中比赛。")
-        self.open_home_team_button.setEnabled(False)
-        self.open_away_team_button.setEnabled(False)
-        selected_competition = self.competition_filter.currentText()
-        if selected_competition and selected_competition != "全部赛事":
-            self._match_records = [
-                record for record in self._all_match_records if record["competition"] == selected_competition
-            ]
+    @staticmethod
+    def _resolve_competition(route: Route, state: dict) -> str:
+        if "competition" in route.params:
+            candidate = route.params.get("competition")
         else:
-            self._match_records = list(self._all_match_records)
+            candidate = state.get("competition")
+        if candidate in base.ALL_COMPETITIONS:
+            return str(candidate)
+        return _ALL_COMPETITION
 
-        competitions = {record["competition"] for record in self._match_records}
-        for match_index, record in enumerate(self._match_records, start=1):
-            result = record["result"]
-            set_table_row(
-                self.matches_table,
-                self.matches_table.rowCount(),
-                [
-                    str(match_index),
-                    record["competition"],
-                    str(record["round_number"]),
-                    result["home_team"],
-                    f"{result['home_goals']}-{result['away_goals']}",
-                    result["away_team"],
-                ],
-            )
-
-        self._set_summary(
-            f"第 {self._current_week_data['week_number']} 周" if self._current_week_data else "-",
-            str(len(self._match_records)),
-            str(len(competitions)),
-            self._match_records[0]["competition"] if self._match_records else "-",
-        )
-
-        if self._match_records:
-            self.matches_table.selectRow(0)
-            self._on_match_selected()
+    @staticmethod
+    def _resolve_week(route: Route, state: dict) -> Optional[int]:
+        if "week" in route.params:
+            week = route.int_param("week")
         else:
-            self.events_text.setPlainText("当前筛选下没有已记录的比赛。")
+            raw = state.get("week")
+            try:
+                week = int(raw) if raw is not None else None  # type: ignore[arg-type]
+            except (TypeError, ValueError):
+                week = None
+        if week is not None and not _MIN_WEEK <= week <= _MAX_WEEK:
+            return None
+        return week
 
-    def _on_match_selected(self) -> None:
-        selected = self.matches_table.selectionModel().selectedRows()
-        if not selected or self.snapshot is None:
-            return
-        row_index = selected[0].row()
-        if row_index >= len(self._match_records):
-            return
-        record = self._match_records[row_index]
-        result = record["result"]
-        self._current_result = result
-        title = (
-            f"{record['competition']} | 第 {record['round_number']} 轮/回合 | "
-            f"{result['home_team']} {result['home_goals']}-{result['away_goals']} {result['away_team']}"
+    # -- 行加载与状态保存 ------------------------------------------------------
+
+    def _load_rows(
+        self,
+        conn,
+        season: int,
+        competition: str,
+        week: Optional[int],
+        status_text: str,
+        season_valid: bool = True,
+    ) -> None:
+        self.save_state(
+            {
+                "season": season,
+                "competition": competition,
+                "week": week,
+                "status": status_text,
+            }
         )
-        self.detail_title.setText(title)
-        self.focus_card.value_label.setText(f"{result['home_team']} vs {result['away_team']}")  # type: ignore[attr-defined]
-        self.open_home_team_button.setEnabled(True)
-        self.open_away_team_button.setEnabled(True)
-        events = result.get("key_events", [])
-        self.events_text.setPlainText("\n".join(events) if events else "这场比赛没有记录到关键事件。")
-
-        self.player_stats_table.setRowCount(0)
-        label_map = {row.player.player_id: row.player for row in self.snapshot.player_stats}
-        player_rows = []
-        for player_id, delta in result.get("player_stats", {}).items():
-            total = sum(
-                int(delta.get(field, 0))
-                for field in (
-                    "goals",
-                    "assists",
-                    "chances_created",
-                    "successful_defenses",
-                    "successful_saves",
-                    "clean_sheets",
-                )
-            )
-            if total <= 0:
-                continue
-            player = label_map.get(player_id)
-            player_rows.append(
-                (
-                    total,
-                    player_id,
-                    player.label if player else player_id,
-                    player.position if player else "-",
-                    delta,
-                )
-            )
-        player_rows.sort(key=lambda item: (-item[0], item[1]))
-        for _, player_id, label, position, delta in player_rows:
-            row_idx = self.player_stats_table.rowCount()
-            set_table_row(
-                self.player_stats_table,
-                row_idx,
-                [
-                    label,
-                    position,
-                    str(delta.get("goals", 0)),
-                    str(delta.get("assists", 0)),
-                    str(delta.get("chances_created", 0)),
-                    str(delta.get("successful_defenses", 0)),
-                    str(delta.get("successful_saves", 0)),
-                    str(delta.get("clean_sheets", 0)),
-                ],
-            )
-            self.player_stats_table.item(row_idx, 0).setData(Qt.UserRole, label)
-            self.player_stats_table.item(row_idx, 0).setData(Qt.UserRole + 1, player_id)
-        color_position_items(self.player_stats_table, 1)
-
-    def _set_summary(self, week: str, match_count: str, competition_count: str, focus: str) -> None:
-        self.week_card.value_label.setText(week)  # type: ignore[attr-defined]
-        self.match_count_card.value_label.setText(match_count)  # type: ignore[attr-defined]
-        self.competition_card.value_label.setText(competition_count)  # type: ignore[attr-defined]
-        self.focus_card.value_label.setText(focus)  # type: ignore[attr-defined]
-
-    def _latest_match_week_index(self) -> int:
-        for index in range(self.week_picker.count() - 1, -1, -1):
-            week_number = self.week_picker.itemData(index, Qt.UserRole)
-            if self.snapshot is not None:
-                week_data = next(
-                    (item for item in self.snapshot.simulated_weeks if item.get("week_number") == week_number),
-                    None,
-                )
-                if week_data and _week_has_matches(week_data):
-                    return index
-        return max(0, self.week_picker.count() - 1)
-
-    def _open_current_team(self, side: str) -> None:
-        if not self._current_result:
+        self._summary_label.setText("")
+        if not season_valid:
+            self._rows = []
+            self._show_empty("该赛季不存在", f"存档中不存在第 {season} 赛季。")
             return
-        team_name = self._current_result["home_team"] if side == "home" else self._current_result["away_team"]
-        self.open_team_callback(team_name)
-
-    def _open_selected_player(self, *_args) -> None:
-        selected = self.player_stats_table.selectionModel().selectedRows()
-        if not selected:
+        try:
+            source_rows = match_queries.list_matches(
+                conn,
+                int(season),
+                competition=None if competition == _ALL_COMPETITION else competition,
+                week_number=week,
+                status=_STATUS_QUERY.get(status_text),
+            )
+        except KeyError:
+            self._rows = []
+            self._show_empty("该赛季不存在", f"存档中不存在第 {season} 赛季。")
             return
-        item = self.player_stats_table.item(selected[0].row(), 0)
-        if item is None:
-            return
-        self.open_player_callback(
-            item.data(Qt.UserRole + 1),
-            item.data(Qt.UserRole),
+        self._rows = [_to_list_row(row) for row in source_rows]
+        completed_count = sum(1 for row in source_rows if row.is_completed)
+        self._summary_label.setText(
+            f"共 {len(source_rows)} 场 · 已赛 {completed_count} · 未赛 {len(source_rows) - completed_count}"
         )
+        if not self._rows:
+            self._show_empty(
+                "没有匹配的比赛",
+                "当前筛选条件下没有比赛，请调整赛季、赛事、周次或状态筛选后重试。",
+            )
+        else:
+            self._table.set_rows(self._rows, route_for_row=self._route_for_row)
+            self._stack.setCurrentWidget(self._table.parentWidget())
 
+    def _route_for_row(self, row: _ListRow):
+        return Route("match", match=row.match_id)
 
-def _week_has_matches(week_data: dict) -> bool:
-    for key in ("premier_matchdays", "second_matchdays", "cup_matchdays", "playoff_matchdays"):
-        for matchday in week_data.get(key, []):
-            if matchday.get("results"):
-                return True
-    return False
+    # -- 筛选交互 -------------------------------------------------------------
+
+    def _on_season_changed(self, index: int) -> None:
+        """切赛季 → navigate 新路由（保留当前具体赛事/周次），见模块说明。"""
+        data = self._season_combo.itemData(index)
+        if data is None or self._season is None:
+            return
+        season = int(data)
+        if season == self._season:
+            return
+        params = {"season": season}
+        competition = self._competition_combo.currentText()
+        if competition != _ALL_COMPETITION:
+            params["competition"] = competition
+        week = self._current_week()
+        if week is not None:
+            params["week"] = week
+        self.navigate(Route("matches", **params))
+
+    def _on_filters_changed(self, *_args) -> None:
+        """赛事/周次/状态变化：保存页面状态并重查，不产生历史栈条目。"""
+        if self._season is None:
+            return
+        try:
+            with base.open_read_connection(self.save_name()) as conn:
+                self._load_rows(
+                    conn,
+                    self._season,
+                    self._competition_combo.currentText(),
+                    self._current_week(),
+                    self._status_combo.currentText(),
+                )
+        except base.MissingSaveError:
+            self._show_empty(
+                "未初始化存档",
+                "当前还没有可用的存档数据库。请先在“存档”页新建或选择一个存档。",
+            )
+
+    # -- 组合框辅助 ------------------------------------------------------------
+
+    def _rebuild_season_combo(self, seasons, selected: Optional[int]) -> None:
+        combo = self._season_combo
+        combo.blockSignals(True)
+        combo.clear()
+        for season in seasons:
+            label = f"第 {season.season_number} 赛季"
+            if not season.is_completed:
+                label += "（进行中）"
+            combo.addItem(label, season.season_number)
+        index = combo.findData(selected) if selected is not None else -1
+        combo.setCurrentIndex(max(0, index))
+        combo.blockSignals(False)
+
+    def _set_combo_text(self, combo: QComboBox, text: str) -> None:
+        combo.blockSignals(True)
+        combo.setCurrentIndex(max(0, combo.findText(text)))
+        combo.blockSignals(False)
+
+    def _set_week_combo(self, week: Optional[int]) -> None:
+        combo = self._week_combo
+        combo.blockSignals(True)
+        index = 0 if week is None else combo.findData(int(week))
+        combo.setCurrentIndex(max(0, index))
+        combo.blockSignals(False)
+
+    def _current_week(self) -> Optional[int]:
+        index = self._week_combo.currentIndex()
+        if index <= 0:
+            return None
+        data = self._week_combo.itemData(index)
+        try:
+            return int(data)  # type: ignore[arg-type]
+        except (TypeError, ValueError):
+            return None
+
+    # -- 空状态 ----------------------------------------------------------------
+
+    def _show_empty(self, title: str, description: Optional[str] = None) -> None:
+        if self._empty_state is not None:
+            self._stack.removeWidget(self._empty_state)
+            self._empty_state.deleteLater()
+        self._empty_state = EmptyState(title, description)
+        self._stack.addWidget(self._empty_state)
+        self._stack.setCurrentWidget(self._empty_state)

@@ -68,8 +68,6 @@ def simulate_match(fixture: Fixture, rng: random.Random) -> MatchResult:
 
     if not key_events:
         key_events.append("比赛比较胶着，双方都没创造出太多绝对机会。")
-    else:
-        key_events = key_events[:5]
 
     if away_goals == 0:
         _record_stat(player_stats, fixture.home_team.goalkeeper, "clean_sheets")
@@ -307,6 +305,8 @@ def _record_stat(
     stat_name: str,
     amount: int = 1,
 ) -> None:
+    if not player.is_real:
+        return
     delta = player_stats.setdefault(player.player_id, PlayerStatDelta())
     delta.add(stat_name, amount)
 

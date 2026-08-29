@@ -1,192 +1,395 @@
+"""存档管理页（阶段 5 重写，实施方案 §8.8）。
+
+Route：``Route("saves")``（无参数）。
+
+写流程（全部经 ``context.service``，每个调用 try/except；``service`` 为
+None 时只读展示、全部写按钮禁用）：
+
+- 新建存档：输入框 + “新建”按钮 → ``service.create_save``；
+  ``normalize_save_name`` 的 ``ValueError``（含合法字符集规则说明）在行内
+  状态条提示，不弹窗打断；成功后刷新列表并
+  ``context.request_save_reload(新存档名)`` 让外壳切换到新存档；
+- 打开存档：行内“打开”按钮 → ``context.request_save_reload(存档名)``，
+  由外壳走 Router 的存档切换流程（旧页的 ``_replace_save_state`` 回调不再
+  使用）；
+- 删除存档：行内“删除”按钮 → ``QMessageBox`` Yes/No 二次确认（明确列出
+  存档名）→ ``service.delete_save`` → 刷新列表 + 状态条 →
+  ``request_save_reload(service.current_save_name())`` 让外壳重载（删除
+  当前存档时 ``load_current_save_name`` 自动回退到剩余存档）；
+- 初始化赛季：未初始化存档（目录里还没有 ``save.sqlite3``）的行内
+  “初始化赛季”按钮 → ``service.initialize`` → ``request_save_reload``。
+
+页面信息（不虚构、不迁移旧档）：
+- 存档目录：``service.save_directory()``；
+- 新架构说明：SQLite——每个存档一个 ``save.sqlite3``；旧版 ``state.json``
+  存档不兼容、不迁移（§9.3）；
+- 当前存档标记：``service.current_save_name()``。
+
+滚动面归属（§8.2）：内容型页面——单个外层 ``QScrollArea`` 是唯一纵向滚动
+面；存档列表逐行完整展开，不出现内部小滚动区。
+"""
+
 from __future__ import annotations
 
-from typing import Callable
+from typing import Callable, Dict, List, Optional
 
-from PySide6.QtCore import QSize, Qt
 from PySide6.QtWidgets import (
+    QFrame,
     QHBoxLayout,
     QLabel,
     QLineEdit,
-    QListWidget,
-    QListWidgetItem,
     QMessageBox,
     QPushButton,
-    QTextEdit,
+    QScrollArea,
     QVBoxLayout,
     QWidget,
 )
 
-from football_simulator.state import SaveSnapshot
-from football_simulator.ui_v2.services import SimulatorUIService
-from football_simulator.ui_v2.widgets import CardFrame
+from football_simulator.queries import base
+from football_simulator.ui_v2.components import PageHeader, TEXT_COLOR_MUTED
+from football_simulator.ui_v2.navigation import Route
+from football_simulator.ui_v2.pages.entity_page_base import EntityPageBase, PageContext
+from football_simulator.ui_v2.widgets import section_header
+
+_MUTED_STYLE = f"color: {TEXT_COLOR_MUTED}; background: transparent;"
+_BRIGHT_STYLE = "color: #f8fbff; background: transparent; font-weight: 700;"
+_ACCENT_STYLE = "color: #7dd3fc; background: transparent; font-weight: 700;"
+_ERROR_STYLE = "color: #f87171; background: transparent; font-weight: 600;"
+_OK_STYLE = "color: #4ade80; background: transparent; font-weight: 600;"
 
 
-class SavesPage(QWidget):
-    def __init__(
-        self,
-        service: SimulatorUIService,
-        save_name_getter: Callable[[], str],
-        save_state_callback: Callable[[str, SaveSnapshot | None], None],
-    ) -> None:
-        super().__init__()
-        self.service = service
-        self.save_name_getter = save_name_getter
-        self.save_state_callback = save_state_callback
-        self.snapshot: SaveSnapshot | None = None
+class SavesPage(EntityPageBase):
+    """存档管理：新建 / 打开 / 删除存档与初始化赛季（外壳经 request_save_reload 切换）。"""
 
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(16)
+    def __init__(self, context: PageContext, parent: Optional[QWidget] = None) -> None:
+        self._status_message: str = ""
+        self._status_is_error: bool = False
+        self._rows_container: Optional[QWidget] = None
+        self._rows_layout: Optional[QVBoxLayout] = None
+        self._save_rows: Dict[str, Dict[str, QWidget]] = {}
+        self._create_input: Optional[QLineEdit] = None
+        self._create_status: Optional[QLabel] = None
+        self._status_label: Optional[QLabel] = None
+        self._saves_frame: Optional[QFrame] = None
+        super().__init__(context, parent)
 
-        header = CardFrame("存档管理", f"存档目录：{self.service.save_directory()}")
-        controls = QWidget()
-        controls_layout = QHBoxLayout(controls)
-        controls_layout.setContentsMargins(0, 0, 0, 0)
-        controls_layout.setSpacing(10)
-        self.new_save_input = QLineEdit()
-        self.new_save_input.setPlaceholderText("输入新存档名")
-        self.create_button = QPushButton("新建存档")
-        self.select_button = QPushButton("切换到所选存档")
-        self.delete_button = QPushButton("删除所选存档")
-        self.create_button.clicked.connect(self._create_save)
-        self.select_button.clicked.connect(self._select_save)
-        self.delete_button.clicked.connect(self._delete_save)
-        controls_layout.addWidget(self.new_save_input, 1)
-        controls_layout.addWidget(self.create_button)
-        controls_layout.addWidget(self.select_button)
-        controls_layout.addWidget(self.delete_button)
-        header.body_layout.addWidget(controls)
-        layout.addWidget(header)
+    # -- UI 骨架（一次构建；列表在 refresh 中重建） ---------------------------
 
-        body = QWidget()
-        body_layout = QHBoxLayout(body)
-        body_layout.setContentsMargins(0, 0, 0, 0)
-        body_layout.setSpacing(16)
-        self.save_list = QListWidget()
-        self.save_list.currentItemChanged.connect(self._refresh_summary)
-        self.summary = QTextEdit()
-        self.summary.setReadOnly(True)
-        body_layout.addWidget(self.save_list, 1)
-        body_layout.addWidget(self.summary, 2)
-        layout.addWidget(body, 1)
+    def _build_ui(self) -> None:
+        root = QVBoxLayout(self)
+        root.setContentsMargins(16, 14, 16, 14)
+        root.setSpacing(12)
 
-    def set_snapshot(self, snapshot: SaveSnapshot | None) -> None:
-        self.snapshot = snapshot
-        self._refresh_save_list()
+        # 唯一外层纵向滚动面（内容型页面，全部内容完整展开）。
+        self._scroll = QScrollArea(self)
+        self._scroll.setObjectName("savesScroll")
+        self._scroll.setWidgetResizable(True)
+        self._scroll.setFrameShape(QFrame.Shape.NoFrame)
+        content = QWidget(self._scroll)
+        content_layout = QVBoxLayout(content)
+        content_layout.setContentsMargins(0, 0, 0, 0)
+        content_layout.setSpacing(12)
+        self._scroll.setWidget(content)
+        root.addWidget(self._scroll, 1)
+        self._content = content
+        self._content_layout = content_layout
 
-    def _refresh_save_list(self) -> None:
-        current = self.save_name_getter()
-        self.save_list.clear()
-        saves = self.service.available_saves()
+        content_layout.addWidget(PageHeader("存档管理", [], parent=content))
+
+        # 说明卡：存档目录 + SQLite 新架构说明（旧 state.json 不兼容、不迁移）。
+        info_frame = QFrame(content)
+        info_frame.setObjectName("cardFrame")
+        info_layout = QVBoxLayout(info_frame)
+        info_layout.setContentsMargins(12, 10, 12, 10)
+        info_layout.setSpacing(6)
+        service = self._context.service
+        directory = service.save_directory() if service is not None else "（当前未启用写服务）"
+        info_layout.addWidget(section_header("存档目录与新架构", None))
+        directory_label = QLabel(f"存档目录：{directory}")
+        directory_label.setObjectName("savesDirectoryLabel")
+        directory_label.setWordWrap(True)
+        info_layout.addWidget(directory_label)
+        architecture_label = QLabel(
+            "存档采用 SQLite 新架构：每个存档目录包含一个 save.sqlite3 数据库，"
+            "周推进与赛季结算在单事务内完成。旧版 state.json 存档不兼容，也不会迁移。"
+        )
+        architecture_label.setObjectName("savesArchitectureNote")
+        architecture_label.setWordWrap(True)
+        architecture_label.setStyleSheet(_MUTED_STYLE)
+        info_layout.addWidget(architecture_label)
+        if service is None:
+            readonly_note = QLabel(
+                "当前未启用写服务：存档列表与全部写操作（新建/打开/删除/初始化）不可用，页面为只读展示。"
+            )
+            readonly_note.setObjectName("savesReadonlyNote")
+            readonly_note.setWordWrap(True)
+            readonly_note.setStyleSheet(_ERROR_STYLE)
+            info_layout.addWidget(readonly_note)
+        content_layout.addWidget(info_frame)
+
+        # 新建存档卡。
+        create_frame = QFrame(content)
+        create_frame.setObjectName("cardFrame")
+        create_layout = QVBoxLayout(create_frame)
+        create_layout.setContentsMargins(12, 10, 12, 10)
+        create_layout.setSpacing(8)
+        create_layout.addWidget(section_header("新建存档", "存档名只能由中文、字母或数字开头，并仅包含中文、字母、数字、空格、下划线和连字符（1–64 字符）。"))
+        create_row = QWidget(create_frame)
+        create_row_layout = QHBoxLayout(create_row)
+        create_row_layout.setContentsMargins(0, 0, 0, 0)
+        create_row_layout.setSpacing(10)
+        self._create_input = QLineEdit(create_row)
+        self._create_input.setObjectName("savesCreateInput")
+        self._create_input.setPlaceholderText("输入新存档名")
+        self._create_input.returnPressed.connect(self._on_create_clicked)
+        create_button = QPushButton("新建", create_row)
+        create_button.setObjectName("savesCreateButton")
+        create_button.setEnabled(service is not None)
+        create_button.clicked.connect(self._on_create_clicked)
+        self._create_button = create_button
+        create_row_layout.addWidget(self._create_input, 1)
+        create_row_layout.addWidget(create_button)
+        create_layout.addWidget(create_row)
+        self._create_status = QLabel("", create_frame)
+        self._create_status.setObjectName("savesCreateStatus")
+        self._create_status.setWordWrap(True)
+        create_layout.addWidget(self._create_status)
+        content_layout.addWidget(create_frame)
+
+        # 存档列表卡（行完整展开，无内部滚动）。
+        self._saves_frame = QFrame(content)
+        self._saves_frame.setObjectName("cardFrame")
+        saves_layout = QVBoxLayout(self._saves_frame)
+        saves_layout.setContentsMargins(12, 10, 12, 10)
+        saves_layout.setSpacing(8)
+        saves_layout.addWidget(section_header("存档列表", "“打开”切换到该存档；删除前会二次确认；未初始化的存档可先初始化赛季。"))
+        self._rows_container = QWidget(self._saves_frame)
+        self._rows_layout = QVBoxLayout(self._rows_container)
+        self._rows_layout.setContentsMargins(0, 0, 0, 0)
+        self._rows_layout.setSpacing(8)
+        saves_layout.addWidget(self._rows_container)
+        content_layout.addWidget(self._saves_frame)
+
+        # 行内状态条（写流程反馈）。
+        self._status_label = QLabel("", content)
+        self._status_label.setObjectName("savesStatusLabel")
+        self._status_label.setWordWrap(True)
+        content_layout.addWidget(self._status_label)
+        content_layout.addStretch(1)
+
+    # -- 数据刷新 -------------------------------------------------------------
+
+    def refresh(self) -> None:
+        route = self.current_route()
+        if route is None or route.name != "saves":
+            return
+        self._rebuild_rows()
+        self._apply_status_label()
+
+    # -- 存档列表 -------------------------------------------------------------
+
+    def _list_saves(self) -> List[str]:
+        service = self._context.service
+        if service is None:
+            return []
+        try:
+            return list(service.available_saves())
+        except Exception as exc:  # 枚举失败时给出明确文案，不空白
+            self._set_status(f"读取存档列表失败：{exc}", is_error=True)
+            return []
+
+    def _is_initialized(self, save_name: str) -> bool:
+        """已初始化 = 存档目录中存在 save.sqlite3（仅建档的存档为未初始化）。"""
+
+        try:
+            return base.database_path(save_name).exists()
+        except Exception:
+            return False
+
+    def _rebuild_rows(self) -> None:
+        assert self._rows_layout is not None
+        service = self._context.service
+        current = None
+        if service is not None:
+            try:
+                current = service.current_save_name()
+            except Exception:
+                current = None
+        saves = self._list_saves()
+
+        while self._rows_layout.count():
+            item = self._rows_layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.setParent(None)
+                widget.deleteLater()
+        self._save_rows = {}
+
+        if service is None:
+            note = QLabel("当前未启用写服务，无法枚举存档。")
+            note.setObjectName("savesNoServiceNote")
+            note.setStyleSheet(_MUTED_STYLE)
+            self._rows_layout.addWidget(note)
+            return
+        if not saves:
+            note = QLabel("存档目录是空的。输入存档名并点击“新建”开始第一个存档。")
+            note.setObjectName("savesEmptyNote")
+            note.setStyleSheet(_MUTED_STYLE)
+            self._rows_layout.addWidget(note)
+            return
+
         for save_name in saves:
-            item = QListWidgetItem(self._save_card_text(save_name, save_name == current))
-            item.setSizeHint(QSize(260, 74))
-            if save_name == current:
-                item.setSelected(True)
-            item.setData(Qt.UserRole, save_name)
-            self.save_list.addItem(item)
-        if self.save_list.count():
-            target_row = 0
-            for index in range(self.save_list.count()):
-                if self.save_list.item(index).data(Qt.UserRole) == current:
-                    target_row = index
-                    break
-            self.save_list.setCurrentRow(target_row)
-        else:
-            self.summary.setPlainText("当前还没有可用存档。")
+            self._rows_layout.addWidget(self._build_save_row(save_name, save_name == current))
 
-    def _save_card_text(self, save_name: str, is_current: bool) -> str:
-        prefix = "当前存档 | " if is_current else ""
-        snapshot = self.service.preview_snapshot(save_name)
-        if snapshot is None:
-            return f"{prefix}{save_name}\n未初始化\n可初始化新赛季"
-        pending = (
-            len(snapshot.pending_ability_review)
-            + len(snapshot.pending_transfer_review)
-            + (1 if snapshot.pending_draft.get("status") == "awaiting_input" else 0)
-        )
-        return (
-            f"{prefix}{save_name}\n"
-            f"第 {snapshot.season_number} 赛季 | W{snapshot.current_week}/{len(snapshot.weeks)}\n"
-            f"历史 {len(snapshot.history)} 季 | 待办 {pending}"
-        )
+    def _build_save_row(self, save_name: str, is_current: bool) -> QWidget:
+        service = self._context.service
+        initialized = self._is_initialized(save_name)
 
-    def _refresh_summary(self) -> None:
-        item = self.save_list.currentItem()
-        if item is None:
+        row = QFrame(self._rows_container)
+        row.setObjectName("savesRowFrame")
+        row.setStyleSheet(
+            "QFrame#savesRowFrame { background: #111c2e; border: 1px solid #223653; border-radius: 9px; }"
+        )
+        row_layout = QHBoxLayout(row)
+        row_layout.setContentsMargins(12, 8, 12, 8)
+        row_layout.setSpacing(10)
+
+        name_label = QLabel(save_name + ("　（当前存档）" if is_current else ""))
+        name_label.setObjectName("savesRowNameLabel")
+        name_label.setStyleSheet(_BRIGHT_STYLE if is_current else "color: #e8eef7; background: transparent; font-weight: 600;")
+        name_label.setToolTip(save_name)
+        row_layout.addWidget(name_label)
+
+        state_label = QLabel("已初始化（save.sqlite3）" if initialized else "未初始化（还没有 save.sqlite3）")
+        state_label.setObjectName("savesRowStateLabel")
+        state_label.setStyleSheet(_ACCENT_STYLE if initialized else _MUTED_STYLE)
+        row_layout.addWidget(state_label)
+        row_layout.addStretch(1)
+
+        open_button = QPushButton("打开", row)
+        open_button.setObjectName("savesOpenButton")
+        open_button.setEnabled(service is not None)
+        open_button.clicked.connect(lambda _=False, name=save_name: self._open_save(name))
+        row_layout.addWidget(open_button)
+
+        initialize_button = QPushButton("初始化赛季", row)
+        initialize_button.setObjectName("savesInitializeButton")
+        initialize_button.setEnabled(service is not None and not initialized)
+        initialize_button.setVisible(not initialized)
+        initialize_button.clicked.connect(lambda _=False, name=save_name: self._initialize_save(name))
+        row_layout.addWidget(initialize_button)
+
+        delete_button = QPushButton("删除", row)
+        delete_button.setObjectName("savesDeleteButton")
+        delete_button.setEnabled(service is not None)
+        delete_button.clicked.connect(lambda _=False, name=save_name: self._delete_save(name))
+        row_layout.addWidget(delete_button)
+
+        self._save_rows[save_name] = {
+            "row": row,
+            "name": name_label,
+            "state": state_label,
+            "open": open_button,
+            "initialize": initialize_button,
+            "delete": delete_button,
+        }
+        return row
+
+    # -- 写流程 ----------------------------------------------------------------
+
+    def _request_reload(self, save_name: str) -> None:
+        reload_hook: Optional[Callable[[str], None]] = self._context.request_save_reload
+        if reload_hook is not None:
+            try:
+                reload_hook(save_name)
+            except Exception as exc:
+                self._set_status(f"切换存档失败：{exc}", is_error=True)
+
+    def _on_create_clicked(self) -> None:
+        assert self._create_input is not None and self._create_status is not None
+        service = self._context.service
+        if service is None:
             return
-        save_name = item.data(Qt.UserRole)
-        snapshot = self.service.preview_snapshot(save_name)
-        if snapshot is None:
-            self.summary.setPlainText(
-                "\n".join(
-                    [
-                        f"存档：{save_name}",
-                        "状态：还没有初始化赛季",
-                        "可用操作：初始化赛季后开始游玩",
-                    ]
-                )
-            )
-            return
-        next_phase = snapshot.weeks[snapshot.current_week].label if snapshot.current_week < len(snapshot.weeks) else "赛季已结束"
-        self.summary.setPlainText(
-            "\n".join(
-                [
-                    f"存档：{save_name}",
-                    f"赛季：第 {snapshot.season_number} 赛季",
-                    f"当前周次：{snapshot.current_week}/{len(snapshot.weeks)}",
-                    f"当前阶段：{next_phase}",
-                    f"历史赛季：{len(snapshot.history)}",
-                    f"待审能力变动：{len(snapshot.pending_ability_review)}",
-                    f"待审转会：{len(snapshot.pending_transfer_review)}",
-                    f"待处理选秀：{'是' if snapshot.pending_draft.get('status') == 'awaiting_input' else '否'}",
-                ]
-            )
-        )
-
-    def _create_save(self) -> None:
-        save_name = self.new_save_input.text().strip()
+        save_name = self._create_input.text().strip()
         if not save_name:
-            QMessageBox.warning(self, "Football Simulator UI v2", "请输入新存档名。")
+            self._set_create_status("请输入新存档名。", is_error=True)
             return
         try:
-            state = self.service.create_save(save_name)
+            state = service.create_save(save_name)
+        except ValueError as exc:
+            # normalize_save_name 的合法性规则（字符集/保留名等）行内提示。
+            self._set_create_status(f"存档名不合法：{exc}", is_error=True)
+            return
         except Exception as exc:
-            QMessageBox.warning(self, "Football Simulator UI v2", str(exc))
+            QMessageBox.warning(self, "Football Simulator UI v2", f"创建存档失败：{exc}")
             return
-        self.new_save_input.clear()
-        self._refresh_save_list()
-        self.save_state_callback(state.save_name, state.snapshot)
-        QMessageBox.information(self, "Football Simulator UI v2", f"已创建存档 {state.save_name}。")
+        created = state.save_name
+        self._create_input.clear()
+        self._set_create_status(f"已创建存档 {created}。", is_error=False)
+        self._set_status(f"已创建存档 {created}，正在切换到该存档。", is_error=False)
+        self._rebuild_rows()
+        self._request_reload(created)
 
-    def _select_save(self) -> None:
-        item = self.save_list.currentItem()
-        if item is None:
-            return
-        save_name = item.data(Qt.UserRole)
-        state = self.service.load_state(save_name)
-        self.save_state_callback(save_name, state.snapshot)
-        QMessageBox.information(self, "Football Simulator UI v2", f"已切换到存档 {save_name}。")
+    def _open_save(self, save_name: str) -> None:
+        self._set_status(f"正在打开存档 {save_name}。", is_error=False)
+        self._request_reload(save_name)
 
-    def _delete_save(self) -> None:
-        item = self.save_list.currentItem()
-        if item is None:
+    def _initialize_save(self, save_name: str) -> None:
+        service = self._context.service
+        if service is None:
             return
-        save_name = item.data(Qt.UserRole)
-        if save_name == self.save_name_getter():
-            QMessageBox.warning(self, "Football Simulator UI v2", "不能删除当前正在使用的存档。")
+        try:
+            state = service.initialize(save_name)
+        except Exception as exc:
+            QMessageBox.warning(self, "Football Simulator UI v2", f"初始化存档 {save_name} 失败：{exc}")
+            return
+        self._set_status(f"已初始化存档 {state.save_name} 的第 1 赛季，正在切换到该存档。", is_error=False)
+        self._rebuild_rows()
+        self._request_reload(state.save_name)
+
+    def _delete_save(self, save_name: str) -> None:
+        service = self._context.service
+        if service is None:
             return
         answer = QMessageBox.question(
             self,
             "Football Simulator UI v2",
-            f"确定要删除存档 {save_name} 吗？",
+            f"确定要删除存档“{save_name}”吗？该操作不可恢复。",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
         )
         if answer != QMessageBox.StandardButton.Yes:
+            self._set_status(f"已取消删除存档 {save_name}。", is_error=False)
             return
         try:
-            self.service.delete_save(save_name)
+            service.delete_save(save_name)
         except Exception as exc:
-            QMessageBox.warning(self, "Football Simulator UI v2", str(exc))
+            QMessageBox.warning(self, "Football Simulator UI v2", f"删除存档 {save_name} 失败：{exc}")
             return
-        self._refresh_save_list()
-        QMessageBox.information(self, "Football Simulator UI v2", f"已删除存档 {save_name}。")
+        current = None
+        try:
+            current = service.current_save_name()
+        except Exception:
+            current = None
+        self._set_status(f"已删除存档 {save_name}。", is_error=False)
+        self._rebuild_rows()
+        # 让外壳重载：删除当前存档时外壳按 current_save_name 的回退结果切换。
+        if current:
+            self._request_reload(current)
+
+    # -- 状态条 ----------------------------------------------------------------
+
+    def _set_status(self, message: str, is_error: bool) -> None:
+        self._status_message = message
+        self._status_is_error = is_error
+        self._apply_status_label()
+
+    def _set_create_status(self, message: str, is_error: bool) -> None:
+        assert self._create_status is not None
+        self._create_status.setStyleSheet(_ERROR_STYLE if is_error else _OK_STYLE)
+        self._create_status.setText(message)
+
+    def _apply_status_label(self) -> None:
+        assert self._status_label is not None
+        self._status_label.setStyleSheet(_ERROR_STYLE if self._status_is_error else _OK_STYLE)
+        self._status_label.setText(self._status_message)

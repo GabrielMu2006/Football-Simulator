@@ -37,6 +37,11 @@ class RealPlayerProfile:
     initial_market_value: Optional[float] = None
 
 
+def real_player_id(player_name: str) -> str:
+    slug = "-".join("".join(character.lower() if character.isalnum() else " " for character in player_name).split())
+    return f"real::{slug or 'unnamed'}"
+
+
 @dataclass(frozen=True)
 class SaveConfig:
     save_name: str
@@ -50,17 +55,17 @@ class SaveConfig:
     draft_players: List[RealPlayerTemplate]
 
 
-def load_save_config(save_name: str) -> SaveConfig:
-    config_path = ensure_save_config(save_name)
+def load_save_config(save_name: str, rng: Optional[random.Random] = None) -> SaveConfig:
+    config_path = ensure_save_config(save_name, rng=rng)
     return load_save_config_from_path(config_path, save_name)
 
 
-def ensure_save_config(save_name: str, *, force: bool = False) -> Path:
+def ensure_save_config(save_name: str, *, force: bool = False, rng: Optional[random.Random] = None) -> Path:
     config_path = save_config_path(save_name)
     if config_path.exists() and not force:
         return config_path
     source_data = json.loads(shared_config_path().read_text(encoding="utf-8"))
-    save_data = _build_randomized_save_config(source_data, random.SystemRandom())
+    save_data = _build_randomized_save_config(source_data, rng if rng is not None else random.SystemRandom())
     config_path.write_text(
         json.dumps(save_data, ensure_ascii=False, indent=2),
         encoding="utf-8",
@@ -165,7 +170,7 @@ def create_league_teams_from_save(
                     continue
                 slot_index = vacancies[team_name][player.position].pop()
                 team_slots[team_name][slot_index] = Player(
-                    player_id=player.player_id,
+                    player_id=real_player_id(player.name or ""),
                     name=player.name,
                     position=player.position,
                     ability=player.ability,
@@ -191,7 +196,7 @@ def create_league_teams_from_save(
         slot_index = vacancies[team_name][player_profile.position].pop()
         slot_template = team_slots[team_name][slot_index]
         team_slots[team_name][slot_index] = Player(
-            player_id=slot_template.player_id,
+            player_id=real_player_id(player_profile.name),
             name=player_profile.name,
             position=player_profile.position,
             ability=player_profile.ability,

@@ -168,6 +168,10 @@ class TableRow:
     goals_against: int = 0
     points: int = 0
 
+    @property
+    def goal_diff(self) -> int:
+        return self.goals_for - self.goals_against
+
     def record_match(self, goals_for: int, goals_against: int) -> None:
         self.played += 1
         self.goals_for += goals_for

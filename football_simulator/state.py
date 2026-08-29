@@ -1,9 +1,9 @@
-import json
 import random
+from contextlib import contextmanager
 from dataclasses import dataclass
 from itertools import combinations
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional
+from typing import Callable, Dict, Iterable, List, Optional
 
 from football_simulator.data import (
     REAL_PLAYER_ABILITY_MAX,
@@ -12,7 +12,14 @@ from football_simulator.data import (
     build_real_player_pool,
     create_league_teams_from_save,
     load_save_config,
+    real_player_id,
 )
+from football_simulator.domain.formulas import calculate_market_value as _calculate_market_value
+from football_simulator.domain.formulas import calculate_player_rating as _calculate_player_rating
+from football_simulator.domain.standings import apply_table_result as _apply_table_result
+from football_simulator.domain.standings import group_by_metric as _group_by_metric
+from football_simulator.domain.standings import head_to_head_tuple as _head_to_head_tuple
+from football_simulator.domain.standings import rank_table_rows as _rank_table_rows
 from football_simulator.match_engine import simulate_match
 from football_simulator.models import (
     Fixture,
@@ -31,11 +38,12 @@ from football_simulator.models import (
     TeamSeasonStats,
     WeekScheduleEntry,
 )
-from football_simulator.runtime import save_root
+from football_simulator.persistence.save_repository import SaveRepository
+from football_simulator.runtime import normalize_save_name, save_root
 from football_simulator.schedule import SUMMER_BREAK_WEEKS, TOTAL_WEEKS, WINTER_BREAK_WEEKS, build_league_schedule, build_week_calendar
 
 
-STATE_FILE_NAME = "state.json"
+SAVE_DATABASE_FILE_NAME = "save.sqlite3"
 PREMIER_DIVISION = "一级联赛"
 SECOND_DIVISION = "次级联赛"
 PLAYOFF_COMPETITION = "升级附加赛"
@@ -91,6 +99,20 @@ AWARD_COMPETITIONS = (PREMIER_DIVISION, WINNERS_CUP, CHALLENGE_CUP, SUPER_CUP)
 WINTER_SETTLEMENT_WEEK = 24
 FINAL_SETTLEMENT_WEEK = 49
 
+# 随机源注入（测试专用接口）。生产默认仍是 random.SystemRandom，与历史行为
+# 完全一致；测试通过 set_rng_provider 注入可复现随机源。注入只允许替换随机
+# 源本身，不得改变公式或随机调用顺序。
+_RNG_PROVIDER: Callable[[], random.Random] = random.SystemRandom
+
+
+def _rng() -> random.Random:
+    return _RNG_PROVIDER()
+
+
+def set_rng_provider(provider: Optional[Callable[[], random.Random]]) -> None:
+    global _RNG_PROVIDER
+    _RNG_PROVIDER = provider if provider is not None else random.SystemRandom
+
 
 @dataclass
 class SaveSnapshot:
@@ -117,6 +139,7 @@ class SaveSnapshot:
     pending_transfer_review: List[dict]
     pending_draft: dict
     settlement_cache: dict
+    transfer_history: List[dict]
 
     @property
     def teams(self) -> List[Team]:
@@ -143,164 +166,175 @@ class WeekSimulationResult:
 
 
 def initialize_save_state(save_name: str) -> SaveSnapshot:
-    config = load_save_config(save_name)
-    rng = random.SystemRandom()
-    previous_state = _load_state_json_if_exists(save_name)
+    with _state_transaction(save_name, create=True):
+        rng = _rng()
+        config = load_save_config(save_name, rng=rng)
+        previous_state = _load_state_json_if_exists(save_name)
 
-    history: List[dict] = []
-    previous_season = 0
-    if previous_state is not None:
-        if previous_state.get("pending_ability_review"):
-            raise ValueError("当前存档还有未处理的赛季末能力变动，请先完成审核。")
-        if previous_state.get("pending_transfer_review"):
-            raise ValueError("当前存档还有未处理的转会审核，请先完成审核。")
-        if previous_state.get("pending_draft", {}).get("status") == "awaiting_input":
-            raise ValueError("当前存档赛季已结束，请先完成选秀。")
-        history = previous_state.get("history", [])
-        previous_season = int(previous_state.get("season_number", 0))
-        premier_team_names = previous_state.get("next_premier_team_names", previous_state.get("premier_team_names", config.premier_teams))
-        second_team_names = previous_state.get("next_second_team_names", previous_state.get("second_team_names", config.second_division_teams))
-        real_player_pool = _deserialize_real_player_pool(previous_state.get("real_player_pool", []))
-        if not real_player_pool:
+        history: List[dict] = []
+        previous_season = 0
+        if previous_state is not None:
+            if previous_state.get("pending_ability_review"):
+                raise ValueError("当前存档还有未处理的赛季末能力变动，请先完成审核。")
+            if previous_state.get("pending_transfer_review"):
+                raise ValueError("当前存档还有未处理的转会审核，请先完成审核。")
+            if previous_state.get("pending_draft", {}).get("status") == "awaiting_input":
+                raise ValueError("当前存档赛季已结束，请先完成选秀。")
+            history = previous_state.get("history", [])
+            previous_season = int(previous_state.get("season_number", 0))
+            if not previous_state.get("season_complete"):
+                # 旧 JSON 语义：未完成赛季被重新初始化时整体丢弃（不归档、
+                # 直接进入下一赛季编号）。SQLite 下清空被放弃赛季的比赛、
+                # 统计等派生数据，避免孤儿行残留。
+                _ACTIVE_REPO.reset_season_data(previous_season)
+            premier_team_names = previous_state.get("next_premier_team_names", previous_state.get("premier_team_names", config.premier_teams))
+            second_team_names = previous_state.get("next_second_team_names", previous_state.get("second_team_names", config.second_division_teams))
+            real_player_pool = _deserialize_real_player_pool(previous_state.get("real_player_pool", []))
+            if not real_player_pool:
+                real_player_pool = build_real_player_pool(config, rng)
+            assigned_real_players = _extract_assigned_real_players(previous_state, real_player_pool)
+        else:
+            premier_team_names = config.premier_teams
+            second_team_names = config.second_division_teams
             real_player_pool = build_real_player_pool(config, rng)
-        assigned_real_players = _extract_assigned_real_players(previous_state, real_player_pool)
-    else:
-        premier_team_names = config.premier_teams
-        second_team_names = config.second_division_teams
-        real_player_pool = build_real_player_pool(config, rng)
-        assigned_real_players = None
+            assigned_real_players = None
 
-    premier_teams, second_teams = create_league_teams_from_save(
-        config,
-        rng,
-        list(premier_team_names),
-        list(second_team_names),
-        real_player_pool=real_player_pool,
-        assigned_real_players=assigned_real_players,
-    )
-    weeks = build_week_calendar(build_league_schedule(premier_teams))
-    previous_archive = history[-1] if history else None
-    cup_state = _initialize_cup_state(
-        season_number=previous_season + 1,
-        previous_archive=previous_archive,
-        premier_teams=premier_teams,
-        second_teams=second_teams,
-        rng=rng,
-    )
+        premier_teams, second_teams = create_league_teams_from_save(
+            config,
+            rng,
+            list(premier_team_names),
+            list(second_team_names),
+            real_player_pool=real_player_pool,
+            assigned_real_players=assigned_real_players,
+        )
+        weeks = build_week_calendar(build_league_schedule(premier_teams))
+        previous_archive = history[-1] if history else None
+        cup_state = _initialize_cup_state(
+            season_number=previous_season + 1,
+            previous_archive=previous_archive,
+            premier_teams=premier_teams,
+            second_teams=second_teams,
+            rng=rng,
+        )
 
-    state = {
-        "save_name": save_name,
-        "season_number": previous_season + 1,
-        "current_week": 0,
-        "season_complete": False,
-        "premier_team_names": [team.name for team in premier_teams],
-        "second_team_names": [team.name for team in second_teams],
-        "next_premier_team_names": [team.name for team in premier_teams],
-        "next_second_team_names": [team.name for team in second_teams],
-        "premier_teams": [_serialize_team(team) for team in premier_teams],
-        "second_teams": [_serialize_team(team) for team in second_teams],
-        "weeks": [_serialize_week(week) for week in weeks],
-        "simulated_weeks": [],
-        "promotion_playoff": {},
-        "ranking_playoffs": {},
-        "cup_state": cup_state,
-        "history": history,
-        "real_player_pool": _serialize_real_player_pool(real_player_pool),
-        "pending_ability_review": [],
-        "pending_transfer_review": [],
-        "pending_draft": {},
-        "draft_pool_index": 0,
-        "settlement_cache": {"winter": {}, "final": {}},
-        "player_registry": _serialize_player_registry([*premier_teams, *second_teams]),
-    }
-    _write_state_json(save_name, state)
+        state = {
+            "save_name": save_name,
+            "season_number": previous_season + 1,
+            "current_week": 0,
+            "season_complete": False,
+            "premier_team_names": [team.name for team in premier_teams],
+            "second_team_names": [team.name for team in second_teams],
+            "next_premier_team_names": [team.name for team in premier_teams],
+            "next_second_team_names": [team.name for team in second_teams],
+            "premier_teams": [_serialize_team(team) for team in premier_teams],
+            "second_teams": [_serialize_team(team) for team in second_teams],
+            "weeks": [_serialize_week(week) for week in weeks],
+            "simulated_weeks": [],
+            "promotion_playoff": {},
+            "ranking_playoffs": {},
+            "cup_state": cup_state,
+            "history": history,
+            "real_player_pool": _serialize_real_player_pool(real_player_pool),
+            "pending_ability_review": [],
+            "pending_transfer_review": [],
+            "pending_draft": {},
+            "transfer_history": previous_state.get("transfer_history", []) if previous_state else [],
+            "draft_pool_index": 0,
+            "settlement_cache": {"winter": {}, "final": {}},
+            "player_registry": _serialize_player_registry([*premier_teams, *second_teams]),
+        }
+        _write_state_json(save_name, state)
     return build_snapshot_from_state(state)
 
 
 def simulate_next_week(save_name: str) -> WeekSimulationResult:
-    state = _load_state_json(save_name)
-    if state.get("season_complete"):
-        raise ValueError("当前赛季已结束，请先初始化新赛季再继续。")
-    if state.get("pending_ability_review"):
-        raise ValueError("夏窗前还有未处理的真实球员能力变动，请先完成审核。")
-    if state.get("pending_transfer_review"):
-        raise ValueError("当前还有未处理的转会审核，请先完成审核。")
+    with _state_transaction(save_name):
+        state = _load_state_json(save_name)
+        if state.get("season_complete"):
+            raise ValueError("当前赛季已结束，请先初始化新赛季再继续。")
+        if state.get("pending_ability_review"):
+            raise ValueError("夏窗前还有未处理的真实球员能力变动，请先完成审核。")
+        if state.get("pending_transfer_review"):
+            raise ValueError("当前还有未处理的转会审核，请先完成审核。")
+        if state.get("pending_draft", {}).get("status") == "awaiting_input":
+            raise ValueError("夏窗前还有待处理选秀，请先完成选秀。")
 
-    snapshot = build_snapshot_from_state(state)
-    if snapshot.current_week >= len(snapshot.weeks):
-        raise ValueError("当前赛季已经没有剩余周次。")
+        snapshot = build_snapshot_from_state(state)
+        if snapshot.current_week >= len(snapshot.weeks):
+            raise ValueError("当前赛季已经没有剩余周次。")
 
-    week = snapshot.weeks[snapshot.current_week]
-    rng = random.SystemRandom()
-    premier_schedule_by_round = {
-        fixtures[0].round_number: fixtures for fixtures in build_league_schedule(snapshot.premier_teams)
-    }
-    second_schedule_by_round = {
-        fixtures[0].round_number: fixtures for fixtures in build_league_schedule(snapshot.second_teams)
-    }
-
-    premier_matchdays: List[MatchdayReport] = []
-    second_matchdays: List[MatchdayReport] = []
-    cup_matchdays: List[MatchdayReport] = []
-    playoff_matchdays: List[MatchdayReport] = []
-
-    for round_number in week.premier_round_numbers:
-        matchday = MatchdayReport(round_number=round_number, competition=PREMIER_DIVISION)
-        for fixture in premier_schedule_by_round[round_number]:
-            matchday.results.append(simulate_match(fixture, rng))
-        premier_matchdays.append(matchday)
-
-    for round_number in week.second_round_numbers:
-        matchday = MatchdayReport(round_number=round_number, competition=SECOND_DIVISION)
-        for fixture in second_schedule_by_round[round_number]:
-            matchday.results.append(_simulate_quick_match(fixture, rng))
-        second_matchdays.append(matchday)
-
-    if week.cup_events:
-        cup_matchdays = _simulate_cup_events(state, snapshot, week, rng)
-
-    if week.kind == "promotion_playoff":
-        playoff_matchdays = _simulate_promotion_playoff_stage(state, snapshot, week, rng)
-
-    state["simulated_weeks"].append(
-        {
-            "week_number": week.week_number,
-            "label": week.label,
-            "kind": week.kind,
-            "premier_matchdays": [_serialize_matchday(matchday) for matchday in premier_matchdays],
-            "second_matchdays": [_serialize_matchday(matchday) for matchday in second_matchdays],
-            "cup_matchdays": [_serialize_matchday(matchday) for matchday in cup_matchdays],
-            "playoff_matchdays": [_serialize_matchday(matchday) for matchday in playoff_matchdays],
+        week = snapshot.weeks[snapshot.current_week]
+        rng = _rng()
+        premier_schedule_by_round = {
+            fixtures[0].round_number: fixtures for fixtures in build_league_schedule(snapshot.premier_teams)
         }
-    )
-    state["current_week"] = week.week_number
-    if week.week_number == WINTER_SETTLEMENT_WEEK:
-        _update_settlement_cache(state, build_snapshot_from_state(state), "winter")
-    elif week.week_number == FINAL_SETTLEMENT_WEEK:
-        _update_settlement_cache(state, build_snapshot_from_state(state), "final")
+        second_schedule_by_round = {
+            fixtures[0].round_number: fixtures for fixtures in build_league_schedule(snapshot.second_teams)
+        }
 
-    if week.week_number == min(SUMMER_BREAK_WEEKS) - 1:
-        config = load_save_config(save_name)
-        _prepare_offseason_ability_review(state, config, rng)
-    elif week.week_number in WINTER_BREAK_WEEKS or week.week_number in SUMMER_BREAK_WEEKS:
-        transfer_snapshot = build_snapshot_from_state(state)
-        _prepare_transfer_review(state, transfer_snapshot, week, rng)
+        premier_matchdays: List[MatchdayReport] = []
+        second_matchdays: List[MatchdayReport] = []
+        cup_matchdays: List[MatchdayReport] = []
+        playoff_matchdays: List[MatchdayReport] = []
 
-    season_completed_now = False
-    if week.week_number >= TOTAL_WEEKS:
-        season_completed_now = True
-        _finalize_season(state)
+        for round_number in week.premier_round_numbers:
+            matchday = MatchdayReport(round_number=round_number, competition=PREMIER_DIVISION)
+            for fixture in premier_schedule_by_round[round_number]:
+                matchday.results.append(simulate_match(fixture, rng))
+            premier_matchdays.append(matchday)
 
-    _write_state_json(save_name, state)
-    return WeekSimulationResult(
-        snapshot=build_snapshot_from_state(state),
-        week=week,
-        premier_matchdays=premier_matchdays,
-        second_matchdays=second_matchdays,
-        cup_matchdays=cup_matchdays,
-        playoff_matchdays=playoff_matchdays,
-        season_completed_now=season_completed_now,
-    )
+        for round_number in week.second_round_numbers:
+            matchday = MatchdayReport(round_number=round_number, competition=SECOND_DIVISION)
+            for fixture in second_schedule_by_round[round_number]:
+                matchday.results.append(_simulate_quick_match(fixture, rng))
+            second_matchdays.append(matchday)
+
+        if week.cup_events:
+            cup_matchdays = _simulate_cup_events(state, snapshot, week, rng)
+
+        if week.kind == "promotion_playoff":
+            playoff_matchdays = _simulate_promotion_playoff_stage(state, snapshot, week, rng)
+
+        state["simulated_weeks"].append(
+            {
+                "week_number": week.week_number,
+                "label": week.label,
+                "kind": week.kind,
+                "premier_matchdays": [_serialize_matchday(matchday) for matchday in premier_matchdays],
+                "second_matchdays": [_serialize_matchday(matchday) for matchday in second_matchdays],
+                "cup_matchdays": [_serialize_matchday(matchday) for matchday in cup_matchdays],
+                "playoff_matchdays": [_serialize_matchday(matchday) for matchday in playoff_matchdays],
+            }
+        )
+        state["current_week"] = week.week_number
+        if week.week_number == WINTER_SETTLEMENT_WEEK:
+            _update_settlement_cache(state, build_snapshot_from_state(state), "winter")
+        elif week.week_number == FINAL_SETTLEMENT_WEEK:
+            _update_settlement_cache(state, build_snapshot_from_state(state), "final")
+
+        if week.week_number == min(SUMMER_BREAK_WEEKS) - 1:
+            config = load_save_config(save_name, rng=rng)
+            _prepare_offseason_ability_review(state, config, rng)
+            _prepare_pending_draft(state, rng)
+        elif week.week_number in WINTER_BREAK_WEEKS or week.week_number in SUMMER_BREAK_WEEKS:
+            transfer_snapshot = build_snapshot_from_state(state)
+            _prepare_transfer_review(state, transfer_snapshot, week, rng)
+
+        season_completed_now = False
+        if week.week_number >= TOTAL_WEEKS:
+            season_completed_now = True
+            _finalize_season(state)
+
+        _write_state_json(save_name, state)
+        return WeekSimulationResult(
+            snapshot=build_snapshot_from_state(state),
+            week=week,
+            premier_matchdays=premier_matchdays,
+            second_matchdays=second_matchdays,
+            cup_matchdays=cup_matchdays,
+            playoff_matchdays=playoff_matchdays,
+            season_completed_now=season_completed_now,
+        )
 
 
 def load_save_snapshot(save_name: str) -> SaveSnapshot:
@@ -312,180 +346,225 @@ def load_last_draft_log(save_name: str) -> dict:
 
 
 def apply_ability_review_decisions(save_name: str, decisions: Dict[str, bool]) -> SaveSnapshot:
-    state = _load_state_json(save_name)
-    pending_review = list(state.get("pending_ability_review", []))
-    if not pending_review:
-        raise ValueError("当前没有待审核的真实球员能力变动。")
+    with _state_transaction(save_name):
+        state = _load_state_json(save_name)
+        pending_review = list(state.get("pending_ability_review", []))
+        if not pending_review:
+            raise ValueError("当前没有待审核的真实球员能力变动。")
 
-    player_pool = {
-        profile.name: profile
-        for profile in _deserialize_real_player_pool(state.get("real_player_pool", []))
-    }
-    processed_review = []
-    for item in pending_review:
-        approved = bool(decisions.get(item["name"], False))
-        if approved and item["name"] in player_pool:
-            profile = player_pool[item["name"]]
-            player_pool[item["name"]] = RealPlayerProfile(
-                name=profile.name,
-                position=profile.position,
-                ability=int(item["new_ability"]),
-            )
-        item["approved"] = approved
-        processed_review.append(item)
+        player_pool = {
+            profile.name: profile
+            for profile in _deserialize_real_player_pool(state.get("real_player_pool", []))
+        }
+        processed_review = []
+        for item in pending_review:
+            approved = bool(decisions.get(item["name"], False))
+            if approved and item["name"] in player_pool:
+                profile = player_pool[item["name"]]
+                player_pool[item["name"]] = RealPlayerProfile(
+                    name=profile.name,
+                    position=profile.position,
+                    ability=int(item["new_ability"]),
+                )
+            item["approved"] = approved
+            processed_review.append(item)
 
-    state["real_player_pool"] = _serialize_real_player_pool(list(player_pool.values()))
-    state["last_ability_review"] = processed_review
-    state["pending_ability_review"] = []
-    _write_state_json(save_name, state)
-    return build_snapshot_from_state(state)
+        state["real_player_pool"] = _serialize_real_player_pool(list(player_pool.values()))
+        state["last_ability_review"] = processed_review
+        state["pending_ability_review"] = []
+        _write_state_json(save_name, state)
+        return build_snapshot_from_state(state)
 
 
 def apply_transfer_review_decisions(save_name: str, decisions: Dict[str, bool]) -> SaveSnapshot:
-    state = _load_state_json(save_name)
-    pending_review = list(state.get("pending_transfer_review", []))
-    if not pending_review:
-        raise ValueError("当前没有待审核的转会。")
+    with _state_transaction(save_name):
+        state = _load_state_json(save_name)
+        pending_review = list(state.get("pending_transfer_review", []))
+        if not pending_review:
+            raise ValueError("当前没有待审核的转会。")
 
-    premier_teams = [_deserialize_team(data) for data in state.get("premier_teams", [])]
-    second_teams = [_deserialize_team(data) for data in state.get("second_teams", [])]
-    teams_by_name = {team.name: team for team in [*premier_teams, *second_teams]}
+        premier_teams = [_deserialize_team(data) for data in state.get("premier_teams", [])]
+        second_teams = [_deserialize_team(data) for data in state.get("second_teams", [])]
+        teams_by_name = {team.name: team for team in [*premier_teams, *second_teams]}
+        _validate_roster_integrity(list(teams_by_name.values()))
+        rng = _rng()
 
-    for item in pending_review:
-        item["approved"] = bool(decisions.get(item["trade_id"], False))
-        if item["approved"]:
-            teams_by_name = _apply_trade_to_team_map(teams_by_name, item)
+        for item in pending_review:
+            item["approved"] = False
+            item["status"] = "玩家拒绝"
+            item["recalculated"] = False
+            item["reason"] = ""
+            if not bool(decisions.get(item["trade_id"], False)):
+                continue
 
-    updated_teams = list(teams_by_name.values())
-    state["premier_teams"] = [_serialize_team(team) for team in updated_teams if team.division == PREMIER_DIVISION]
-    state["second_teams"] = [_serialize_team(team) for team in updated_teams if team.division == SECOND_DIVISION]
-    state["player_registry"] = _merge_player_registry(state.get("player_registry", []), updated_teams)
-    state["last_transfer_review"] = pending_review
-    state["pending_transfer_review"] = []
-    _write_state_json(save_name, state)
-    return build_snapshot_from_state(state)
+            apply_item = item
+            if not _trade_can_apply(teams_by_name, apply_item):
+                replacement = _regenerate_trade_for_current_teams(teams_by_name, item, pending_review, rng)
+                if replacement is None:
+                    item["status"] = "系统拒绝"
+                    item["reason"] = "原交易已不适用于当前阵容，且同两队之间无法重算出合法替代交易。"
+                    continue
+                apply_item = replacement
+                item.update(replacement)
+                item["recalculated"] = True
+                item["reason"] = "原交易已不适用于当前阵容，系统已基于当前阵容重算。"
+
+            try:
+                candidate_teams_by_name = _apply_trade_to_team_map(teams_by_name, apply_item)
+                _validate_roster_integrity(list(candidate_teams_by_name.values()))
+            except ValueError as exc:
+                replacement = _regenerate_trade_for_current_teams(teams_by_name, item, pending_review, rng)
+                if replacement is None:
+                    item["status"] = "系统拒绝"
+                    item["reason"] = f"交易校验失败，且无法重算：{exc}"
+                    continue
+                candidate_teams_by_name = _apply_trade_to_team_map(teams_by_name, replacement)
+                _validate_roster_integrity(list(candidate_teams_by_name.values()))
+                item.update(replacement)
+                item["recalculated"] = True
+                item["reason"] = f"原交易校验失败，系统已重算：{exc}"
+
+            teams_by_name = candidate_teams_by_name
+            item["approved"] = True
+            item["status"] = "系统重算通过" if item.get("recalculated") else "玩家通过"
+
+        updated_teams = list(teams_by_name.values())
+        _validate_roster_integrity(updated_teams)
+        state["premier_teams"] = [_serialize_team(team) for team in updated_teams if team.division == PREMIER_DIVISION]
+        state["second_teams"] = [_serialize_team(team) for team in updated_teams if team.division == SECOND_DIVISION]
+        state["player_registry"] = _serialize_player_registry(updated_teams)
+        state.setdefault("transfer_history", []).extend(
+            _build_transfer_history_rows(state, pending_review)
+        )
+        state["last_transfer_review"] = pending_review
+        state["pending_transfer_review"] = []
+        _write_state_json(save_name, state)
+        return build_snapshot_from_state(state)
 
 
 def apply_draft_prospects(save_name: str, prospects: List[dict]) -> SaveSnapshot:
-    state = _load_state_json(save_name)
-    pending_draft = dict(state.get("pending_draft", {}))
-    if pending_draft.get("status") != "awaiting_input":
-        raise ValueError("当前没有待处理的选秀。")
-    if state.get("pending_ability_review") or state.get("pending_transfer_review"):
-        raise ValueError("请先完成其他待审核事项，再进行选秀。")
+    with _state_transaction(save_name):
+        state = _load_state_json(save_name)
+        pending_draft = dict(state.get("pending_draft", {}))
+        if pending_draft.get("status") != "awaiting_input":
+            raise ValueError("当前没有待处理的选秀。")
+        if state.get("pending_ability_review") or state.get("pending_transfer_review"):
+            raise ValueError("请先完成其他待审核事项，再进行选秀。")
 
-    config = load_save_config(save_name)
-    rng = random.SystemRandom()
-    existing_profiles = _deserialize_real_player_pool(state.get("real_player_pool", []))
-    existing_names = {profile.name for profile in existing_profiles}
+        rng = _rng()
+        config = load_save_config(save_name, rng=rng)
+        existing_profiles = _deserialize_real_player_pool(state.get("real_player_pool", []))
+        existing_names = {profile.name for profile in existing_profiles}
 
-    new_profiles: List[RealPlayerProfile] = []
-    target_count = int(pending_draft.get("candidate_count", 0)) or random.SystemRandom().randint(6, 10)
-    config_candidates, next_draft_pool_index = _config_draft_candidates(
-        config,
-        existing_names,
-        int(state.get("draft_pool_index", 0)),
-        target_count,
-    )
-    shortage = max(0, target_count - len(config_candidates))
-    manual_items = list(prospects[:shortage]) if shortage else []
-    prospect_items = [*config_candidates, *manual_items]
-    for item in prospect_items:
-        name = str(item["name"]).strip()
-        position = str(item["position"]).strip().upper()
-        if not name:
-            continue
-        if name in existing_names or any(profile.name == name for profile in new_profiles):
-            raise ValueError(f"新秀姓名重复：{name}")
-        if position not in FORMATION_RULES:
-            raise ValueError(f"不支持的位置：{position}")
-        new_profiles.append(
-            RealPlayerProfile(
-                name=name,
-                position=position,
-                ability=rng.randint(
-                    max(config.default_player_ability + 1, config.real_player_ability_min),
-                    config.real_player_ability_max,
-                ),
-                initial_market_value=30.0,
-            )
+        new_profiles: List[RealPlayerProfile] = []
+        target_count = int(pending_draft.get("candidate_count", 0)) or _rng().randint(6, 10)
+        config_candidates, next_draft_pool_index = _config_draft_candidates(
+            config,
+            existing_names,
+            int(state.get("draft_pool_index", 0)),
+            target_count,
         )
-
-    premier_teams = [_deserialize_team(data) for data in state.get("premier_teams", [])]
-    second_teams = [_deserialize_team(data) for data in state.get("second_teams", [])]
-    teams_by_name = {team.name: team for team in [*premier_teams, *second_teams]}
-    snapshot = build_snapshot_from_state(state)
-    draft_order = [row.team.name for row in reversed(snapshot.premier_table)]
-
-    prospects_remaining = new_profiles[:]
-    rng.shuffle(prospects_remaining)
-    prospects_remaining.sort(key=lambda profile: profile.ability, reverse=True)
-    drafted_results: List[dict] = []
-
-    while prospects_remaining:
-        picked_in_round = False
-        for team_name in draft_order:
-            team = teams_by_name[team_name]
-            counts = _real_position_counts(team)
-            eligible = [
-                profile
-                for profile in prospects_remaining
-                if counts[profile.position] < FORMATION_RULES[profile.position]
-            ]
-            if not eligible:
+        shortage = max(0, target_count - len(config_candidates))
+        manual_items = list(prospects[:shortage]) if shortage else []
+        prospect_items = [*config_candidates, *manual_items]
+        for item in prospect_items:
+            name = str(item["name"]).strip()
+            position = str(item["position"]).strip().upper()
+            if not name:
                 continue
-            best_profile = eligible[0]
-            teams_by_name[team_name] = _draft_profile_to_team(team, best_profile)
-            drafted_results.append(
-                {
-                    "team_name": team_name,
-                    "name": best_profile.name,
-                    "position": best_profile.position,
-                    "ability": best_profile.ability,
-                    "market_value": best_profile.initial_market_value,
-                }
+            if name in existing_names or any(profile.name == name for profile in new_profiles):
+                raise ValueError(f"新秀姓名重复：{name}")
+            if position not in FORMATION_RULES:
+                raise ValueError(f"不支持的位置：{position}")
+            new_profiles.append(
+                RealPlayerProfile(
+                    name=name,
+                    position=position,
+                    ability=rng.randint(
+                        max(config.default_player_ability + 1, config.real_player_ability_min),
+                        config.real_player_ability_max,
+                    ),
+                    initial_market_value=30.0,
+                )
             )
-            prospects_remaining.remove(best_profile)
-            picked_in_round = True
-            if not prospects_remaining:
-                break
-        if not picked_in_round:
-            break
 
-    updated_teams = list(teams_by_name.values())
-    state["premier_teams"] = [_serialize_team(team) for team in updated_teams if team.division == PREMIER_DIVISION]
-    state["second_teams"] = [_serialize_team(team) for team in updated_teams if team.division == SECOND_DIVISION]
-    state["player_registry"] = _merge_player_registry(state.get("player_registry", []), updated_teams)
-    state["real_player_pool"] = _serialize_real_player_pool([*existing_profiles, *new_profiles])
-    state["draft_pool_index"] = next_draft_pool_index
-    state["last_draft"] = {
-        "season_number": int(state.get("season_number", 0)),
-        "target_count": target_count,
-        "config_candidates_used": len(config_candidates),
-        "manual_candidates_used": len(manual_items),
-        "prospects": [
-            {
-                "name": profile.name,
-                "position": profile.position,
-                "ability": profile.ability,
-                "market_value": profile.initial_market_value,
-            }
-            for profile in new_profiles
-        ],
-        "results": drafted_results,
-        "undrafted": [
-            {
-                "name": profile.name,
-                "position": profile.position,
-                "ability": profile.ability,
-                "market_value": profile.initial_market_value,
-            }
-            for profile in prospects_remaining
-        ],
-    }
-    state["pending_draft"] = {}
-    _write_state_json(save_name, state)
-    return build_snapshot_from_state(state)
+        premier_teams = [_deserialize_team(data) for data in state.get("premier_teams", [])]
+        second_teams = [_deserialize_team(data) for data in state.get("second_teams", [])]
+        teams_by_name = {team.name: team for team in [*premier_teams, *second_teams]}
+        snapshot = build_snapshot_from_state(state)
+        draft_order = [row.team.name for row in reversed(snapshot.premier_table)]
+
+        prospects_remaining = new_profiles[:]
+        rng.shuffle(prospects_remaining)
+        prospects_remaining.sort(key=lambda profile: profile.ability, reverse=True)
+        drafted_results: List[dict] = []
+
+        while prospects_remaining:
+            picked_in_round = False
+            for team_name in draft_order:
+                team = teams_by_name[team_name]
+                counts = _real_position_counts(team)
+                eligible = [
+                    profile
+                    for profile in prospects_remaining
+                    if counts[profile.position] < FORMATION_RULES[profile.position]
+                ]
+                if not eligible:
+                    continue
+                best_profile = eligible[0]
+                teams_by_name[team_name] = _draft_profile_to_team(team, best_profile)
+                drafted_results.append(
+                    {
+                        "team_name": team_name,
+                        "name": best_profile.name,
+                        "position": best_profile.position,
+                        "ability": best_profile.ability,
+                        "market_value": best_profile.initial_market_value,
+                    }
+                )
+                prospects_remaining.remove(best_profile)
+                picked_in_round = True
+                if not prospects_remaining:
+                    break
+            if not picked_in_round:
+                break
+
+        updated_teams = list(teams_by_name.values())
+        _validate_roster_integrity(updated_teams)
+        state["premier_teams"] = [_serialize_team(team) for team in updated_teams if team.division == PREMIER_DIVISION]
+        state["second_teams"] = [_serialize_team(team) for team in updated_teams if team.division == SECOND_DIVISION]
+        state["player_registry"] = _serialize_player_registry(updated_teams)
+        state["real_player_pool"] = _serialize_real_player_pool([*existing_profiles, *new_profiles])
+        state["draft_pool_index"] = next_draft_pool_index
+        state["last_draft"] = {
+            "season_number": int(state.get("season_number", 0)),
+            "stage": "夏窗前选秀",
+            "target_count": target_count,
+            "config_candidates_used": len(config_candidates),
+            "manual_candidates_used": len(manual_items),
+            "prospects": [
+                {
+                    "name": profile.name,
+                    "position": profile.position,
+                    "ability": profile.ability,
+                    "market_value": profile.initial_market_value,
+                }
+                for profile in new_profiles
+            ],
+            "results": drafted_results,
+            "undrafted": [
+                {
+                    "name": profile.name,
+                    "position": profile.position,
+                    "ability": profile.ability,
+                    "market_value": profile.initial_market_value,
+                }
+                for profile in prospects_remaining
+            ],
+        }
+        state["pending_draft"] = {}
+        _write_state_json(save_name, state)
+        return build_snapshot_from_state(state)
 
 
 def _config_draft_candidates(
@@ -515,13 +594,14 @@ def _config_draft_candidates_from_index(
 
 
 def build_snapshot_from_state(state: dict) -> SaveSnapshot:
+    _normalize_rosters_and_registry(state)
     premier_teams = [_deserialize_team(data) for data in state.get("premier_teams", [])]
     second_teams = [_deserialize_team(data) for data in state.get("second_teams", [])]
     weeks = [_deserialize_week(data) for data in state.get("weeks", [])]
     simulated_weeks = state.get("simulated_weeks", [])
     team_lookup = {team.name: team for team in [*premier_teams, *second_teams]}
     settlement_cache = state.get("settlement_cache", {})
-    player_registry_data = state.get("player_registry") or _serialize_player_registry([*premier_teams, *second_teams])
+    player_registry_data = _serialize_player_registry([*premier_teams, *second_teams])
 
     premier_table_map = {team.name: TableRow(team=team) for team in premier_teams}
     second_table_map = {team.name: TableRow(team=team) for team in second_teams}
@@ -696,6 +776,7 @@ def build_snapshot_from_state(state: dict) -> SaveSnapshot:
         pending_transfer_review=list(state.get("pending_transfer_review", [])),
         pending_draft=dict(state.get("pending_draft", {})),
         settlement_cache=dict(state.get("settlement_cache", {})),
+        transfer_history=list(state.get("transfer_history", [])),
     )
 
 
@@ -780,6 +861,8 @@ def get_player_single_season_records(snapshot: SaveSnapshot) -> List[dict]:
         for row in season["player_stats"]:
             normalized_row = dict(row)
             normalized_row["label"] = _normalize_player_label(row["label"])
+            normalized_row.setdefault("season_team_names", [normalized_row.get("team_name", "-")])
+            normalized_row.setdefault("team_display_name", normalized_row.get("team_name", "-"))
             records.append(normalized_row)
     return records
 
@@ -955,69 +1038,6 @@ def _build_settlement_period_stats(
     return period_player_stats, period_team_matches
 
 
-def _calculate_player_rating(player_stats: PlayerSeasonStats, matches_played: int) -> float:
-    if matches_played <= 0:
-        return 0.0
-
-    ability_bonus = max(0.0, (player_stats.player.ability - 50) / 10)
-    goals_per_match = player_stats.goals / matches_played
-    assists_per_match = player_stats.assists / matches_played
-    chances_per_match = player_stats.chances_created / matches_played
-    defenses_per_match = player_stats.successful_defenses / matches_played
-    saves_per_match = player_stats.successful_saves / matches_played
-    clean_sheet_rate = player_stats.clean_sheets / matches_played
-
-    if player_stats.player.position == POSITION_FORWARD:
-        rating = (
-            4.80
-            + 4.60 * goals_per_match
-            + 2.40 * assists_per_match
-            + 0.32 * chances_per_match
-            + 0.12 * defenses_per_match
-            + 0.10 * ability_bonus
-        )
-    elif player_stats.player.position == POSITION_MIDFIELDER:
-        rating = (
-            4.95
-            + 2.20 * goals_per_match
-            + 2.80 * assists_per_match
-            + 0.42 * chances_per_match
-            + 0.28 * defenses_per_match
-            + 0.14 * ability_bonus
-        )
-    elif player_stats.player.position == POSITION_DEFENDER:
-        rating = (
-            5.25
-            + 1.10 * goals_per_match
-            + 1.40 * assists_per_match
-            + 0.20 * chances_per_match
-            + 0.72 * defenses_per_match
-            + 0.24 * ability_bonus
-        )
-    else:
-        rating = 5.45 + 0.24 * saves_per_match + 2.10 * clean_sheet_rate + 0.30 * ability_bonus
-
-    return round(max(0.0, min(10.0, rating)), 2)
-
-
-def _calculate_market_value(player: Player, season_rating: float) -> float:
-    if not player.is_real:
-        return 0.0
-
-    if player.position == POSITION_GOALKEEPER:
-        performance_factor = 0.58 * season_rating + 0.42 * (player.ability / 10)
-        position_factor = 1.08
-    else:
-        performance_factor = 0.60 * season_rating + 0.40 * (player.ability / 10)
-        position_factor = {
-            POSITION_FORWARD: 1.12,
-            POSITION_MIDFIELDER: 1.06,
-            POSITION_DEFENDER: 1.08,
-        }.get(player.position, 1.0)
-
-    return round((performance_factor ** 2.18) * position_factor, 2)
-
-
 def _update_settlement_cache(state: dict, snapshot: SaveSnapshot, cache_name: str) -> None:
     cache = state.setdefault("settlement_cache", {})
     cache[cache_name] = {
@@ -1072,13 +1092,31 @@ def _prepare_transfer_review(
     state["pending_transfer_review"] = proposals
 
 
+def _prepare_pending_draft(state: dict, rng: random.Random) -> None:
+    pending = state.get("pending_draft", {})
+    if pending.get("status") == "awaiting_input":
+        return
+    season_number = int(state.get("season_number", 0))
+    last_draft = state.get("last_draft", {})
+    if int(last_draft.get("season_number", -1)) == season_number:
+        return
+    state["pending_draft"] = {
+        "status": "awaiting_input",
+        "season_number": season_number,
+        "candidate_count": rng.randint(6, 10),
+        "stage": "夏窗前选秀",
+        "results": [],
+        "undrafted": [],
+    }
+
+
 def _generate_trade_proposals(
     snapshot: SaveSnapshot,
     target_trades: int,
     rng: random.Random,
 ) -> List[dict]:
     market_values = {
-        row.player.player_id: round(row.market_value or 0.0, 2)
+        row.player.player_id: _effective_market_value(row)
         for row in snapshot.player_stats
         if row.player.is_real
     }
@@ -1140,6 +1178,69 @@ def _generate_trade_for_pair(
                 continue
             return _build_trade_review_item(team_a, team_b, outgoing_a, outgoing_b, trade_number)
     return None
+
+
+def _trade_can_apply(teams_by_name: Dict[str, Team], trade_item: dict) -> bool:
+    team_a = teams_by_name.get(trade_item.get("team_a"))
+    team_b = teams_by_name.get(trade_item.get("team_b"))
+    if team_a is None or team_b is None:
+        return False
+    team_a_ids = {player.player_id for player in team_a.roster}
+    team_b_ids = {player.player_id for player in team_b.roster}
+    outgoing_a_ids = {item["player_id"] for item in trade_item.get("team_a_players", [])}
+    outgoing_b_ids = {item["player_id"] for item in trade_item.get("team_b_players", [])}
+    return outgoing_a_ids <= team_a_ids and outgoing_b_ids <= team_b_ids
+
+
+def _regenerate_trade_for_current_teams(
+    teams_by_name: Dict[str, Team],
+    original_item: dict,
+    review_items: List[dict],
+    rng: random.Random,
+) -> Optional[dict]:
+    team_a = teams_by_name.get(original_item.get("team_a"))
+    team_b = teams_by_name.get(original_item.get("team_b"))
+    if team_a is None or team_b is None:
+        return None
+    market_values = _market_values_from_trade_context(teams_by_name, review_items)
+    replacement = _generate_trade_for_pair(
+        team_a,
+        team_b,
+        market_values,
+        set(),
+        rng,
+        _trade_number_from_id(str(original_item.get("trade_id", "trade_0"))),
+    )
+    if replacement is None:
+        return None
+    replacement["trade_id"] = original_item.get("trade_id", replacement["trade_id"])
+    return replacement
+
+
+def _market_values_from_trade_context(teams_by_name: Dict[str, Team], review_items: List[dict]) -> Dict[str, float]:
+    values: Dict[str, float] = {}
+    for item in review_items:
+        for player in [*item.get("team_a_players", []), *item.get("team_b_players", [])]:
+            player_id = player.get("player_id")
+            if player_id:
+                values[player_id] = round(float(player.get("market_value", 0.0)), 2)
+    for team in teams_by_name.values():
+        for player in team.roster:
+            if not player.is_real or player.player_id in values:
+                continue
+            if player.initial_market_value is not None:
+                values[player.player_id] = round(player.initial_market_value, 2)
+            else:
+                fallback_rating = max(6.0, min(8.5, player.ability / 10))
+                values[player.player_id] = _calculate_market_value(player, fallback_rating)
+    return values
+
+
+def _trade_number_from_id(trade_id: str) -> int:
+    try:
+        return int(trade_id.rsplit("_", 1)[-1])
+    except ValueError:
+        return 0
 
 
 def _candidate_trade_packages(player_value_pairs: List[tuple[Player, float]]) -> List[List[tuple[Player, float]]]:
@@ -1242,7 +1343,18 @@ def _build_trade_review_item(
 
 def _player_market_value(snapshot: SaveSnapshot, player_id: str) -> float:
     player_row = next((row for row in snapshot.player_stats if row.player.player_id == player_id), None)
-    return round(player_row.market_value or 0.0, 2) if player_row else 0.0
+    return _effective_market_value(player_row) if player_row else 0.0
+
+
+def _effective_market_value(player_row: Optional[PlayerSeasonStats]) -> float:
+    if player_row is None or not player_row.player.is_real:
+        return 0.0
+    if player_row.market_value is not None:
+        return round(player_row.market_value, 2)
+    if player_row.player.initial_market_value is not None:
+        return round(player_row.player.initial_market_value, 2)
+    fallback_rating = max(6.0, min(8.5, player_row.player.ability / 10))
+    return _calculate_market_value(player_row.player, fallback_rating)
 
 
 def _apply_trade_to_team_map(teams_by_name: Dict[str, Team], trade_item: dict) -> Dict[str, Team]:
@@ -1287,7 +1399,7 @@ def _rebuild_team_after_trade(
             raise ValueError(f"{team.name} 没有可供 {incoming_player.label} 替换的 {incoming_player.position} 默认位置。")
         slot_number = roster[replacement_index].slot_number
         roster[replacement_index] = Player(
-            player_id=incoming_player.player_id,
+            player_id=real_player_id(incoming_player.name or incoming_player.player_id),
             name=incoming_player.name,
             position=incoming_player.position,
             ability=incoming_player.ability,
@@ -1311,12 +1423,253 @@ def _build_default_slot_player(team_name: str, position: str, slot_number: int, 
     )
 
 
+def _validate_roster_integrity(teams: List[Team]) -> None:
+    if len(teams) != 40:
+        raise ValueError(f"阵容校验失败：当前共有 {len(teams)} 支球队，应为 40 支。")
+    real_player_ids: set[str] = set()
+    duplicated_real_ids: set[str] = set()
+    for team in teams:
+        if len(team.roster) != sum(FORMATION_RULES.values()):
+            raise ValueError(f"阵容校验失败：{team.name} 不是 11 人阵容。")
+        position_counts = {position: 0 for position in FORMATION_RULES}
+        real_counts = {position: 0 for position in FORMATION_RULES}
+        for player in team.roster:
+            if player.position not in position_counts:
+                raise ValueError(f"阵容校验失败：{team.name} 出现未知位置 {player.position}。")
+            position_counts[player.position] += 1
+            if player.is_real:
+                if player.player_id in real_player_ids:
+                    duplicated_real_ids.add(player.player_id)
+                real_player_ids.add(player.player_id)
+                real_counts[player.position] += 1
+        if position_counts != FORMATION_RULES:
+            raise ValueError(f"阵容校验失败：{team.name} 位置人数不正确。")
+        for position, limit in FORMATION_RULES.items():
+            if real_counts[position] > limit:
+                raise ValueError(f"阵容校验失败：{team.name} 的 {position} 真实球员超过上限。")
+    if duplicated_real_ids:
+        raise ValueError("阵容校验失败：存在重复真实球员 ID：" + "、".join(sorted(duplicated_real_ids)[:5]))
+
+
+def _build_transfer_history_rows(state: dict, review_items: List[dict]) -> List[dict]:
+    week_number = int(state.get("current_week", 0))
+    window = _transfer_window_label(week_number)
+    rows: List[dict] = []
+    for item in review_items:
+        rows.append(
+            {
+                "season_number": int(state.get("season_number", 0)),
+                "week_number": week_number,
+                "window": window,
+                "trade_id": item.get("trade_id"),
+                "team_a": item.get("team_a"),
+                "team_b": item.get("team_b"),
+                "team_a_players": list(item.get("team_a_players", [])),
+                "team_b_players": list(item.get("team_b_players", [])),
+                "team_a_total_value": float(item.get("team_a_total_value", 0.0)),
+                "team_b_total_value": float(item.get("team_b_total_value", 0.0)),
+                "value_gap": float(item.get("value_gap", 0.0)),
+                "approved": bool(item.get("approved")),
+                "status": item.get("status") or ("玩家通过" if item.get("approved") else "玩家拒绝"),
+                "recalculated": bool(item.get("recalculated")),
+                "reason": item.get("reason", ""),
+            }
+        )
+    return rows
+
+
+def _transfer_window_label(week_number: int) -> str:
+    if week_number in WINTER_BREAK_WEEKS:
+        return "冬窗"
+    if week_number in SUMMER_BREAK_WEEKS:
+        return "夏窗"
+    return "转会窗口"
+
+
 def _slugify_team_name(team_name: str) -> str:
     return "-".join("".join(character.lower() if character.isalnum() else " " for character in team_name).split())
 
 
 def _slugify_player_name(player_name: str) -> str:
     return "-".join("".join(character.lower() if character.isalnum() else " " for character in player_name).split())
+
+
+def normalize_rosters_and_registry(state: dict) -> dict:
+    _normalize_rosters_and_registry(state)
+    return state
+
+
+def _normalize_rosters_and_registry(state: dict) -> bool:
+    changed = False
+    id_remap: Dict[str, str] = {}
+    seen_real_ids: set[str] = set()
+    real_name_by_old_id: Dict[str, str] = {}
+
+    for item in state.get("player_registry", []):
+        name = _clean_player_name(item.get("name"))
+        if item.get("is_real") and name:
+            real_name_by_old_id.setdefault(str(item.get("player_id", "")), name)
+
+    for league_key in ("premier_teams", "second_teams"):
+        for team_data in state.get(league_key, []):
+            team_name = str(team_data.get("name", ""))
+            default_ability = _default_ability_from_team_data(team_data)
+            normalized_roster = []
+            for player_data in team_data.get("roster", []):
+                original_id = str(player_data.get("player_id", ""))
+                name = _clean_player_name(player_data.get("name"))
+                position = str(player_data.get("position", "")).upper()
+                slot_number = int(player_data.get("slot_number", 1))
+                ability = int(player_data.get("ability", default_ability))
+
+                if name:
+                    normalized_id = real_player_id(name)
+                    if normalized_id in seen_real_ids:
+                        normalized_player = _default_player_data(team_name, position, slot_number, default_ability)
+                    else:
+                        normalized_player = {
+                            "player_id": normalized_id,
+                            "name": name,
+                            "position": position,
+                            "ability": ability,
+                            "is_real": True,
+                            "slot_number": slot_number,
+                            "initial_market_value": player_data.get("initial_market_value"),
+                        }
+                        seen_real_ids.add(normalized_id)
+                        if original_id and original_id != normalized_id:
+                            id_remap.setdefault(original_id, normalized_id)
+                            real_name_by_old_id.setdefault(original_id, name)
+                else:
+                    normalized_player = _default_player_data(team_name, position, slot_number, default_ability)
+
+                if normalized_player != player_data:
+                    changed = True
+                normalized_roster.append(normalized_player)
+            if normalized_roster != team_data.get("roster", []):
+                team_data["roster"] = normalized_roster
+                changed = True
+
+    changed = _normalize_match_player_stat_ids(state, id_remap, real_name_by_old_id) or changed
+    changed = _normalize_review_player_ids(state) or changed
+
+    teams = [
+        _deserialize_team(team_data)
+        for team_data in [*state.get("premier_teams", []), *state.get("second_teams", [])]
+    ]
+    registry = _serialize_player_registry(teams)
+    if state.get("player_registry") != registry:
+        state["player_registry"] = registry
+        changed = True
+    state["roster_fix_summary"] = _build_roster_fix_summary(state)
+    return changed
+
+
+def _clean_player_name(value: object) -> Optional[str]:
+    if value is None:
+        return None
+    name = str(value).strip()
+    if not name or name.startswith("默认 "):
+        return None
+    return name
+
+
+def _default_ability_from_team_data(team_data: dict) -> int:
+    abilities = [
+        int(player.get("ability", 50))
+        for player in team_data.get("roster", [])
+        if not player.get("is_real")
+    ]
+    if abilities:
+        return min(abilities)
+    all_abilities = [int(player.get("ability", 50)) for player in team_data.get("roster", [])]
+    return min(all_abilities) if all_abilities else 50
+
+
+def _default_player_data(team_name: str, position: str, slot_number: int, ability: int) -> dict:
+    team_slug = _slugify_team_name(team_name)
+    return {
+        "player_id": f"{team_slug}-{position.lower()}-{slot_number}-default",
+        "name": None,
+        "position": position,
+        "ability": ability,
+        "is_real": False,
+        "slot_number": slot_number,
+        "initial_market_value": None,
+    }
+
+
+def _normalize_match_player_stat_ids(
+    state: dict,
+    id_remap: Dict[str, str],
+    real_name_by_old_id: Dict[str, str],
+) -> bool:
+    changed = False
+    for week_data in state.get("simulated_weeks", []):
+        for matchday_key in ("premier_matchdays", "second_matchdays", "cup_matchdays", "playoff_matchdays"):
+            for matchday in week_data.get(matchday_key, []):
+                for result in matchday.get("results", []):
+                    stats = result.get("player_stats", {})
+                    if not isinstance(stats, dict):
+                        continue
+                    normalized_stats = {}
+                    for player_id, delta in stats.items():
+                        target_id = id_remap.get(player_id)
+                        if target_id is None and player_id in real_name_by_old_id:
+                            target_id = real_player_id(real_name_by_old_id[player_id])
+                        if target_id is None and str(player_id).startswith("real::"):
+                            target_id = player_id
+                        if target_id is None:
+                            changed = True
+                            continue
+                        if target_id in normalized_stats:
+                            normalized_stats[target_id] = _merge_stat_delta_dicts(normalized_stats[target_id], delta)
+                        else:
+                            normalized_stats[target_id] = delta
+                        if target_id != player_id:
+                            changed = True
+                    if normalized_stats != stats:
+                        result["player_stats"] = normalized_stats
+                        changed = True
+    return changed
+
+
+def _merge_stat_delta_dicts(first: dict, second: dict) -> dict:
+    merged = dict(first)
+    for field in ("goals", "assists", "chances_created", "successful_defenses", "successful_saves", "clean_sheets"):
+        merged[field] = int(merged.get(field, 0)) + int(second.get(field, 0))
+    return merged
+
+
+def _normalize_review_player_ids(state: dict) -> bool:
+    changed = False
+    for review_key in ("pending_transfer_review", "last_transfer_review", "transfer_history"):
+        for item in state.get(review_key, []):
+            for side_key in ("team_a_players", "team_b_players"):
+                for player in item.get(side_key, []):
+                    name = _clean_player_name(player.get("name"))
+                    if name:
+                        normalized_id = real_player_id(name)
+                        if player.get("player_id") != normalized_id:
+                            player["player_id"] = normalized_id
+                            changed = True
+    return changed
+
+
+def _build_roster_fix_summary(state: dict) -> dict:
+    real_count = 0
+    default_count = 0
+    for team_data in [*state.get("premier_teams", []), *state.get("second_teams", [])]:
+        for player in team_data.get("roster", []):
+            if player.get("is_real"):
+                real_count += 1
+            else:
+                default_count += 1
+    return {
+        "real_players": real_count,
+        "default_players": default_count,
+        "registry_players": len(state.get("player_registry", [])),
+    }
 
 
 def _draft_profile_to_team(team: Team, profile: RealPlayerProfile) -> Team:
@@ -1333,7 +1686,7 @@ def _draft_profile_to_team(team: Team, profile: RealPlayerProfile) -> Team:
         raise ValueError(f"{team.name} 没有可供新秀替换的 {profile.position} 默认位置。")
     slot_number = roster[replacement_index].slot_number
     roster[replacement_index] = Player(
-        player_id=f"rookie-{_slugify_player_name(profile.name)}",
+        player_id=real_player_id(profile.name),
         name=profile.name,
         position=profile.position,
         ability=profile.ability,
@@ -1367,13 +1720,6 @@ def _finalize_season(state: dict) -> None:
         "cup_champions": cup_champions,
     }
     state["season_complete"] = True
-    state["pending_draft"] = {
-        "status": "awaiting_input",
-        "season_number": season_number,
-        "candidate_count": random.SystemRandom().randint(6, 10),
-        "results": [],
-        "undrafted": [],
-    }
     _archive_current_season(state)
 
 
@@ -1398,7 +1744,7 @@ def _generate_ranking_playoffs(state: dict) -> Dict[str, list[dict]]:
                 second_results.append(result)
                 _apply_table_result(second_table_map, result)
 
-    rng = random.SystemRandom()
+    rng = _rng()
     return {
         PREMIER_DIVISION: _build_ranking_playoff_resolutions(list(premier_table_map.values()), premier_results, rng),
         SECOND_DIVISION: _build_ranking_playoff_resolutions(list(second_table_map.values()), second_results, rng),
@@ -1698,7 +2044,7 @@ def _winners_cup_group_standings(state: dict, snapshot: SaveSnapshot) -> Dict[st
     cup = state["cup_state"]["winners_cup"]
     team_lookup = {team.name: team for team in snapshot.premier_teams}
     standings: Dict[str, List[str]] = {}
-    rng = random.SystemRandom()
+    rng = _rng()
     for group_name, teams in cup["groups"].items():
         rows = {team_name: TableRow(team=team_lookup[team_name]) for team_name in teams}
         results: List[MatchResult] = []
@@ -2052,84 +2398,6 @@ def _sort_second_division_seed(snapshot: SaveSnapshot, first_team: str, second_t
     return second_team, first_team
 
 
-def _apply_table_result(table_map: Dict[str, TableRow], result: MatchResult) -> None:
-    home_row = table_map[result.home_team.name]
-    away_row = table_map[result.away_team.name]
-    home_row.record_match(result.home_goals, result.away_goals)
-    away_row.record_match(result.away_goals, result.home_goals)
-
-
-def _rank_table_rows(
-    rows: List[TableRow],
-    results: List[MatchResult],
-    playoff_resolutions: list[dict],
-) -> List[TableRow]:
-    sorted_rows: List[TableRow] = []
-    grouped = _group_by_metric(rows, lambda row: (row.points, row.goals_for - row.goals_against, row.goals_for))
-    resolution_map = {tuple(item["teams"]): item["order"] for item in playoff_resolutions}
-
-    for group in grouped:
-        if len(group) == 1:
-            sorted_rows.extend(group)
-            continue
-
-        head_to_head_groups = _group_by_metric(
-            group,
-            lambda row: _head_to_head_tuple(row.team.name, group, results),
-        )
-        for tied_group in head_to_head_groups:
-            if len(tied_group) == 1:
-                sorted_rows.extend(tied_group)
-                continue
-
-            team_names = tuple(sorted(row.team.name for row in tied_group))
-            order = resolution_map.get(team_names)
-            if order is None:
-                tied_group.sort(key=lambda row: row.team.name)
-                sorted_rows.extend(tied_group)
-            else:
-                order_index = {team_name: index for index, team_name in enumerate(order)}
-                sorted_rows.extend(sorted(tied_group, key=lambda row: order_index[row.team.name]))
-
-    return sorted_rows
-
-
-def _group_by_metric(rows: List[TableRow], key_func) -> List[List[TableRow]]:
-    ordered = sorted(rows, key=key_func, reverse=True)
-    groups: List[List[TableRow]] = []
-    for row in ordered:
-        metric = key_func(row)
-        if not groups or key_func(groups[-1][0]) != metric:
-            groups.append([row])
-        else:
-            groups[-1].append(row)
-    return groups
-
-
-def _head_to_head_tuple(team_name: str, group: List[TableRow], results: List[MatchResult]) -> tuple[int, int, int]:
-    team_names = {row.team.name for row in group}
-    points = 0
-    goal_diff = 0
-    goals_for = 0
-    for result in results:
-        if result.home_team.name not in team_names or result.away_team.name not in team_names:
-            continue
-        if result.home_team.name == team_name:
-            goals_for += result.home_goals
-            goal_diff += result.home_goals - result.away_goals
-            if result.home_goals > result.away_goals:
-                points += 3
-            elif result.home_goals == result.away_goals:
-                points += 1
-        elif result.away_team.name == team_name:
-            goals_for += result.away_goals
-            goal_diff += result.away_goals - result.home_goals
-            if result.away_goals > result.home_goals:
-                points += 3
-            elif result.away_goals == result.home_goals:
-                points += 1
-    return points, goal_diff, goals_for
-
 
 def _simulate_quick_match(
     fixture: Fixture,
@@ -2211,6 +2479,7 @@ def _snapshot_to_archive(snapshot: SaveSnapshot) -> dict:
     player_stats = []
     for row in snapshot.player_stats:
         enriched_row = _serialize_player_season_stats(row)
+        enriched_row.update(_player_season_team_display(snapshot, row))
         team_context = team_enrichment.get(row.team_name, {})
         enriched_row.update(
             {
@@ -2287,6 +2556,7 @@ def _build_player_settlement_points(snapshot: SaveSnapshot) -> List[dict]:
                     week_number=week_number,
                     season_rating=rating,
                     market_value=market_value,
+                    team_display_name=_player_season_team_display(snapshot, row)["team_display_name"],
                 )
             )
 
@@ -2305,6 +2575,7 @@ def _build_player_settlement_points(snapshot: SaveSnapshot) -> List[dict]:
                     week_number=FINAL_SETTLEMENT_WEEK,
                     season_rating=row.season_rating,
                     market_value=row.market_value,
+                    team_display_name=_player_season_team_display(snapshot, row)["team_display_name"],
                 )
             )
 
@@ -2318,12 +2589,14 @@ def _build_player_settlement_point(
     week_number: int,
     season_rating: float,
     market_value: float,
+    team_display_name: Optional[str] = None,
 ) -> dict:
     return {
         "player_id": _player_history_key_for_player(row.player),
         "label": row.player.label,
         "position": row.player.position,
         "team_name": row.team_name,
+        "team_display_name": team_display_name or row.team_name,
         "season_number": row.season_number,
         "stage": stage_label,
         "week_number": week_number,
@@ -2418,6 +2691,7 @@ def get_player_trend_points(snapshot: SaveSnapshot, player_id: Optional[str], la
                     "label": _normalize_player_label(row["label"]),
                     "position": row["position"],
                     "team_name": row["team_name"],
+                    "team_display_name": row.get("team_display_name") or row["team_name"],
                     "season_number": season_number,
                     "stage": "赛季末",
                     "week_number": FINAL_SETTLEMENT_WEEK,
@@ -2460,6 +2734,258 @@ def get_trade_detail_rows(snapshot: SaveSnapshot) -> List[dict]:
             }
         )
     return rows
+
+
+def get_transfer_history_rows(snapshot: SaveSnapshot) -> List[dict]:
+    rows: List[dict] = []
+    for item in snapshot.transfer_history:
+        team_a_players = _format_trade_player_names(item.get("team_a_players", []))
+        team_b_players = _format_trade_player_names(item.get("team_b_players", []))
+        rows.append(
+            {
+                "season_number": int(item.get("season_number", 0)),
+                "week_number": int(item.get("week_number", 0)),
+                "window": item.get("window", "-"),
+                "team_a": item.get("team_a", "-"),
+                "team_b": item.get("team_b", "-"),
+                "team_a_players": team_a_players,
+                "team_b_players": team_b_players,
+                "team_a_total_value": float(item.get("team_a_total_value", 0.0)),
+                "team_b_total_value": float(item.get("team_b_total_value", 0.0)),
+                "value_gap": float(item.get("value_gap", 0.0)),
+                "approved": bool(item.get("approved")),
+                "status": item.get("status") or ("玩家通过" if item.get("approved") else "玩家拒绝"),
+                "recalculated": bool(item.get("recalculated")),
+                "reason": item.get("reason", ""),
+            }
+        )
+    rows.sort(key=lambda row: (row["season_number"], row["week_number"]), reverse=True)
+    return rows
+
+
+def _player_season_team_display(snapshot: SaveSnapshot, row: PlayerSeasonStats) -> dict:
+    team_names = _player_season_team_names(snapshot, row)
+    return {
+        "season_team_names": team_names,
+        "team_display_name": " / ".join(team_names),
+    }
+
+
+def _player_season_team_names(snapshot: SaveSnapshot, row: PlayerSeasonStats) -> List[str]:
+    winter_teams: List[str] = []
+    summer_origin: Optional[str] = None
+
+    for move in _player_transfer_moves_for_season(snapshot, row):
+        window = move["window"]
+        if window == "冬窗":
+            _append_unique(winter_teams, move["source_team"])
+            _append_unique(winter_teams, move["destination_team"])
+        elif window == "夏窗" and summer_origin is None:
+            summer_origin = move["source_team"]
+
+    if winter_teams:
+        return winter_teams
+    if summer_origin:
+        return [summer_origin]
+    return [row.team_name]
+
+
+def _player_transfer_moves_for_season(snapshot: SaveSnapshot, row: PlayerSeasonStats) -> List[dict]:
+    moves: List[dict] = []
+    for order_index, item in enumerate(snapshot.transfer_history):
+        if int(item.get("season_number", 0)) != row.season_number:
+            continue
+        if not bool(item.get("approved")):
+            continue
+        team_a = item.get("team_a")
+        team_b = item.get("team_b")
+        for player in item.get("team_a_players", []):
+            if _transfer_player_matches_row(player, row):
+                moves.append(
+                    {
+                        "order_index": order_index,
+                        "week_number": int(item.get("week_number", 0)),
+                        "window": item.get("window", ""),
+                        "source_team": team_a or row.team_name,
+                        "destination_team": team_b or row.team_name,
+                    }
+                )
+        for player in item.get("team_b_players", []):
+            if _transfer_player_matches_row(player, row):
+                moves.append(
+                    {
+                        "order_index": order_index,
+                        "week_number": int(item.get("week_number", 0)),
+                        "window": item.get("window", ""),
+                        "source_team": team_b or row.team_name,
+                        "destination_team": team_a or row.team_name,
+                    }
+                )
+    moves.sort(key=lambda item: (item["week_number"], item["order_index"]))
+    return moves
+
+
+def _transfer_player_matches_row(player: dict, row: PlayerSeasonStats) -> bool:
+    player_id = player.get("player_id")
+    if player_id and player_id == row.player.player_id:
+        return True
+    name = _clean_player_name(player.get("name"))
+    return bool(name and _normalize_player_label(name) == _normalize_player_label(row.player.label))
+
+
+def _append_unique(items: List[str], value: Optional[str]) -> None:
+    if value and value not in items:
+        items.append(value)
+
+
+def get_season_archive_rows(snapshot: SaveSnapshot) -> List[dict]:
+    rows: List[dict] = []
+    for season in _season_archives(snapshot):
+        season_number = int(season["season_number"])
+        rows.append(
+            {
+                "season_number": season_number,
+                "premier_table": _archive_league_table_rows(season, PREMIER_DIVISION),
+                "second_table": _archive_league_table_rows(season, SECOND_DIVISION),
+                "cup_rows": _archive_cup_tree_rows(season),
+                "cup_champions": dict(season.get("cup_champions", {})),
+            }
+        )
+    rows.sort(key=lambda row: row["season_number"], reverse=True)
+    return rows
+
+
+def _format_trade_player_names(players: List[dict]) -> str:
+    if not players:
+        return "-"
+    return "、".join(
+        f"{player.get('name', '-')}/{player.get('position', '-')}/{float(player.get('market_value', 0.0)):.2f}M"
+        for player in players
+    )
+
+
+def _archive_league_table_rows(season: dict, division: str) -> List[dict]:
+    rows = [
+        dict(row)
+        for row in season.get("team_stats", [])
+        if row.get("division") == division
+    ]
+    rows.sort(
+        key=lambda row: (
+            int(row.get("points", 0)),
+            int(row.get("goal_diff", 0)),
+            int(row.get("goals_for", 0)),
+        ),
+        reverse=True,
+    )
+    for index, row in enumerate(rows, start=1):
+        row["rank"] = index
+    return rows
+
+
+def _archive_cup_tree_rows(season: dict) -> List[dict]:
+    cup_state = season.get("cup_state", {})
+    rows: List[dict] = []
+    rows.extend(_winners_cup_archive_rows(cup_state.get("winners_cup", {})))
+    rows.extend(_challenge_cup_archive_rows(cup_state.get("challenge_cup", {})))
+    rows.extend(_super_cup_archive_rows(cup_state.get("super_cup", {})))
+    return rows
+
+
+def _winners_cup_archive_rows(cup: dict) -> List[dict]:
+    if not cup.get("active"):
+        return [{"competition": WINNERS_CUP, "stage": "未启用", "node": "-", "summary": "本赛季未启用"}]
+    rows: List[dict] = []
+    for group_name, teams in sorted(cup.get("groups", {}).items()):
+        rows.append(
+            {
+                "competition": WINNERS_CUP,
+                "stage": "小组阶段",
+                "node": group_name,
+                "summary": "、".join(teams),
+            }
+        )
+    for stage_key, pairs in sorted(cup.get("knockout_pairs", {}).items()):
+        rows.append(
+            {
+                "competition": WINNERS_CUP,
+                "stage": "淘汰阶段",
+                "node": _cup_stage_label(stage_key),
+                "summary": _format_pair_rows(pairs),
+            }
+        )
+    if cup.get("champion"):
+        rows.append({"competition": WINNERS_CUP, "stage": "冠军", "node": "-", "summary": cup["champion"]})
+    return rows
+
+
+def _challenge_cup_archive_rows(cup: dict) -> List[dict]:
+    if not cup.get("active"):
+        return [{"competition": CHALLENGE_CUP, "stage": "未启用", "node": "-", "summary": "本赛季未启用"}]
+    rows: List[dict] = []
+    participants = cup.get("participants", [])
+    if participants:
+        rows.append({"competition": CHALLENGE_CUP, "stage": "参赛队", "node": "32队", "summary": f"{len(participants)} 支球队"})
+    for stage_key, winners in sorted(cup.get("winners", {}).items()):
+        rows.append(
+            {
+                "competition": CHALLENGE_CUP,
+                "stage": "淘汰树",
+                "node": _cup_stage_label(stage_key),
+                "summary": "、".join(winners) if winners else "-",
+            }
+        )
+    if cup.get("champion"):
+        rows.append({"competition": CHALLENGE_CUP, "stage": "冠军", "node": "-", "summary": cup["champion"]})
+    return rows
+
+
+def _super_cup_archive_rows(cup: dict) -> List[dict]:
+    if not cup.get("active"):
+        return [{"competition": SUPER_CUP, "stage": "未启用", "node": "-", "summary": "本赛季未启用"}]
+    rows = [
+        {
+            "competition": SUPER_CUP,
+            "stage": "参赛队",
+            "node": "四强",
+            "summary": "、".join(cup.get("participants", [])) or "-",
+        }
+    ]
+    if cup.get("finalists"):
+        rows.append(
+            {
+                "competition": SUPER_CUP,
+                "stage": "决赛",
+                "node": "-",
+                "summary": "、".join(cup.get("finalists", [])),
+            }
+        )
+    if cup.get("champion"):
+        rows.append({"competition": SUPER_CUP, "stage": "冠军", "node": "-", "summary": cup["champion"]})
+    return rows
+
+
+def _cup_stage_label(stage_key: str) -> str:
+    labels = {
+        "winners_cup_quarterfinal_leg_1": "八强首回合",
+        "winners_cup_quarterfinal_leg_2": "八强次回合",
+        "winners_cup_semifinal_leg_1": "半决赛首回合",
+        "winners_cup_semifinal_leg_2": "半决赛次回合",
+        "winners_cup_final_leg_1": "决赛首回合",
+        "winners_cup_final_leg_2": "决赛次回合",
+        "challenge_cup_r32": "三十二强",
+        "challenge_cup_r16": "十六强",
+        "challenge_cup_quarterfinal": "八强",
+        "challenge_cup_semifinal": "半决赛",
+        "challenge_cup_final": "决赛",
+    }
+    return labels.get(stage_key, stage_key)
+
+
+def _format_pair_rows(pairs: List[dict]) -> str:
+    if not pairs:
+        return "-"
+    return " | ".join(f"{pair.get('home', '-')} vs {pair.get('away', '-')}" for pair in pairs)
 
 
 def _player_lookup_key(player_id: Optional[str], label: Optional[str]) -> Optional[str]:
@@ -2919,7 +3445,7 @@ def _winners_cup_group_standings_from_snapshot(snapshot: SaveSnapshot) -> Dict[s
 
     team_lookup = {team.name: team for team in snapshot.premier_teams}
     standings: Dict[str, List[str]] = {}
-    rng = random.SystemRandom()
+    rng = _rng()
     for group_name, teams in cup.get("groups", {}).items():
         rows = {team_name: TableRow(team=team_lookup[team_name]) for team_name in teams}
         results: List[MatchResult] = []
@@ -3002,7 +3528,7 @@ def _extract_assigned_real_players(state: dict, real_player_pool: List[RealPlaye
             profile = profile_by_name.get(player.name or "")
             if profile is not None:
                 player = Player(
-                    player_id=player.player_id,
+                    player_id=real_player_id(player.name or profile.name),
                     name=player.name,
                     position=player.position,
                     ability=profile.ability,
@@ -3019,6 +3545,8 @@ def _serialize_player_registry(teams: List[Team]) -> List[dict]:
     registry_items: List[dict] = []
     for team in teams:
         for player in team.roster:
+            if not player.is_real:
+                continue
             item = _serialize_player(player)
             item["team_name"] = team.name
             item["division"] = team.division
@@ -3036,31 +3564,89 @@ def _merge_player_registry(existing_registry_data: List[dict], teams: List[Team]
     return sorted(registry_by_id.values(), key=lambda item: item["player_id"])
 
 
-def _state_path(save_name: str) -> Path:
-    return save_root() / save_name / STATE_FILE_NAME
+def _save_dir(save_name: str) -> Path:
+    return save_root() / normalize_save_name(save_name)
+
+
+def _open_repo(save_name: str, *, create: bool = False) -> SaveRepository:
+    if create:
+        return SaveRepository.create(_save_dir(save_name), save_name)
+    return SaveRepository.open(_save_dir(save_name), save_name)
+
+
+# 当前活动的存档写事务。公开 API 通过 _state_transaction 建立事务；
+# _load_state_json/_write_state_json 在事务内直接委托给该仓库。
+_ACTIVE_REPO: Optional[SaveRepository] = None
+
+
+@contextmanager
+def _state_transaction(save_name: str, *, create: bool = False):
+    """存档读-改-写事务。
+
+    ``BEGIN IMMEDIATE`` 从物化开始就持有写锁，直到 COMMIT：并发写入要么
+    串行成功（受 busy_timeout 约束），要么清晰报错，不会静默覆盖。
+    事务内任何异常（包括 COMMIT 本身失败）都会整体回滚，不产生半提交状态，
+    并保证连接关闭、事务句柄清理。
+    """
+    global _ACTIVE_REPO
+    if _ACTIVE_REPO is not None:
+        raise RuntimeError("存档事务不可嵌套。")
+    repo = _open_repo(save_name, create=create)
+    try:
+        repo.begin()
+        _ACTIVE_REPO = repo
+        try:
+            yield repo
+            repo.commit()
+        except BaseException:
+            repo.rollback()
+            raise
+    finally:
+        if _ACTIVE_REPO is repo:
+            _ACTIVE_REPO = None
+        repo.close()
 
 
 def _load_state_json(save_name: str) -> dict:
     state = _load_state_json_if_exists(save_name)
     if state is None:
-        raise FileNotFoundError(f"未找到存档 '{save_name}' 的状态文件，请先初始化赛季。")
+        raise FileNotFoundError(f"未找到存档 '{save_name}' 的存档数据库，请先初始化赛季。")
     return state
 
 
 def _load_state_json_if_exists(save_name: str) -> Optional[dict]:
-    path = _state_path(save_name)
-    if not path.exists():
-        return None
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
-        raise ValueError(f"存档文件无效：{path}") from exc
+    if _ACTIVE_REPO is not None:
+        if _ACTIVE_REPO.save_name != save_name:
+            raise RuntimeError(f"存档事务指向 '{_ACTIVE_REPO.save_name}'，不能读取 '{save_name}'。")
+        state = _ACTIVE_REPO.load_state()
+    else:
+        repo = _open_repo(save_name)
+        try:
+            state = repo.load_state()
+        finally:
+            repo.close()
+    if state is not None:
+        _normalize_rosters_and_registry(state)
+    return state
 
 
 def _write_state_json(save_name: str, state: dict) -> None:
-    path = _state_path(save_name)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(state, indent=2), encoding="utf-8")
+    _normalize_rosters_and_registry(state)
+    if _ACTIVE_REPO is not None:
+        if _ACTIVE_REPO.save_name != save_name:
+            raise RuntimeError(f"存档事务指向 '{_ACTIVE_REPO.save_name}'，不能写入 '{save_name}'。")
+        _ACTIVE_REPO.persist_state(state)
+        return
+    repo = _open_repo(save_name)
+    try:
+        repo.begin()
+        repo.persist_state(state)
+        repo.commit()
+    except BaseException:
+        repo.rollback()
+        raise
+    finally:
+        repo.close()
 
 
 def _serialize_team(team: Team) -> dict:
@@ -3116,12 +3702,14 @@ def _deserialize_real_player_pool(data: List[dict]) -> List[RealPlayerProfile]:
 
 
 def _deserialize_player(data: dict) -> Player:
+    name = data.get("name")
+    is_real = bool(data["is_real"]) and bool(_clean_player_name(name))
     return Player(
-        player_id=data["player_id"],
-        name=data.get("name"),
+        player_id=real_player_id(str(name)) if is_real else data["player_id"],
+        name=name if is_real else None,
         position=data["position"],
         ability=int(data["ability"]),
-        is_real=bool(data["is_real"]),
+        is_real=is_real,
         slot_number=int(data["slot_number"]),
         initial_market_value=float(data["initial_market_value"]) if data.get("initial_market_value") is not None else None,
     )
@@ -3259,6 +3847,8 @@ def _serialize_player_season_stats(row: PlayerSeasonStats) -> dict:
         "position": row.player.position,
         "is_real": row.player.is_real,
         "team_name": row.team_name,
+        "season_team_names": [row.team_name],
+        "team_display_name": row.team_name,
         "appearances": row.appearances,
         "goals": row.goals,
         "assists": row.assists,
