@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""校验 40 支球队都能映射到 team_badges_40 的新队标。"""
+"""校验 40 支球队都能映射到 team_badges_40_v2 的新队标。"""
 
 import json
 import unittest

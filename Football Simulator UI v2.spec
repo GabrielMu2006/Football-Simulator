@@ -5,7 +5,7 @@ a = Analysis(
     ['ui_v2_main.py'],
     pathex=['/Users/gabrielmu/Documents/Football Simulator'],
     binaries=[],
-    datas=[('足球模拟器总配置.json', '.'), ('team_badges_40/PNG', 'team_badges_40/PNG')],
+    datas=[('足球模拟器总配置.json', '.'), ('team_badges_40_v2/PNG', 'team_badges_40_v2/PNG')],
     hiddenimports=['football_simulator.ui_v2.pages.competition_page', 'football_simulator.ui_v2.pages.dashboard_page', 'football_simulator.ui_v2.pages.draft_page', 'football_simulator.ui_v2.pages.history_page', 'football_simulator.ui_v2.pages.match_detail_page', 'football_simulator.ui_v2.pages.matches_page', 'football_simulator.ui_v2.pages.player_profile_page', 'football_simulator.ui_v2.pages.players_page', 'football_simulator.ui_v2.pages.saves_page', 'football_simulator.ui_v2.pages.season_overview_page', 'football_simulator.ui_v2.pages.team_profile_page', 'football_simulator.ui_v2.pages.teams_page', 'football_simulator.ui_v2.pages.transfers_page', 'football_simulator.ui_v2.pages.weekly_report_page', 'football_simulator.ui_v2.components.team_crest', 'football_simulator.ui_v2.design_tokens'],
     hookspath=[],
     hooksconfig={},

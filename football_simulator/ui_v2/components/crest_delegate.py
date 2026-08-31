@@ -27,7 +27,7 @@ class TeamCrestTextDelegate(QStyledItemDelegate):
     def __init__(
         self,
         parent: Optional[object] = None,
-        crest_size: int = 36,
+        crest_size: int = 42,
         color: str = TEXT_COLOR,
     ) -> None:
         super().__init__(parent)  # type: ignore[arg-type]
@@ -46,7 +46,7 @@ class TeamCrestTextDelegate(QStyledItemDelegate):
         painter.save()
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         rect = opt.rect.adjusted(10, 6, -10, -6)
-        crest_size = min(min(rect.height(), self._crest_size), 48)
+        crest_size = min(min(rect.height(), self._crest_size), 56)
         crest_rect = QRect(
             rect.left(),
             rect.top() + (rect.height() - crest_size) // 2,

@@ -160,8 +160,8 @@ class MatchCenterPage(EntityPageBase):
 
         self._table = EntityTable(_LIST_COLUMNS, navigator=self._context.navigate)
         # 队徽：主客队名列（UI#5 统一）。
-        self._home_crest_delegate = TeamCrestTextDelegate(parent=self._table.view, crest_size=32)
-        self._away_crest_delegate = TeamCrestTextDelegate(parent=self._table.view, crest_size=32)
+        self._home_crest_delegate = TeamCrestTextDelegate(parent=self._table.view, crest_size=38)
+        self._away_crest_delegate = TeamCrestTextDelegate(parent=self._table.view, crest_size=38)
         self._table.view.setItemDelegateForColumn(3, self._home_crest_delegate)
         self._table.view.setItemDelegateForColumn(5, self._away_crest_delegate)
         # 结果列口径：主队视角（主胜/平/客胜）。

@@ -15,7 +15,7 @@ a = Analysis(
     binaries=[],
     datas=[
         ("足球模拟器总配置.json", "."),
-        ("team_badges_40/PNG", "team_badges_40/PNG"),
+        ("team_badges_40_v2/PNG", "team_badges_40_v2/PNG"),
     ],
     hiddenimports=[
         # 动态路由加载的页面（main_window._PARALLEL_PAGE_SPECS 经 importlib 加载，

@@ -68,7 +68,7 @@ def _badge_root() -> Optional[Path]:
         _BADGE_ROOT_LOADED = True
         from football_simulator.runtime import resource_root
 
-        candidate = resource_root() / "team_badges_40" / "PNG"
+        candidate = resource_root() / "team_badges_40_v2" / "PNG"
         _BADGE_ROOT = candidate if candidate.is_dir() else None
     return _BADGE_ROOT
 
@@ -189,7 +189,7 @@ def draw_team_crest(
 class TeamCrest(QWidget):
     """固定尺寸的队徽控件；可用于页头、比分板等上下文。"""
 
-    def __init__(self, team_name: str, size: int = 48, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, team_name: str, size: int = 52, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self._team_name = team_name
         self._size = size

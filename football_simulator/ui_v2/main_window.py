@@ -26,8 +26,8 @@ import importlib
 import traceback
 from typing import Dict, Optional, Tuple, Type
 
-from PySide6.QtCore import QRectF, QThread, Qt, QUrl, Signal
-from PySide6.QtGui import QColor, QDesktopServices, QFont, QIcon, QKeySequence, QPainter, QPixmap, QShortcut
+from PySide6.QtCore import QRectF, QSize, QThread, Qt, QUrl, Signal
+from PySide6.QtGui import QColor, QDesktopServices, QFont, QIcon, QKeySequence, QPainter, QPen, QPixmap, QShortcut
 from PySide6.QtWidgets import (
     QComboBox,
     QFrame,
@@ -93,26 +93,78 @@ _NAV_ICON_SYMBOLS = {
 
 
 def _nav_icon(symbol: str) -> QIcon:
-    """生成 22×22 的圆角小图标（深色底 + 青色符号）。"""
-    pixmap = QPixmap(22, 22)
+    """生成 34×34 的圆角大图标（深色底 + 青色符号）。"""
+    size = 34
+    pixmap = QPixmap(size, size)
     pixmap.fill(Qt.GlobalColor.transparent)
     painter = QPainter(pixmap)
     painter.setRenderHint(QPainter.RenderHint.Antialiasing)
     painter.setPen(Qt.PenStyle.NoPen)
     painter.setBrush(QColor("#122238"))
-    painter.drawRoundedRect(QRectF(1.0, 1.0, 20.0, 20.0), 6.0, 6.0)
+    painter.drawRoundedRect(QRectF(1.0, 1.0, size - 2.0, size - 2.0), 10.0, 10.0)
     painter.setPen(QColor("#7dd3fc"))
     font = QFont()
-    font.setPixelSize(13)
+    font.setPixelSize(20)
     font.setBold(True)
     painter.setFont(font)
     painter.drawText(
-        QRectF(0.0, 0.0, 22.0, 22.0),
+        QRectF(0.0, 0.0, size, size),
         Qt.AlignmentFlag.AlignCenter,
         symbol,
     )
     painter.end()
     return QIcon(pixmap)
+
+
+class _ArrowButton(QPushButton):
+    """大箭头导航按钮（后退/前进）：圆角底 + 粗箭头，悬停高亮。"""
+
+    def __init__(self, direction: int, parent: Optional[QWidget] = None) -> None:
+        super().__init__(parent)
+        self._direction = direction  # -1 左箭头（后退）/ +1 右箭头（前进）
+        self.setFixedSize(48, 38)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+
+    def paintEvent(self, event) -> None:  # noqa: N802 - Qt API
+        del event
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        enabled = self.isEnabled()
+        hovered = enabled and self.underMouse()
+        painter.setPen(Qt.PenStyle.NoPen)
+        if not enabled:
+            painter.setBrush(QColor("#1a2536"))
+        elif hovered:
+            painter.setBrush(QColor("#1f3a5f"))
+        else:
+            painter.setBrush(QColor("#122238"))
+        painter.drawRoundedRect(QRectF(1.5, 1.5, self.width() - 3, self.height() - 3), 12.0, 12.0)
+
+        if not enabled:
+            arrow_color = QColor("#5a6b80")
+        elif hovered:
+            arrow_color = QColor("#ffffff")
+        else:
+            arrow_color = QColor("#7dd3fc")
+        pen = QPen(
+            arrow_color,
+            3.4,
+            Qt.PenStyle.SolidLine,
+            Qt.PenCapStyle.RoundCap,
+            Qt.PenJoinStyle.RoundJoin,
+        )
+        painter.setPen(pen)
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        cx = self.width() // 2
+        cy = self.height() // 2
+        if self._direction < 0:
+            painter.drawLine(cx + 9, cy - 9, cx - 8, cy)
+            painter.drawLine(cx - 8, cy, cx + 9, cy + 9)
+            painter.drawLine(cx - 4, cy, cx + 10, cy)
+        else:
+            painter.drawLine(cx - 9, cy - 9, cx + 8, cy)
+            painter.drawLine(cx + 8, cy, cx - 9, cy + 9)
+            painter.drawLine(cx - 10, cy, cx + 4, cy)
 
 # 实体详情路由 → 所属一级导航（侧栏高亮镜像用）。
 _SIDEBAR_PARENT_BY_ROUTE = {
@@ -316,8 +368,8 @@ class MainWindow(QMainWindow):
         nav_panel = QFrame()
         nav_panel.setObjectName("navPanel")
         nav_layout = QVBoxLayout(nav_panel)
-        nav_layout.setContentsMargins(16, 16, 16, 16)
-        nav_layout.setSpacing(12)
+        nav_layout.setContentsMargins(20, 20, 20, 20)
+        nav_layout.setSpacing(14)
 
         title = QLabel("Football Simulator")
         title.setObjectName("titleLabel")
@@ -328,6 +380,7 @@ class MainWindow(QMainWindow):
 
         self.nav_list = QListWidget()
         self.nav_list.setObjectName("navList")
+        self.nav_list.setIconSize(QSize(34, 34))
         for label, key in NAV_ITEMS:
             item = QListWidgetItem(label)
             item.setData(Qt.UserRole, key)
@@ -367,14 +420,12 @@ class MainWindow(QMainWindow):
         # 第一行：后退 / 前进 / 面包屑 / 全局搜索
         nav_row = QHBoxLayout()
         nav_row.setSpacing(8)
-        self.back_button = QPushButton("←")
+        self.back_button = _ArrowButton(-1)
         self.back_button.setToolTip("后退")
-        self.back_button.setFixedWidth(40)
         self.back_button.setEnabled(False)
         self.back_button.clicked.connect(self.router.back)
-        self.forward_button = QPushButton("→")
+        self.forward_button = _ArrowButton(1)
         self.forward_button.setToolTip("前进")
-        self.forward_button.setFixedWidth(40)
         self.forward_button.setEnabled(False)
         self.forward_button.clicked.connect(self.router.forward)
         self.breadcrumb_bar = QWidget()

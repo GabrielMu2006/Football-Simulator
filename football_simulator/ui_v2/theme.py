@@ -12,13 +12,13 @@ QMainWindow, QFrame, QSplitter, QStackedWidget, QTabWidget::pane {
     background: #0b1220;
 }
 QLabel#titleLabel {
-    font-size: 22px;
+    font-size: 26px;
     font-weight: 900;
     color: #f8fbff;
 }
 QLabel#subtitleLabel {
     color: #91a8c5;
-    font-size: 13px;
+    font-size: 14px;
 }
 QFrame#navPanel, QFrame#statusPanel, QFrame#contentPanel, QFrame#cardFrame {
     background: #111c2e;
@@ -29,13 +29,15 @@ QListWidget#navList {
     background: transparent;
     border: none;
     outline: none;
-    padding: 8px;
+    padding: 10px;
+    font-size: 16px;
 }
 QListWidget#navList::item {
-    padding: 11px 13px;
-    margin: 3px 4px;
-    border-radius: 9px;
+    padding: 16px 18px;
+    margin: 4px 6px;
+    border-radius: 12px;
     color: #cbd7e6;
+    font-size: 16px;
 }
 QListWidget#navList::item:hover {
     background: #1b304d;

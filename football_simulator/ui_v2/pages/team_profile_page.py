@@ -262,7 +262,7 @@ class _LinkColumnDelegate(QStyledItemDelegate):
         painter.setPen(QColor(LINK_COLOR))
         rect = opt.rect.adjusted(8, 0, -8, 0)
         if self._crest:
-            crest_size = min(rect.height(), 32)
+            crest_size = min(rect.height(), 38)
             crest_rect = QRect(
                 rect.left(),
                 rect.top() + (rect.height() - crest_size) // 2,
@@ -564,7 +564,7 @@ class TeamProfilePage(EntityPageBase):
             self._page_header.setParent(None)
             self._page_header.deleteLater()
         breadcrumbs: list = []
-        self._team_crest = TeamCrest(title, size=56)
+        self._team_crest = TeamCrest(title, size=64)
         self._page_header = PageHeader(
             title,
             breadcrumbs,
