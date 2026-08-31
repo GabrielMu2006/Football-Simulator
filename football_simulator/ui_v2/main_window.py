@@ -303,6 +303,9 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Football Simulator UI v2")
         self.resize(1680, 980)
         self.setMinimumSize(1440, 860)
+        # macOS Tahoe（26.x）上原生全屏 + 模态弹窗/窗口重建会触发 Space 滑动并退回桌面；
+        # 禁用原生全屏：绿钮变为“填满屏幕/最大化”，不进入全屏 Space。
+        self.setWindowFlag(Qt.WindowType.WindowFullscreenButtonHint, False)
         self._build_ui()
         self.router.navigate(Route("dashboard"))
         self._load_save(self.service.current_save_name())
