@@ -831,6 +831,15 @@ class MainWindow(QMainWindow):
         self.simulate_button.setText("模拟下一周")
         self.snapshot = result.snapshot
         self._refresh_views()
+        # 已在战报页时：推进后让战报跟随到新一周（周次变化才导航）。
+        _current = self.router.current
+        if _current is not None and _current.name == "weekly_report":
+            try:
+                _week = int(_current.params.get("week") or 0)
+            except Exception:
+                _week = 0
+            if _week != self.snapshot.current_week:
+                self.router.navigate(Route("weekly_report", week=self.snapshot.current_week))
         # 用户确认 #9：单步不再自动打开战报；批量到赛季末/待办给出结果页。
         if self._simulate_mode == "until_season_end":
             if result.season_completed_now:

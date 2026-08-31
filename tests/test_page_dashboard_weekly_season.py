@@ -14,7 +14,7 @@
 - 周报（§8.7）：第 3 周分组行数 == list_matches(week=3)、行激活 → match、
   第 25 周休赛周空状态文案、上一周/下一周导航与边界禁用；
 - 赛季总览（§8.4 + 写流程）：52 周时间线与状态、能力审核表行数 == pending 数、
-  默认“保留”、提交全部“采纳”后 pending 清空且球员池能力 == new_ability、
+  默认“采纳”、提交全部“采纳”后 pending 清空且球员池能力 == new_ability、
   转会/选秀待办链接路由、赛季选择器、归档冠军、进行中榜首摘要；
 - 滚动硬规则（§8.2）：1440×860 与 1680×980 两种尺寸 × 关键状态零嵌套滚动；
 - 截图输出到 Reviews/ui_audit/phase4/（dashboard_* / weekly_* / season_*）。
@@ -645,11 +645,11 @@ class SeasonOverviewPageTests(unittest.TestCase):
             sorted(item["name"] for item in page._review_items),
             sorted(item["name"] for item in pending),
         )
-        # 每行一组“保留/采纳”互斥按钮，默认保留。
+        # 每行一组“保留/采纳”互斥按钮，默认采纳。
         self.assertEqual(len(page._review_buttons), len(pending))
         for name, buttons in page._review_buttons.items():
-            self.assertTrue(buttons["keep"].isChecked())
-            self.assertFalse(buttons["approve"].isChecked())
+            self.assertFalse(buttons["keep"].isChecked())
+            self.assertTrue(buttons["approve"].isChecked())
         self.assertTrue(page._review_submit.isEnabled())
 
         # 安全约束：service 为 None 时审核表仍只读展示（待办来自同一份数据），

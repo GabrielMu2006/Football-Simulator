@@ -7,7 +7,7 @@ Route：``Route("season_overview", season=<n>)``（season 必填）。
 - 待办区（写流程核心）：
   * 能力变动审核（``pending_ability_review``）：表格列出
     球员/位置/当前能力/新能力/变化（+绿 -红徽标），每行“保留/采纳”选择
-    （默认保留；语义：能力越高越好，“采纳”= 采用 new_ability），
+    （默认采纳；语义：能力越高越好，“采纳”= 采用 new_ability），
     底部“提交审核结果”→ ``context.service.apply_ability_review(save_name,
     {name: is_approved})``；成功后刷新并显示“已提交 N 项（采纳 M 项）”，
     失败弹 ``QMessageBox``；提交后待办清空、显示“暂无待审核能力变动”；
@@ -414,7 +414,7 @@ class SeasonOverviewPage(EntityPageBase):
         review_layout.addWidget(
             section_header(
                 "能力变动审核",
-                "能力越高越好：“采纳”= 采用新能力，“保留”= 维持当前能力（默认）。",
+                "能力越高越好：“采纳”= 采用新能力（默认），“保留”= 维持当前能力。",
             )
         )
 
@@ -555,10 +555,10 @@ class SeasonOverviewPage(EntityPageBase):
         keep_button = QPushButton("保留")
         keep_button.setObjectName("reviewKeepButton")
         keep_button.setCheckable(True)
-        keep_button.setChecked(True)
         approve_button = QPushButton("采纳")
         approve_button.setObjectName("reviewApproveButton")
         approve_button.setCheckable(True)
+        approve_button.setChecked(True)  # 默认采纳
         group = QButtonGroup(widget)
         group.setExclusive(True)
         group.addButton(keep_button)
@@ -588,6 +588,13 @@ class SeasonOverviewPage(EntityPageBase):
             return
         self._review_message = f"已提交 {len(decisions)} 项（采纳 {approved_count} 项）"
         self.refresh()
+        # 让外壳重新加载快照：待办角标/模拟按钮立即更新，无需手动点刷新。
+        reload_hook = self._context.request_save_reload
+        if reload_hook is not None:
+            try:
+                reload_hook(self.save_name())
+            except Exception:
+                pass
 
     # -- 赛季时间线 -------------------------------------------------------------
 
