@@ -1,7 +1,7 @@
 """TeamCrestTextDelegate：表格球队名列的统一"队徽 + 文本"渲染。
 
 抽自 teams_page 的私有 delegate，供比赛列表 / 球员目录 / 周报等全站复用，
-保证队徽尺寸与绘制一致（默认 28px，可传入 crest_size 覆盖）。
+保证队徽尺寸与绘制一致（默认 36px，可传入 crest_size 覆盖）。
 """
 
 from __future__ import annotations
@@ -27,7 +27,7 @@ class TeamCrestTextDelegate(QStyledItemDelegate):
     def __init__(
         self,
         parent: Optional[object] = None,
-        crest_size: int = 28,
+        crest_size: int = 36,
         color: str = TEXT_COLOR,
     ) -> None:
         super().__init__(parent)  # type: ignore[arg-type]
@@ -45,8 +45,8 @@ class TeamCrestTextDelegate(QStyledItemDelegate):
             return
         painter.save()
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        rect = opt.rect.adjusted(8, 4, -8, -4)
-        crest_size = min(min(rect.height(), self._crest_size), 32)
+        rect = opt.rect.adjusted(10, 6, -10, -6)
+        crest_size = min(min(rect.height(), self._crest_size), 48)
         crest_rect = QRect(
             rect.left(),
             rect.top() + (rect.height() - crest_size) // 2,

@@ -519,7 +519,7 @@ class DashboardPage(EntityPageBase):
             home_layout = QHBoxLayout(home_holder)
             home_layout.setContentsMargins(0, 0, 0, 0)
             home_layout.setSpacing(6)
-            home_layout.addWidget(TeamCrest(row.home_name, size=18), 0)
+            home_layout.addWidget(TeamCrest(row.home_name, size=24), 0)
             home_layout.addWidget(home_link, 1)
             grid.addWidget(home_holder, row_index, 1)
 
@@ -539,7 +539,7 @@ class DashboardPage(EntityPageBase):
             away_layout = QHBoxLayout(away_holder)
             away_layout.setContentsMargins(0, 0, 0, 0)
             away_layout.setSpacing(6)
-            away_layout.addWidget(TeamCrest(row.away_name, size=18), 0)
+            away_layout.addWidget(TeamCrest(row.away_name, size=24), 0)
             away_layout.addWidget(away_link, 1)
             grid.addWidget(away_holder, row_index, 3)
 

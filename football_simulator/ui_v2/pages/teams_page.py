@@ -104,7 +104,7 @@ class _TeamCrestTextDelegate(QStyledItemDelegate):
         painter.save()
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         rect = opt.rect.adjusted(8, 4, -8, -4)
-        crest_size = min(rect.height(), 28)
+        crest_size = min(rect.height(), 40)
         crest_rect = QRect(
             rect.left(),
             rect.top() + (rect.height() - crest_size) // 2,

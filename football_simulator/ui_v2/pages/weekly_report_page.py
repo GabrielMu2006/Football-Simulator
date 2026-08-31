@@ -65,7 +65,7 @@ _MATCH_COLUMNS = (
 )
 
 # 完整展开高度 = 表头 + 行数 × 行高 + 边框/缓冲（保证纵向滚动条永不激活）。
-_ROW_HEIGHT = 34
+_ROW_HEIGHT = 44
 _TABLE_HEIGHT_BUFFER = 12
 
 
@@ -308,8 +308,8 @@ class WeeklyReportPage(EntityPageBase):
 
         table = EntityTable(_MATCH_COLUMNS, navigator=navigate)
         table.view.verticalHeader().setDefaultSectionSize(_ROW_HEIGHT)
-        table._home_crest_delegate = TeamCrestTextDelegate(parent=table.view, crest_size=20)
-        table._away_crest_delegate = TeamCrestTextDelegate(parent=table.view, crest_size=20)
+        table._home_crest_delegate = TeamCrestTextDelegate(parent=table.view, crest_size=32)
+        table._away_crest_delegate = TeamCrestTextDelegate(parent=table.view, crest_size=32)
         table.view.setItemDelegateForColumn(0, table._home_crest_delegate)
         table.view.setItemDelegateForColumn(2, table._away_crest_delegate)
         dtos = [_weekly_row(row) for row in rows]

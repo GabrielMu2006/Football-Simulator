@@ -387,7 +387,7 @@ class _LinkColumnDelegate(QStyledItemDelegate):
         painter.setPen(QColor("#7dd3fc"))
         rect = opt.rect.adjusted(8, 0, -8, 0)
         if self._show_crest:
-            crest_size = min(rect.height(), 24)
+            crest_size = min(rect.height(), 32)
             crest_rect = QRect(rect.left(), rect.top() + (rect.height() - crest_size) // 2, crest_size, crest_size)
             draw_team_crest(painter, crest_rect, str(text), size=crest_size)
             rect = QRect(

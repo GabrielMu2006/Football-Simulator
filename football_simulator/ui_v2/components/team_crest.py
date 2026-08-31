@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Callable, Dict, Optional
 
 from PySide6.QtCore import QRect, QRectF, QSize, Qt
-from PySide6.QtGui import QColor, QFont, QPainter, QPen, QPixmap
+from PySide6.QtGui import QColor, QFont, QGuiApplication, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import QWidget
 
 #: 自定义队徽提供者：签名 (team_name) -> Optional[图片路径/URL]。
@@ -91,18 +91,28 @@ def _badge_path(team_name: str) -> Optional[str]:
     return _BADGE_INDEX.get(key)
 
 
+def _device_pixel_ratio() -> float:
+    """当前屏幕设备像素比（Retina/高 DPI 为 2.0，普通屏幕为 1.0）。"""
+    screen = QGuiApplication.primaryScreen()
+    return float(screen.devicePixelRatio()) if screen is not None else 1.0
+
+
 @lru_cache(maxsize=256)
 def _loaded_image_pixmap(path: str, size: int) -> Optional[QPixmap]:
-    """带缓存的图片队徽：避免每格重复解码 1024px PNG。"""
+    """带缓存的图片队徽：按设备像素比渲染，保证高分屏依然清晰。"""
     pixmap = QPixmap(path)
     if pixmap.isNull():
         return None
-    return pixmap.scaled(
-        size,
-        size,
+    dpr = _device_pixel_ratio()
+    target = max(1, int(round(size * dpr)))
+    scaled = pixmap.scaled(
+        target,
+        target,
         Qt.AspectRatioMode.KeepAspectRatio,
         Qt.TransformationMode.SmoothTransformation,
     )
+    scaled.setDevicePixelRatio(dpr)
+    return scaled
 
 
 def _crest_pixmap(team_name: str, size: int) -> QPixmap:
@@ -179,7 +189,7 @@ def draw_team_crest(
 class TeamCrest(QWidget):
     """固定尺寸的队徽控件；可用于页头、比分板等上下文。"""
 
-    def __init__(self, team_name: str, size: int = 40, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, team_name: str, size: int = 48, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self._team_name = team_name
         self._size = size

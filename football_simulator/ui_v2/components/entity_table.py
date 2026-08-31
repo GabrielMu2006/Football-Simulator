@@ -235,6 +235,10 @@ class EntityTable(QWidget):
                 header.setSectionResizeMode(index, QHeaderView.ResizeMode.ResizeToContents)
 
         self._view.verticalHeader().setVisible(False)
+        # 统一行高：让队徽（22–40px 图片）有足够行内空间完整显示。
+        self._view.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
+        self._view.verticalHeader().setDefaultSectionSize(44)
+        self._view.verticalHeader().setMinimumSectionSize(40)
         self._view.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
         self._view.setSelectionMode(QTableView.SelectionMode.SingleSelection)
         self._view.setEditTriggers(QTableView.EditTrigger.NoEditTriggers)
