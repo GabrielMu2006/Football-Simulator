@@ -313,18 +313,17 @@ class HistorySelectorTests(unittest.TestCase):
         harness, page = _make_history(SAVE_A)
         # 无参 → 最新已归档赛季（第 1 赛季；第 2 赛季进行中、无归档，不得出现）。
         self.assertEqual(page._season, 1)
-        combo = page._season_combo
-        self.assertIsNotNone(combo)
-        self.assertEqual(combo.count(), 1)
-        self.assertIn("第 1 赛季", combo.itemText(0))
-        self.assertIn("已归档", combo.itemText(0))
+        buttons = page._season_buttons
+        self.assertEqual(len(buttons), 1)
+        self.assertIn("第 1 赛季", buttons[1].text())
+        self.assertTrue(buttons[1].isChecked())
 
     def test_season_selector_navigates_to_new_route(self) -> None:
         harness, page = _make_history(SAVE_D, apply_to_pages=True)
         self.assertEqual(page._season, 2)
-        combo = page._season_combo
-        self.assertEqual(combo.count(), 2)
-        combo.setCurrentIndex(0)  # 切到第 1 赛季
+        buttons = page._season_buttons
+        self.assertEqual(len(buttons), 2)
+        buttons[1].click()  # 点击第 1 赛季卡片 → 进入该赛季历史
         self.assertEqual(harness.routes[-1], Route("history", season=1))
         # 外壳应用新路由后页面按第 1 赛季刷新。
         self.assertEqual(page._season, 1)

@@ -116,6 +116,15 @@ _STAGE_FINAL = "赛季末"
 _MUTED_STYLE = f"color: {TEXT_COLOR_MUTED}; background: transparent;"
 _BRIGHT_STYLE = f"color: {TEXT_COLOR_BRIGHT}; background: transparent; font-weight: 700;"
 
+_SEASON_BUTTON_STYLE = (
+    "QPushButton#historySeasonButton {"
+    "  padding: 10px 18px; border-radius: 10px; background: #122238;"
+    "  color: #cbd7e6; border: 1px solid #263b5b; font-weight: 700; }"
+    "QPushButton#historySeasonButton:hover { background: #1b304d; color: #f8fbff; }"
+    "QPushButton#historySeasonButton:checked { background: #1167d8; color: #ffffff;"
+    "  border: 1px solid #1167d8; }"
+)
+
 _STANDING_COLUMNS: Tuple[ColumnSpec, ...] = (
     ColumnSpec("rank", "名次", width=64, alignment=Qt.AlignmentFlag.AlignRight),
     ColumnSpec("team_name", "球队", width=200, stretch=True),
@@ -349,7 +358,7 @@ class HistoryPage(EntityPageBase):
         self._top20_rows: Tuple[_Top20Row, ...] = ()
         self._settlement_rows: Tuple[_SettlementRow, ...] = ()
         self._page_header: Optional[PageHeader] = None
-        self._season_combo: Optional[QComboBox] = None
+        self._season_buttons: Dict[int, QPushButton] = {}
         self._division_combo: Optional[QComboBox] = None
         self._overview_layout: Optional[QVBoxLayout] = None
         self._champion_links: List[EntityLink] = []
@@ -378,26 +387,28 @@ class HistoryPage(EntityPageBase):
         content_layout.setContentsMargins(0, 0, 0, 0)
         content_layout.setSpacing(10)
 
-        # 页头：标题固定；右侧赛季选择器跨刷新复用。
-        selector = QWidget(self._content)
-        selector_layout = QHBoxLayout(selector)
-        selector_layout.setContentsMargins(0, 0, 0, 0)
-        selector_layout.setSpacing(6)
-        caption = QLabel("赛季", selector)
-        caption.setStyleSheet(_MUTED_STYLE)
-        self._season_combo = QComboBox(selector)
-        self._season_combo.setObjectName("historySeasonSelector")
-        self._season_combo.currentIndexChanged.connect(self._on_season_selected)
-        selector_layout.addWidget(caption)
-        selector_layout.addWidget(self._season_combo)
+        # 页头：标题固定；下方为可横向滑动的赛季选择条（点击进入该赛季历史）。
         self._page_header = PageHeader(
             "历史与荣誉",
             breadcrumbs=[],
             navigator=self._context.navigate,
-            actions=[selector],
             parent=self._content,
         )
         content_layout.addWidget(self._page_header)
+
+        season_strip = QScrollArea(self._content)
+        season_strip.setObjectName("historySeasonStrip")
+        season_strip.setWidgetResizable(True)
+        season_strip.setFrameShape(QFrame.Shape.NoFrame)
+        season_strip.setFixedHeight(62)
+        season_strip.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        season_strip.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        strip_content = QWidget(season_strip)
+        self._season_strip_layout = QHBoxLayout(strip_content)
+        self._season_strip_layout.setContentsMargins(0, 4, 0, 4)
+        self._season_strip_layout.setSpacing(8)
+        season_strip.setWidget(strip_content)
+        content_layout.addWidget(season_strip)
 
         self._tabs = QTabWidget(self._content)
 
@@ -722,16 +733,26 @@ class HistoryPage(EntityPageBase):
         self._render_settlement(self._filter_settlement_rows(self._current_filter_text()))
 
     def _render_season_selector(self, data: "_HistoryData") -> None:
-        combo = self._season_combo
-        if combo is None:
+        layout = getattr(self, "_season_strip_layout", None)
+        if layout is None:
             return
-        combo.blockSignals(True)
-        combo.clear()
+        while layout.count():
+            item = layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
+        self._season_buttons = {}
         for season_number in data.archived_seasons:
-            combo.addItem(f"第 {season_number} 赛季（已归档）", season_number)
-        index = combo.findData(data.season_number)
-        combo.setCurrentIndex(max(0, index))
-        combo.blockSignals(False)
+            button = QPushButton(f"第 {season_number} 赛季")
+            button.setObjectName("historySeasonButton")
+            button.setCheckable(True)
+            button.setChecked(season_number == data.season_number)
+            button.setCursor(Qt.CursorShape.PointingHandCursor)
+            button.setStyleSheet(_SEASON_BUTTON_STYLE)
+            button.clicked.connect(lambda _=False, s=season_number: self._navigate_season(s))
+            layout.addWidget(button)
+            self._season_buttons[season_number] = button
+        layout.addStretch(1)
 
     # -- 页签 0：赛季总览 ------------------------------------------------------
 
@@ -1083,17 +1104,10 @@ class HistoryPage(EntityPageBase):
     def _on_tab_changed(self, _index: int) -> None:
         self._save_state()
 
-    def _on_season_selected(self, _index: int) -> None:
-        combo = self._season_combo
-        if combo is None or self._season is None:
+    def _navigate_season(self, season_number: int) -> None:
+        if season_number == self._season:
             return
-        data = combo.itemData(_index)
-        if data is None:
-            return
-        season = int(data)
-        if season == self._season:
-            return
-        self.navigate(Route("history", season=season))
+        self.navigate(Route("history", season=season_number))
 
     # -- 路由解析（链接合同） ---------------------------------------------------
 
