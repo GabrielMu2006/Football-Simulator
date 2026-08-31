@@ -36,7 +36,7 @@ python3 -m venv .venv-ui-v2
 ## 核心内容
 
 - 40 支虚拟球队：每个新存档随机排序，前 20 支进入一级联赛，后 20 支进入次级联赛。
-- 200 名真实球员池：每个新存档随机排序，前 50 名作为初始真实球员，其余依次进入后续选秀池。
+- 250 名真实球员池（200 基础 + 50 新增，见 `real_player_additions_50.md`）：每个新存档随机排序，前 50 名作为初始真实球员，其余依次进入后续选秀池。
 - 每队基础阵容：1 名门将、4 名后卫、3 名中场、3 名前锋。
 - 一级联赛：完整比赛模拟，统计进球、助攻、创造机会、成功防守、扑救、零封、评分和身价。
 - 次级联赛：完整比赛模拟，统计权重低于一级；独立升降级与杯赛。
@@ -135,6 +135,8 @@ ui_v2_main.py                唯一入口
 football_simulator/          游戏逻辑、SQLite 持久化、查询层、UI
 assets/                      应用图标（app.icns / app.ico / PNG）
 team_badges_40_v2/           40 支球队队标 V2（PNG）
+real_player_star_pool_200.md 真实球员池文档（200 基础）
+real_player_additions_50.md  真实球员池新增 50 人文档（已合并进配置）
 scripts/                     图标生成、DMG 打包、Windows 构建脚本
 tests/                       冻结测试 / 页面验收测试
 build_macos_ui_v2_app.sh     macOS PyInstaller 构建

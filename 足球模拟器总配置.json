@@ -885,6 +885,206 @@
     {
       "name": "Khvicha Kvaratskhelia",
       "position": "FW"
+    },
+    {
+      "name": "Bart Verbruggen",
+      "position": "GK"
+    },
+    {
+      "name": "David de Gea",
+      "position": "GK"
+    },
+    {
+      "name": "Diogo Costa",
+      "position": "GK"
+    },
+    {
+      "name": "Rui Patricio",
+      "position": "GK"
+    },
+    {
+      "name": "Wojciech Szczesny",
+      "position": "GK"
+    },
+    {
+      "name": "Anatoliy Trubin",
+      "position": "GK"
+    },
+    {
+      "name": "Kepa Arrizabalaga",
+      "position": "GK"
+    },
+    {
+      "name": "Victor Osimhen",
+      "position": "FW"
+    },
+    {
+      "name": "Ollie Watkins",
+      "position": "FW"
+    },
+    {
+      "name": "Gianluca Scamacca",
+      "position": "FW"
+    },
+    {
+      "name": "Mauro Icardi",
+      "position": "FW"
+    },
+    {
+      "name": "Jorginho",
+      "position": "MF"
+    },
+    {
+      "name": "Tijjani Reijnders",
+      "position": "MF"
+    },
+    {
+      "name": "Rodrigo Bentancur",
+      "position": "MF"
+    },
+    {
+      "name": "Ismael Bennacer",
+      "position": "MF"
+    },
+    {
+      "name": "Piotr Zielinski",
+      "position": "MF"
+    },
+    {
+      "name": "Fabian Ruiz",
+      "position": "MF"
+    },
+    {
+      "name": "Douglas Luiz",
+      "position": "MF"
+    },
+    {
+      "name": "Franck Kessie",
+      "position": "MF"
+    },
+    {
+      "name": "Marcel Sabitzer",
+      "position": "MF"
+    },
+    {
+      "name": "Amadou Onana",
+      "position": "MF"
+    },
+    {
+      "name": "Gabriel Magalhaes",
+      "position": "DF"
+    },
+    {
+      "name": "Ben White",
+      "position": "DF"
+    },
+    {
+      "name": "Riccardo Calafiori",
+      "position": "DF"
+    },
+    {
+      "name": "Marc Guehi",
+      "position": "DF"
+    },
+    {
+      "name": "Sven Botman",
+      "position": "DF"
+    },
+    {
+      "name": "Andrew Robertson",
+      "position": "DF"
+    },
+    {
+      "name": "Ibrahima Konate",
+      "position": "DF"
+    },
+    {
+      "name": "Pau Torres",
+      "position": "DF"
+    },
+    {
+      "name": "Antonio Silva",
+      "position": "DF"
+    },
+    {
+      "name": "Kyle Walker",
+      "position": "DF"
+    },
+    {
+      "name": "Goncalo Inacio",
+      "position": "DF"
+    },
+    {
+      "name": "Ousmane Diomande",
+      "position": "DF"
+    },
+    {
+      "name": "Nicolas Otamendi",
+      "position": "DF"
+    },
+    {
+      "name": "Stefan de Vrij",
+      "position": "DF"
+    },
+    {
+      "name": "Benjamin Pavard",
+      "position": "DF"
+    },
+    {
+      "name": "Francesco Acerbi",
+      "position": "DF"
+    },
+    {
+      "name": "Rayan Ait-Nouri",
+      "position": "DF"
+    },
+    {
+      "name": "David Alaba",
+      "position": "DF"
+    },
+    {
+      "name": "Dani Carvajal",
+      "position": "DF"
+    },
+    {
+      "name": "Cesar Azpilicueta",
+      "position": "DF"
+    },
+    {
+      "name": "Jarrad Branthwaite",
+      "position": "DF"
+    },
+    {
+      "name": "Aaron Wan-Bissaka",
+      "position": "DF"
+    },
+    {
+      "name": "Inigo Martinez",
+      "position": "DF"
+    },
+    {
+      "name": "Andreas Christensen",
+      "position": "DF"
+    },
+    {
+      "name": "Pedro Porro",
+      "position": "DF"
+    },
+    {
+      "name": "Josip Stanisic",
+      "position": "DF"
+    },
+    {
+      "name": "Jean-Clair Todibo",
+      "position": "DF"
+    },
+    {
+      "name": "Edmond Tapsoba",
+      "position": "DF"
+    },
+    {
+      "name": "Oleksandr Zinchenko",
+      "position": "DF"
     }
   ]
 }

@@ -52,6 +52,7 @@ from football_simulator.state import SaveSnapshot
 from football_simulator.ui_v2 import navigation
 from football_simulator.ui_v2.components import EmptyState, EntityLink
 from football_simulator.ui_v2.components.global_search import GlobalSearchBox
+from football_simulator.ui_v2.components.tutorial import TutorialDialog
 from football_simulator.ui_v2.navigation import Route, Router
 from football_simulator.ui_v2.pages.entity_page_base import EntityPageBase, PageContext
 from football_simulator.ui_v2.services import SimulatorUIService
@@ -305,6 +306,7 @@ class MainWindow(QMainWindow):
         self._build_ui()
         self.router.navigate(Route("dashboard"))
         self._load_save(self.service.current_save_name())
+        TutorialDialog.show_first_run_if_needed(self)
 
     # ------------------------------------------------------------------
     # UI 构建
@@ -496,6 +498,10 @@ class MainWindow(QMainWindow):
         control_row.addWidget(self.advance_button)
         control_row.addWidget(self.weekly_button)
         control_row.addWidget(self.reload_button)
+        self.tutorial_button = QPushButton("教程")
+        self.tutorial_button.setToolTip("查看游戏教程")
+        self.tutorial_button.clicked.connect(lambda: TutorialDialog.show_tutorial(self))
+        control_row.addWidget(self.tutorial_button)
         bar_layout.addLayout(control_row)
         return bar
 
