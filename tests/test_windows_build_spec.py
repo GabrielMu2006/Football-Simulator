@@ -74,8 +74,8 @@ class WindowsSpecSanityTest(unittest.TestCase):
             text = _spec_text(name)
             for source in _datas_files(text):
                 self.assertTrue(
-                    (ROOT / source).is_file(),
-                    f"{name}: datas 引用了不存在的文件: {source}",
+                    (ROOT / source).exists(),
+                    f"{name}: datas 引用了不存在的文件/目录: {source}",
                 )
 
     def test_hiddenimports_cover_all_page_modules(self) -> None:

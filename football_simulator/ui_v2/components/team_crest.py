@@ -5,7 +5,9 @@ from __future__ import annotations
 
 import hashlib
 import re
-from typing import Callable, Optional
+from functools import lru_cache
+from pathlib import Path
+from typing import Callable, Dict, Optional
 
 from PySide6.QtCore import QRect, QRectF, QSize, Qt
 from PySide6.QtGui import QColor, QFont, QPainter, QPen, QPixmap
@@ -53,18 +55,69 @@ def crest_initials(team_name: str) -> str:
     return (team_name or "?").upper()
 
 
+#: 默认队标目录（team_badges_40/PNG，源码运行与 PyInstaller 打包后都可用）。
+_BADGE_ROOT: Optional[Path] = None
+_BADGE_ROOT_LOADED = False
+#: 文件名（去掉 NN_ 前缀后的标准化队名）→ 实际 PNG 路径。
+_BADGE_INDEX: Optional[Dict[str, str]] = None
+
+
+def _badge_root() -> Optional[Path]:
+    global _BADGE_ROOT, _BADGE_ROOT_LOADED
+    if not _BADGE_ROOT_LOADED:
+        _BADGE_ROOT_LOADED = True
+        from football_simulator.runtime import resource_root
+
+        candidate = resource_root() / "team_badges_40" / "PNG"
+        _BADGE_ROOT = candidate if candidate.is_dir() else None
+    return _BADGE_ROOT
+
+
+def _badge_path(team_name: str) -> Optional[str]:
+    """返回 team_name 对应的队标 PNG 路径；未找到返回 None。"""
+    global _BADGE_INDEX
+    root = _badge_root()
+    if root is None:
+        return None
+    if _BADGE_INDEX is None:
+        index: Dict[str, str] = {}
+        for file in root.glob("*.png"):
+            stem = file.stem
+            parts = stem.split("_", 1)
+            key = parts[1] if len(parts) == 2 and parts[0].isdigit() else stem
+            index[key] = str(file)
+        _BADGE_INDEX = index
+    key = re.sub(r"[^A-Za-z0-9]+", "_", team_name).strip("_")
+    return _BADGE_INDEX.get(key)
+
+
+@lru_cache(maxsize=256)
+def _loaded_image_pixmap(path: str, size: int) -> Optional[QPixmap]:
+    """带缓存的图片队徽：避免每格重复解码 1024px PNG。"""
+    pixmap = QPixmap(path)
+    if pixmap.isNull():
+        return None
+    return pixmap.scaled(
+        size,
+        size,
+        Qt.AspectRatioMode.KeepAspectRatio,
+        Qt.TransformationMode.SmoothTransformation,
+    )
+
+
 def _crest_pixmap(team_name: str, size: int) -> QPixmap:
     if CUSTOM_CREST_PROVIDER is not None:
         path = CUSTOM_CREST_PROVIDER(team_name)
         if path:
-            pixmap = QPixmap(path)
-            if not pixmap.isNull():
-                return pixmap.scaled(
-                    size,
-                    size,
-                    Qt.AspectRatioMode.KeepAspectRatio,
-                    Qt.TransformationMode.SmoothTransformation,
-                )
+            pixmap = _loaded_image_pixmap(str(path), size)
+            if pixmap is not None:
+                return pixmap
+
+    builtin_path = _badge_path(team_name)
+    if builtin_path:
+        pixmap = _loaded_image_pixmap(builtin_path, size)
+        if pixmap is not None:
+            return pixmap
 
     pixmap = QPixmap(size, size)
     pixmap.fill(Qt.GlobalColor.transparent)

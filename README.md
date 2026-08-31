@@ -54,8 +54,8 @@ python3 -m venv .venv-ui-v2
 
 - 应用图标：`assets/app.icns`（macOS）与 `assets/app.ico`（Windows），
   均由 `scripts/generate_app_icon.py` 生成。
-- 虚拟队徽：`football_simulator/ui_v2/components/team_crest.py`，按队名确定性生成；
-  未来可通过 `set_custom_crest_provider()` 替换为自定义图片。
+- 虚拟队徽：默认加载 `team_badges_40/PNG` 的 40 支球队队标图片；
+  缺失时回退为按队名确定性生成的文字队徽，也可通过 `set_custom_crest_provider()` 覆盖。
 
 ## 构建 macOS .app 与 DMG
 
@@ -134,6 +134,7 @@ gh release create v0.2.0 \
 ui_v2_main.py                唯一入口
 football_simulator/          游戏逻辑、SQLite 持久化、查询层、UI
 assets/                      应用图标（app.icns / app.ico / PNG）
+team_badges_40/              40 支球队队标（PNG / SVG）
 scripts/                     图标生成、DMG 打包、Windows 构建脚本
 tests/                       冻结测试 / 页面验收测试
 build_macos_ui_v2_app.sh     macOS PyInstaller 构建
