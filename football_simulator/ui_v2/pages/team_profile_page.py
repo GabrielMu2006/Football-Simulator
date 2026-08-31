@@ -557,13 +557,9 @@ class TeamProfilePage(EntityPageBase):
     def _rebuild_header(self, title: str, route: Optional[navigation.Route]) -> None:
         """重建页头（PageHeader 标题在构造时固定）；赛季选择器跨刷新复用。"""
 
-        if self._page_header is not None:
-            assert self._season_caption is not None
-            self._season_caption.setParent(None)
-            self._season_combo.setParent(None)
-            self._page_header.setParent(None)
-            self._page_header.deleteLater()
+        old_header = self._page_header
         breadcrumbs: list = []
+        # 复用控件直接交给新页头；旧页头随后删除，全程不 setParent(None)。
         self._team_crest = TeamCrest(title, size=64)
         self._page_header = PageHeader(
             title,
@@ -576,6 +572,8 @@ class TeamProfilePage(EntityPageBase):
         self._page_header.add_action(self._season_combo)
         assert self._content is not None
         self._content.layout().insertWidget(0, self._page_header)
+        if old_header is not None:
+            old_header.deleteLater()
 
     # -- 契约入口 -------------------------------------------------------------
 

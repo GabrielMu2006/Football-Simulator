@@ -702,14 +702,10 @@ class CompetitionPage(EntityPageBase):
     def _rebuild_header(self, title: str, route: Optional[Route]) -> None:
         """重建页头（PageHeader 标题在构造时固定）；两个下拉跨刷新复用。"""
 
-        if self._page_header is not None:
-            self._competition_caption.setParent(None)
-            self._competition_combo.setParent(None)
-            self._season_caption.setParent(None)
-            self._season_combo.setParent(None)
-            self._page_header.setParent(None)
-            self._page_header.deleteLater()
+        old_header = self._page_header
         breadcrumbs: list = []
+        # 复用控件直接交给新页头（加入布局时会 reparent），旧页头随后删除；
+        # 全程不 setParent(None)，避免 macOS 全屏下出现临时顶层窗口。
         self._page_header = PageHeader(
             title,
             breadcrumbs,
@@ -722,6 +718,8 @@ class CompetitionPage(EntityPageBase):
             ],
         )
         self._content.layout().insertWidget(0, self._page_header)
+        if old_header is not None:
+            old_header.deleteLater()
 
     def _rebuild_combos(self, seasons: Sequence[base.SeasonRef], competition_id: str, season: int) -> None:
         """重建赛季选择器并定位当前路由；切换由对应槽 navigate。"""
@@ -1363,7 +1361,7 @@ class CompetitionPage(EntityPageBase):
             item = layout.takeAt(0)
             widget = item.widget()
             if widget is not None:
-                widget.setParent(None)
+                # 避免 setParent(None) 产生临时顶层窗口（macOS 全屏退场触发点之一）。
                 widget.deleteLater()
 
     def _muted_label(self, text: str) -> QLabel:

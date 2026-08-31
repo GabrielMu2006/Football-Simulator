@@ -110,7 +110,7 @@ def _clear_layout(layout) -> None:
         item = layout.takeAt(0)
         widget = item.widget()
         if widget is not None:
-            widget.setParent(None)
+            # 避免 setParent(None) 产生临时顶层窗口（macOS 全屏退场触发点之一）。
             widget.deleteLater()
         elif item.layout() is not None:
             _clear_layout(item.layout())

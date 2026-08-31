@@ -614,7 +614,6 @@ class MatchDetailPage(EntityPageBase):
     def _replace_scroll_content(self, widget: QWidget) -> None:
         old = self._scroll.takeWidget()
         if old is not None:
-            old.setParent(None)
             old.deleteLater()
         self._scroll.setWidget(widget)
 

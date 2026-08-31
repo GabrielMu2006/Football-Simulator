@@ -121,7 +121,7 @@ def _clear_layout(layout) -> None:
         item = layout.takeAt(0)
         widget = item.widget()
         if widget is not None:
-            widget.setParent(None)
+            # 避免 setParent(None) 产生临时顶层窗口（macOS 全屏退场触发点之一）。
             widget.deleteLater()
         elif item.layout() is not None:
             _clear_layout(item.layout())
@@ -973,6 +973,13 @@ class TransfersPage(EntityPageBase):
             return
         self._review_message = self._submit_summary(state, decisions)
         self.refresh()
+        # 让外壳重新加载快照：待办角标/模拟按钮立即更新，无需手动点刷新。
+        reload_hook = self._context.request_save_reload
+        if reload_hook is not None:
+            try:
+                reload_hook(self.save_name())
+            except Exception:
+                pass
 
     @staticmethod
     def _submit_summary(state, decisions: Dict[str, bool]) -> str:
