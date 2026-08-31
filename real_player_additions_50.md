@@ -23,7 +23,7 @@
 | 016 | Piotr Zielinski | MF | Inter Milan / 意甲 |
 | 017 | Fabian Ruiz | MF | Paris Saint-Germain / 法甲 |
 | 018 | Douglas Luiz | MF | Juventus / 意甲 |
-| 019 | Stanislav Lobotka | MF | Napoli / 意甲 |
+| 019 | Franck Kessie | MF | Al-Ahli / 沙特联 |
 | 020 | Marcel Sabitzer | MF | Borussia Dortmund / 德甲 |
 | 021 | Amadou Onana | MF | Aston Villa / 英超 |
 | 022 | Gabriel Magalhaes | DF | Arsenal / 英超 |
@@ -42,16 +42,16 @@
 | 035 | Stefan de Vrij | DF | Inter Milan / 意甲 |
 | 036 | Benjamin Pavard | DF | Inter Milan / 意甲 |
 | 037 | Francesco Acerbi | DF | Inter Milan / 意甲 |
-| 038 | Mario Hermoso | DF | Roma / 意甲 |
+| 038 | Rayan Ait-Nouri | DF | Manchester City / 英超 |
 | 039 | David Alaba | DF | Real Madrid / 西甲 |
 | 040 | Dani Carvajal | DF | Real Madrid / 西甲 |
 | 041 | Cesar Azpilicueta | DF | Atletico Madrid / 西甲 |
-| 042 | Juan Foyth | DF | Villarreal / 西甲 |
+| 042 | Giorgio Scalvini | DF | Atalanta / 意甲 |
 | 043 | Aaron Wan-Bissaka | DF | West Ham / 英超 |
 | 044 | Inigo Martinez | DF | Barcelona / 西甲 |
 | 045 | Andreas Christensen | DF | Barcelona / 西甲 |
 | 046 | Pedro Porro | DF | Tottenham / 英超 |
 | 047 | Josip Stanisic | DF | Bayern Munich / 德甲 |
-| 048 | Alex Grimaldo | DF | Bayer Leverkusen / 德甲 |
+| 048 | David Hancko | DF | Atletico Madrid / 西甲 |
 | 049 | Edmond Tapsoba | DF | Bayer Leverkusen / 德甲 |
 | 050 | Oleksandr Zinchenko | DF | Arsenal / 英超 |
