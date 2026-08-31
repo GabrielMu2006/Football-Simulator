@@ -507,6 +507,7 @@ class MatchDetailPage(EntityPageBase):
             check = QCheckBox("只显示真实球员")
             check.setObjectName("playerRealOnlyCheck")
             check.setToolTip("隐藏默认球员的出场行（真实球员始终显示）")
+            check.setChecked(True)  # 默认只显示真实球员
             check.toggled.connect(self._on_real_only_toggled)
             self._real_only_check = check
         return check

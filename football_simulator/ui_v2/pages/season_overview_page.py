@@ -649,19 +649,24 @@ class SeasonOverviewPage(EntityPageBase):
         layout = QHBoxLayout(legend)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(10)
-        entries = (
-            ("已赛周", _PLAYED_COLOR),
-            ("当前周", _CURRENT_COLOR),
-            ("联赛周", _WEEK_KIND_COLORS["league_week"]),
-            ("杯赛周", _WEEK_KIND_COLORS["cup_week"]),
-            ("冬窗", _WEEK_KIND_COLORS["winter_break"]),
-            ("夏窗", _WEEK_KIND_COLORS["summer_break"]),
-            ("升级附加赛", _WEEK_KIND_COLORS["promotion_playoff"]),
-        )
+        legend_colors = {
+            "已赛周": "#2e6db4",
+            "当前周": "#1167d8",
+            "联赛周": "#3b6ea5",
+            "杯赛周": "#7a5fc0",
+            "冬窗": "#3a7d4e",
+            "夏窗": "#a06a2c",
+            "升级附加赛": "#b08a2e",
+        }
+        entries = tuple((label_text, legend_colors[label_text]) for label_text in (
+            "已赛周", "当前周", "联赛周", "杯赛周", "冬窗", "夏窗", "升级附加赛",
+        ))
         for label_text, color in entries:
             chip = QLabel(label_text)
             chip.setStyleSheet(
-                f"background: {color}; color: #e8eef7; border-radius: 6px; padding: 2px 8px; font-size: 11px;"
+                f"background: {color}; color: #f2f6ff;"
+                " border: 1px solid rgba(255, 255, 255, 0.22); border-radius: 7px;"
+                " padding: 4px 11px; font-size: 12px; font-weight: 700;"
             )
             layout.addWidget(chip)
         layout.addStretch(1)

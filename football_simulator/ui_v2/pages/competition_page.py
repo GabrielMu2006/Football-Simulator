@@ -1054,6 +1054,7 @@ class CompetitionPage(EntityPageBase):
         if check is None:
             check = QCheckBox("只显示真实球员")
             check.setObjectName("leaderRealOnlyCheck")
+            check.setChecked(True)  # 默认只显示真实球员
             check.toggled.connect(lambda _checked: self.refresh())
             self._leader_real_only_check = check
         return check

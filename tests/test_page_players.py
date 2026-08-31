@@ -223,6 +223,8 @@ class PlayersDirectoryTests(_PageTestCase):
         context, recorder, store = _make_context(save_name)
         page = PlayersPage(context)
         page.apply_route(Route("players"))
+        # 多数目录断言基于“全部球员”口径；默认只显示真实球员另有专测。
+        page._real_only_check.setChecked(False)
         self._show(page)
         return page, recorder, store
 

@@ -383,21 +383,16 @@ class HistoryPage(EntityPageBase):
         self._stack = QStackedWidget(self)
         root.addWidget(self._stack, 1)
 
-        self._content = QWidget(self)
-        content_layout = QVBoxLayout(self._content)
-        content_layout.setContentsMargins(0, 0, 0, 0)
-        content_layout.setSpacing(10)
-
-        # 页头：标题固定；下方为可横向滑动的赛季选择条（点击进入该赛季历史）。
+        # 页头与赛季选择条放在 stack 之外：即使没有已归档赛季（空状态）也可见。
         self._page_header = PageHeader(
             "历史与荣誉",
             breadcrumbs=[],
             navigator=self._context.navigate,
-            parent=self._content,
+            parent=self,
         )
-        content_layout.addWidget(self._page_header)
+        root.addWidget(self._page_header, 0)
 
-        season_strip = QScrollArea(self._content)
+        season_strip = QScrollArea(self)
         season_strip.setObjectName("historySeasonStrip")
         season_strip.setWidgetResizable(True)
         season_strip.setFrameShape(QFrame.Shape.NoFrame)
@@ -409,7 +404,12 @@ class HistoryPage(EntityPageBase):
         self._season_strip_layout.setContentsMargins(0, 4, 0, 4)
         self._season_strip_layout.setSpacing(8)
         season_strip.setWidget(strip_content)
-        content_layout.addWidget(season_strip)
+        root.addWidget(season_strip, 0)
+
+        self._content = QWidget(self)
+        content_layout = QVBoxLayout(self._content)
+        content_layout.setContentsMargins(0, 0, 0, 0)
+        content_layout.setSpacing(10)
 
         self._tabs = QTabWidget(self._content)
 
@@ -743,6 +743,10 @@ class HistoryPage(EntityPageBase):
             if widget is not None:
                 widget.deleteLater()
         self._season_buttons = {}
+        if not data.archived_seasons:
+            empty_hint = QLabel("暂无已归档赛季（赛季结束后才会归档到此页）")
+            empty_hint.setStyleSheet(_MUTED_STYLE)
+            layout.addWidget(empty_hint)
         for season_number in data.archived_seasons:
             button = QPushButton(f"第 {season_number} 赛季")
             button.setObjectName("historySeasonButton")
@@ -929,79 +933,69 @@ class HistoryPage(EntityPageBase):
         )
 
     def _render_awards_grid(self, data: "_HistoryData") -> None:
-        """赛事个人奖：行=奖项类型，列=赛事；球员与赛事均可点，内容完整展开。"""
+        """赛事个人奖：射手王 / 助攻王 / MVP 三个独立分区，不再合并成一个网格。"""
 
         assert self._awards_grid_layout is not None
         _clear_layout(self._awards_grid_layout)
         self._award_links = []
         navigate = self._context.navigate
 
-        awards: Dict[str, Dict[str, history_queries.CompetitionAwardLine]] = {}
-        competitions: List[str] = []
+        lines_by_type: Dict[str, List[history_queries.CompetitionAwardLine]] = {}
         for line in data.detail.competition_awards:
-            if line.competition not in awards:
-                awards[line.competition] = {}
-                competitions.append(line.competition)
-            awards[line.competition][line.award_type] = line
+            lines_by_type.setdefault(line.award_type, []).append(line)
 
-        if not competitions:
+        rendered_any = False
+        for award_type in _AWARD_TYPE_ORDER:
+            label = _AWARD_TYPE_LABELS.get(award_type, award_type)
+            self._awards_grid_layout.addWidget(
+                section_header(label, f"该赛季各赛事的{label}得主（单击球员/赛事可跳转）")
+            )
+            lines = lines_by_type.get(award_type, [])
+            if not lines:
+                empty = QLabel("该赛季还没有该奖项数据")
+                empty.setStyleSheet(_MUTED_STYLE)
+                self._awards_grid_layout.addWidget(empty)
+                continue
+            rendered_any = True
+            holder = QWidget(self._awards_grid_slot)
+            grid = QGridLayout(holder)
+            grid.setContentsMargins(0, 0, 0, 0)
+            grid.setHorizontalSpacing(14)
+            grid.setVerticalSpacing(6)
+            headers = ("赛事", "球员", "得分")
+            for column, header_text in enumerate(headers):
+                header_label = QLabel(header_text)
+                header_label.setStyleSheet(_GRID_HEADER_STYLE)
+                grid.addWidget(header_label, 0, column)
+            for row_index, line in enumerate(lines, start=1):
+                comp_link = EntityLink(
+                    line.competition,
+                    Route("competition", competition=line.competition, season=data.season_number),
+                    navigate,
+                )
+                comp_link.setStyleSheet(comp_link.styleSheet() + f" {_GRID_CELL_STYLE}")
+                self._award_links.append(comp_link)
+                grid.addWidget(comp_link, row_index, 0)
+
+                player_link = EntityLink(
+                    line.player.display_name,
+                    Route("player", player=line.player.player_id, season=data.season_number),
+                    navigate,
+                )
+                player_link.setStyleSheet(player_link.styleSheet() + f" {_GRID_CELL_STYLE}")
+                self._award_links.append(player_link)
+                grid.addWidget(player_link, row_index, 1)
+
+                score_label = QLabel("—" if line.score is None else f"{line.score:g}")
+                score_label.setStyleSheet(_GRID_CELL_STYLE)
+                grid.addWidget(score_label, row_index, 2)
+            grid.setColumnStretch(len(headers), 1)
+            self._awards_grid_layout.addWidget(holder)
+
+        if not rendered_any:
             empty = QLabel("该赛季还没有赛事个人奖数据")
             empty.setStyleSheet(_MUTED_STYLE)
             self._awards_grid_layout.addWidget(empty)
-            return
-
-        holder = QWidget(self._awards_grid_slot)
-        grid = QGridLayout(holder)
-        grid.setContentsMargins(0, 0, 0, 0)
-        grid.setHorizontalSpacing(14)
-        grid.setVerticalSpacing(6)
-        corner = QLabel("奖项 / 赛事")
-        corner.setStyleSheet(_GRID_HEADER_STYLE)
-        grid.addWidget(corner, 0, 0)
-        for column, competition in enumerate(competitions, start=1):
-            header = EntityLink(
-                competition,
-                Route("competition", competition=competition, season=data.season_number),
-                navigate,
-            )
-            header.setStyleSheet(header.styleSheet() + f" {_GRID_HEADER_STYLE}")
-            self._award_links.append(header)
-            grid.addWidget(header, 0, column)
-        grid.setColumnStretch(len(competitions) + 1, 1)
-
-        for row_index, award_type in enumerate(_AWARD_TYPE_ORDER, start=1):
-            label = QLabel(_AWARD_TYPE_LABELS.get(award_type, award_type))
-            label.setStyleSheet(_GRID_HEADER_STYLE)
-            grid.addWidget(label, row_index, 0)
-            for column, competition in enumerate(competitions, start=1):
-                line = awards.get(competition, {}).get(award_type)
-                cell = QWidget(holder)
-                cell_layout = QHBoxLayout(cell)
-                cell_layout.setContentsMargins(0, 0, 0, 0)
-                cell_layout.setSpacing(6)
-                if line is not None:
-                    player_link = EntityLink(
-                        line.player.display_name,
-                        Route("player", player=line.player.player_id, season=data.season_number),
-                        navigate,
-                    )
-                    self._award_links.append(player_link)
-                    cell_layout.addWidget(player_link)
-                    if line.score is not None:
-                        score_label = QLabel(f"{line.score:g}")
-                        score_label.setStyleSheet(_MUTED_STYLE)
-                        cell_layout.addWidget(score_label)
-                else:
-                    none_label = QLabel("—")
-                    none_label.setStyleSheet(_MUTED_STYLE)
-                    cell_layout.addWidget(none_label)
-                cell_layout.addStretch(1)
-                grid.addWidget(cell, row_index, column)
-        self._awards_grid_layout.addWidget(holder)
-        note = QLabel("评分/身价口径：球员“赛季末”结算点；赛事名可打开该赛事该赛季页面。")
-        note.setStyleSheet(_MUTED_STYLE)
-        note.setWordWrap(True)
-        self._awards_grid_layout.addWidget(note)
 
     # -- 页签 3：球队荣誉 ------------------------------------------------------
 

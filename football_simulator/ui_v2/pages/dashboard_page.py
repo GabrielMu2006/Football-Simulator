@@ -185,7 +185,7 @@ class DashboardPage(EntityPageBase):
         self._sections_layout: Optional[QVBoxLayout] = None
         self._empty: Optional[EmptyState] = None
         # “只显示真实球员”应用于联赛射手/助攻榜；页面实例常驻，跨刷新保持。
-        self._leader_real_only = False
+        self._leader_real_only = True  # 默认只显示真实球员
         super().__init__(context, parent)
 
     # -- UI 骨架（一次构建；内容在 refresh 中重建） ---------------------------

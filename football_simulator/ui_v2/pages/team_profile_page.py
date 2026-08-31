@@ -463,6 +463,7 @@ class TeamProfilePage(EntityPageBase):
         self._squad_table = EntityTable(_SQUAD_COLUMNS, navigator=self._context.navigate, parent=self._squad_panel)
         self._squad_real_only = QCheckBox("只显示真实球员", self._squad_panel)
         self._squad_real_only.setObjectName("squadRealOnlyCheck")
+        self._squad_real_only.setChecked(True)  # 默认只显示真实球员
         self._squad_real_only.toggled.connect(self._on_squad_real_only_toggled)
         squad_layout.addWidget(self._squad_real_only, 0)
         squad_layout.addWidget(self._squad_table, 1)

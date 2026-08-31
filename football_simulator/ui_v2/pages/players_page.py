@@ -157,6 +157,7 @@ class PlayersPage(EntityPageBase):
         self._position_combo.currentIndexChanged.connect(self._on_filters_changed)
         self._team_combo = self._filter_bar.add_combo("球队", ["全部球队"], "playersTeamCombo")
         self._real_only_check = self._filter_bar.add_check("只显示真实球员", "playersRealOnlyCheck")
+        self._real_only_check.setChecked(True)  # 默认只显示真实球员
         self._real_only_check.toggled.connect(self._on_filters_changed)
         self._team_combo.currentIndexChanged.connect(self._on_filters_changed)
         self._filter_bar.add_reset()

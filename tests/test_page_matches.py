@@ -222,6 +222,11 @@ def _make_detail_page(match_id: str) -> Tuple[_Harness, MatchDetailPage]:
     harness = _Harness(_shared_save())
     page = MatchDetailPage(harness.context())
     page.apply_route(Route("match", match=match_id))
+    try:
+        # 全阵容 22 行口径断言；默认只显示真实球员另有专测。
+        page._make_real_only_check().setChecked(False)
+    except Exception:
+        pass
     return harness, page
 
 
