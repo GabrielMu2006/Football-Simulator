@@ -67,6 +67,7 @@ exe = EXE(
     console=False,
     disable_windowed_traceback=False,
     icon=[str(ROOT_DIR / "assets" / "app.ico")],
+    version=str(ROOT_DIR / "windows_version_info.txt"),
 )
 coll = COLLECT(
     exe,

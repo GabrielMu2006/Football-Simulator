@@ -55,4 +55,12 @@ cp "$SHARED_CONFIG_NAME" "${DIST_DIR}/${SHARED_CONFIG_NAME}"
 cp "$SHARED_CONFIG_NAME" "${DIST_DIR}/football_simulator_config.json"
 /usr/libexec/PlistBuddy -c "Delete :NSPrincipalClass" "$APP_BUNDLE/Contents/Info.plist" >/dev/null 2>&1 || true
 /usr/libexec/PlistBuddy -c "Add :NSPrincipalClass string NSApplication" "$APP_BUNDLE/Contents/Info.plist"
+
+# 写入应用版本（与 football_simulator/version.py 保持一致）。
+APP_VERSION="$(grep -o 'APP_VERSION = "[^"]*"' "$ROOT_DIR/football_simulator/version.py" | sed 's/.*"\(.*\)"$/\1/')"
+/usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $APP_VERSION" "$APP_BUNDLE/Contents/Info.plist" 2>/dev/null \
+  || /usr/libexec/PlistBuddy -c "Add :CFBundleShortVersionString string $APP_VERSION" "$APP_BUNDLE/Contents/Info.plist"
+/usr/libexec/PlistBuddy -c "Set :CFBundleVersion $APP_VERSION" "$APP_BUNDLE/Contents/Info.plist" 2>/dev/null \
+  || /usr/libexec/PlistBuddy -c "Add :CFBundleVersion string $APP_VERSION" "$APP_BUNDLE/Contents/Info.plist"
+
 codesign --force --deep --sign - "$APP_BUNDLE"

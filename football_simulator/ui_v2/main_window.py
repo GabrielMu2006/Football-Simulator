@@ -57,6 +57,7 @@ from football_simulator.ui_v2.components.tutorial import TutorialDialog
 from football_simulator.ui_v2.navigation import Route, Router
 from football_simulator.ui_v2.pages.entity_page_base import EntityPageBase, PageContext
 from football_simulator.ui_v2.services import SimulatorUIService
+from football_simulator.version import APP_VERSION
 
 debug_log.hook_qmessagebox()
 
@@ -379,7 +380,7 @@ class MainWindow(QMainWindow):
         QMessageBox.about(
             self,
             "关于 Football Simulator UI v2",
-            "Football Simulator UI v2\n本地足球联赛模拟器（数据工作台）\n"
+            f"Football Simulator UI v2\n版本 {APP_VERSION}\n本地足球联赛模拟器（数据工作台）\n"
             "路线：主队观赛模式 · 双级联赛 · 三杯赛 · 转会/选秀/荣誉",
         )
 
