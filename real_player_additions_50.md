@@ -46,12 +46,13 @@
 | 039 | David Alaba | DF | Real Madrid / 西甲 |
 | 040 | Dani Carvajal | DF | Real Madrid / 西甲 |
 | 041 | Cesar Azpilicueta | DF | Atletico Madrid / 西甲 |
-| 042 | Giorgio Scalvini | DF | Atalanta / 意甲 |
+| 042 | Jarrad Branthwaite | DF | Manchester City / 英超 |
 | 043 | Aaron Wan-Bissaka | DF | West Ham / 英超 |
 | 044 | Inigo Martinez | DF | Barcelona / 西甲 |
 | 045 | Andreas Christensen | DF | Barcelona / 西甲 |
 | 046 | Pedro Porro | DF | Tottenham / 英超 |
 | 047 | Josip Stanisic | DF | Bayern Munich / 德甲 |
-| 048 | David Hancko | DF | Atletico Madrid / 西甲 |
+| 048 | Jean-Clair Todibo | DF | West Ham / 英超 |
 | 049 | Edmond Tapsoba | DF | Bayer Leverkusen / 德甲 |
 | 050 | Oleksandr Zinchenko | DF | Arsenal / 英超 |
+
