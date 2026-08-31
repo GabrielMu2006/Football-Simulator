@@ -21,7 +21,14 @@ from PySide6.QtCore import QEvent, QPoint, Qt, QTimer
 from PySide6.QtGui import QBrush, QColor
 from PySide6.QtWidgets import QLineEdit, QListWidget, QListWidgetItem, QVBoxLayout, QWidget
 
-from football_simulator.queries import list_players, list_teams, open_read_connection
+from football_simulator.queries import (
+    competition_queries,
+    history_queries,
+    list_players,
+    list_teams,
+    match_queries,
+    open_read_connection,
+)
 from football_simulator.ui_v2.navigation import Route
 
 _MUTED_COLOR = "#91a8c5"  # 与 theme.py subtitleLabel 同色
@@ -61,7 +68,7 @@ class GlobalSearchBox(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         self.line_edit = QLineEdit()
-        self.line_edit.setPlaceholderText("搜索球员 / 球队…")
+        self.line_edit.setPlaceholderText("搜索球员 / 球队 / 比赛 / 赛事…")
         self.line_edit.setClearButtonEnabled(True)
         self.line_edit.setToolTip("输入球员名或球队名，回车或点击结果直接打开实体页")
         self.line_edit.setAccessibleName("全局搜索")
@@ -164,6 +171,39 @@ class GlobalSearchBox(QWidget):
                 for row in list_teams(conn, season, search=text)[: self.TEAM_RESULT_LIMIT]:
                     label = f"【球队】{row.team.display_name}　{row.season_division} · {row.points} 分"
                     results.append((label, label, Route("team", team=row.team.team_id, season=season)))
+                for row in match_queries.list_matches(conn, season, search=text)[:4]:
+                    label = (
+                        f"【比赛】{row.home.display_name} vs {row.away.display_name}"
+                        f" · 第 {row.round_number} 轮 · 第 {row.week_number} 周"
+                    )
+                    results.append((label, label, Route("match", match=row.match_id)))
+                for overview in competition_queries.list_competitions(conn, season):
+                    if text.lower() in overview.competition.display_name.lower():
+                        label = f"【赛事】{overview.competition.display_name} · {overview.status}"
+                        results.append((
+                            label,
+                            label,
+                            Route(
+                                "competition",
+                                competition=overview.competition.competition_id,
+                                season=season,
+                            ),
+                        ))
+                history_count = 0
+                for summary in history_queries.list_season_summaries(conn):
+                    season_text = f"第 {summary.season_number} 赛季"
+                    matches_text = (
+                        text.lower() in season_text.lower()
+                        or (text.isdigit() and int(text) == summary.season_number)
+                    )
+                    if not matches_text:
+                        continue
+                    champion = summary.premier_champion or "进行中"
+                    label = f"【历史】{season_text} · {champion}"
+                    results.append((label, label, Route("history", season=summary.season_number)))
+                    history_count += 1
+                    if history_count >= 3:
+                        break
         except Exception:
             return []
         return results

@@ -81,15 +81,12 @@ class MatchEnginePureTests(unittest.TestCase):
         pressure = _team_pressure_score(strong, weak, is_home=True)
         self.assertEqual(pressure, 0.46)
 
-    def test_record_stat_skips_non_real_players(self) -> None:
-        # 当前工作树行为：默认（非真实）球员不记录任何统计。
+    def test_record_stat_records_all_players(self) -> None:
+        # 用户确认 #4：默认（非真实）球员也记录六项统计，但不参与奖项评选。
         player = make_teams(["记录队"])[0].goalkeeper
         stats: dict = {}
         _record_stat(stats, player, "clean_sheets")
-        if player.is_real:
-            self.assertIn(player.player_id, stats)
-        else:
-            self.assertEqual(stats, {})
+        self.assertIn(player.player_id, stats)
 
 
 class MatchSimulationFreezeTests(FreezeTestCase):
@@ -139,26 +136,18 @@ class MatchSimulationFreezeTests(FreezeTestCase):
         gk_by_team = {team.name: team.goalkeeper for team in snapshot.premier_teams}
         rng = random.Random(7)
         clean_sheets: dict = {}
-        clean_sheet_zero_matches = 0
+
         for fixture in fixtures:
             result = simulate_match(fixture, rng)
             home_gk, away_gk = gk_by_team[fixture.home_team.name], gk_by_team[fixture.away_team.name]
             if result.away_goals == 0:
-                if home_gk.is_real:
-                    self.assertEqual(result.player_stats[home_gk.player_id].clean_sheets, 1)
-                    clean_sheets[home_gk.player_id] = clean_sheets.get(home_gk.player_id, 0) + 1
-                else:
-                    self.assertNotIn(home_gk.player_id, result.player_stats)
-                    clean_sheet_zero_matches += 1
+                self.assertEqual(result.player_stats[home_gk.player_id].clean_sheets, 1)
+                clean_sheets[home_gk.player_id] = clean_sheets.get(home_gk.player_id, 0) + 1
             if result.home_goals == 0:
-                if away_gk.is_real:
-                    self.assertEqual(result.player_stats[away_gk.player_id].clean_sheets, 1)
-                    clean_sheets[away_gk.player_id] = clean_sheets.get(away_gk.player_id, 0) + 1
-                else:
-                    self.assertNotIn(away_gk.player_id, result.player_stats)
-        # 有真实门将零封的场合，统计必须与逐场核对一致；且至少存在默认门将的
-        # 零封场合（真实球员只有 50 人，40 队门将在一季中必有默认球员）。
-        self.assertGreater(clean_sheet_zero_matches + len(clean_sheets), 0)
+                self.assertEqual(result.player_stats[away_gk.player_id].clean_sheets, 1)
+                clean_sheets[away_gk.player_id] = clean_sheets.get(away_gk.player_id, 0) + 1
+        # 统计必须与逐场核对一致；默认门将也记录零封（用户确认 #4）。
+        self.assertGreater(len(clean_sheets), 0)
 
 
 class PlayerStatDeltaTests(unittest.TestCase):

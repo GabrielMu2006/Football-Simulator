@@ -116,7 +116,7 @@ class LeaderboardEntry:
     successful_defenses: int
     successful_saves: int
     clean_sheets: int
-    rating: float
+    rating: Optional[float]  # 默认球员不参与评分 -> None
 
 
 @dataclass(frozen=True)
@@ -477,7 +477,11 @@ def _aggregate_competition_stats(conn: sqlite3.Connection, season_id: int, compe
                 successful_defenses=stats.successful_defenses,
                 successful_saves=stats.successful_saves,
                 clean_sheets=stats.clean_sheets,
-                rating=formulas.calculate_player_rating(stats, matches_played),
+                rating=(
+                    None
+                    if not bucket["ref"].is_real
+                    else formulas.calculate_player_rating(stats, matches_played)
+                ),
             )
         )
     return entries
@@ -493,11 +497,13 @@ def _leaderboards(
     if is_real is not None:
         # “只显示真实球员”必须在截取前 N 名之前过滤，否则排名失真。
         entries = [entry for entry in entries if entry.player.is_real == is_real]
-    # 并列时确定性排序：统计降序 → 评分降序 → 能力降序 → 名称升序。
-    # 评分榜的主统计即评分，并列时以（进球+助攻）作次级统计（与引擎榜单一致）。
-    scorers = sorted(entries, key=lambda e: (-e.goals, -e.rating, -e.ability, e.player.display_name))
-    assisters = sorted(entries, key=lambda e: (-e.assists, -e.rating, -e.ability, e.player.display_name))
-    rated = sorted(entries, key=lambda e: (-e.rating, -(e.goals + e.assists), -e.ability, e.player.display_name))
+    # 并列时确定性排序：统计降序 → 评分降序（默认球员无评分，按 0 排）→ 能力降序 → 名称升序。
+    def rating_key(entry) -> float:
+        return entry.rating if entry.rating is not None else 0.0
+
+    scorers = sorted(entries, key=lambda e: (-e.goals, -rating_key(e), -e.ability, e.player.display_name))
+    assisters = sorted(entries, key=lambda e: (-e.assists, -rating_key(e), -e.ability, e.player.display_name))
+    rated = sorted(entries, key=lambda e: (-rating_key(e), -(e.goals + e.assists), -e.ability, e.player.display_name))
     return CompetitionLeaderboards(
         top_scorers=tuple(scorers[:LEADERBOARD_SIZE]),
         top_assisters=tuple(assisters[:LEADERBOARD_SIZE]),

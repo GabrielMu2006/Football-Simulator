@@ -24,7 +24,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QFrame,
@@ -47,6 +47,7 @@ from football_simulator.ui_v2.components import (
     EmptyState,
     PageHeader,
 )
+from football_simulator.ui_v2.components.team_crest import TeamCrest
 from football_simulator.ui_v2.navigation import Route
 from football_simulator.ui_v2.pages.entity_page_base import EntityPageBase
 from football_simulator.ui_v2.widgets import section_header
@@ -95,9 +96,17 @@ def _match_line(ref: base.MatchRef) -> _MatchLine:
     )
 
 
-def _phase_label(current_week: int, season_complete: bool) -> str:
-    """当前阶段 = 周指针所指周次（本周）的赛历 label。"""
-    if season_complete or current_week >= len(_WEEK_CALENDAR):
+def _phase_label(current_week: int, season_complete: bool, weeks=()) -> str:
+    # 当前阶段 = 周指针所指周次（本周）的赛历 label。
+    # weeks 优先取存档真实赛历（已按杯赛激活修饰），缺省退回静态日历。
+    if season_complete:
+        return "赛季已结束"
+    if weeks:
+        if current_week >= len(weeks):
+            return "赛季已结束"
+        entry = weeks[current_week]
+        return entry["label"] if isinstance(entry, dict) else entry.label
+    if current_week >= len(_WEEK_CALENDAR):
         return "赛季已结束"
     return _WEEK_CALENDAR[current_week].label
 
@@ -114,8 +123,30 @@ def _clear_layout(layout) -> None:
             _clear_layout(item.layout())
 
 
-def _metric_card(key: str, title: str, note: str) -> QFrame:
-    frame = QFrame()
+class _MetricCard(QFrame):
+    """可点击的仪表卡：鼠标点击触发导航回调。"""
+
+    clicked = Signal()
+
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
+        super().__init__(parent)
+        self._callback = None
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+
+    def set_callback(self, callback) -> None:
+        self._callback = callback
+
+    def mouseReleaseEvent(self, event) -> None:  # noqa: N802 - Qt API
+        if event.button() == Qt.MouseButton.LeftButton and self.rect().contains(event.position().toPoint()):
+            if self._callback is not None:
+                self._callback()
+            event.accept()
+            return
+        super().mouseReleaseEvent(event)
+
+
+def _metric_card(key: str, title: str, note: str) -> _MetricCard:
+    frame = _MetricCard()
     frame.setObjectName("cardFrame")
     layout = QVBoxLayout(frame)
     layout.setContentsMargins(12, 10, 12, 10)
@@ -164,6 +195,7 @@ class DashboardPage(EntityPageBase):
         page_layout.setContentsMargins(16, 14, 16, 14)
         page_layout.setSpacing(0)
 
+        self._status_cards: Dict[str, _MetricCard] = {}
         self._stack = QStackedWidget()
         page_layout.addWidget(self._stack, 1)
 
@@ -172,7 +204,7 @@ class DashboardPage(EntityPageBase):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(12)
 
-        main_layout.addWidget(PageHeader("主页", breadcrumbs=navigation.breadcrumbs(Route("dashboard"))))
+        main_layout.addWidget(PageHeader("主页", breadcrumbs=[]))
 
         # -- 顶部状态区（静态骨架，refresh 时改数值） ------------------------
         status_holder = QWidget()
@@ -189,6 +221,7 @@ class DashboardPage(EntityPageBase):
             card = _metric_card(key, title, note)
             status_grid.addWidget(card, 0, index)
             self._status_labels[key] = card.value_label  # type: ignore[attr-defined]
+            self._status_cards[key] = card
         for column in range(len(cards)):
             status_grid.setColumnStretch(column, 1)
         main_layout.addWidget(status_holder)
@@ -254,6 +287,7 @@ class DashboardPage(EntityPageBase):
                     conn,
                     leaderboards_is_real=True if self._leader_real_only else None,
                 )
+                week_labels = base.load_week_labels(conn)
                 season_id = base.season_id_for(conn, snapshot.current_season)
                 standings = {
                     category: competition_queries.league_standings_rows(
@@ -284,11 +318,14 @@ class DashboardPage(EntityPageBase):
 
         self._status_labels["season"].setText(f"第 {season} 赛季")
         self._status_labels["week"].setText(f"第 {snapshot.current_week} / {TOTAL_WEEKS} 周")
-        self._status_labels["phase"].setText(_phase_label(snapshot.current_week, snapshot.season_complete))
+        self._status_labels["phase"].setText(
+            _phase_label(snapshot.current_week, snapshot.season_complete, week_labels)
+        )
         self._status_labels["pending"].setText(
             str(pending_total) if pending_total else "0"
         )
         self._render_pending_block(snapshot, season, pending_total)
+        self._bind_status_card_navigation(snapshot, season, pending_total, pending, navigate)
         self._render_sections(snapshot, standings, team_ids, navigate)
         self._stack.setCurrentWidget(self._main)
 
@@ -348,6 +385,33 @@ class DashboardPage(EntityPageBase):
             self._pending_body.addWidget(row)
 
     # -- 主区区块 -------------------------------------------------------------
+
+    def _bind_status_card_navigation(self, snapshot, season: int, pending_total: int, pending, navigate) -> None:
+        if navigate is None:
+            return
+
+        def _goto(route: Route) -> None:
+            navigate(route)
+
+        self._status_cards["season"].set_callback(
+            lambda: _goto(Route("season_overview", season=season))
+        )
+        week_route = Route("weekly_report", week=snapshot.current_week)
+        self._status_cards["week"].set_callback(lambda: _goto(week_route))
+        self._status_cards["phase"].set_callback(lambda: _goto(week_route))
+
+        pending_route = None
+        if pending_total:
+            if pending.ability_review:
+                pending_route = Route("season_overview", season=season)
+            elif pending.transfer_review:
+                pending_route = Route("transfers", season=season)
+            elif pending.draft:
+                pending_route = Route("draft", season=season)
+        if pending_route is not None:
+            self._status_cards["pending"].set_callback(lambda r=pending_route: _goto(r))
+        else:
+            self._status_cards["pending"].set_callback(None)
 
     def _render_sections(self, snapshot, standings, team_ids, navigate) -> None:
         assert self._sections_layout is not None
@@ -451,8 +515,13 @@ class DashboardPage(EntityPageBase):
                 Route("team", team=row.home_id, season=season),
                 navigate,
             )
-            home_link.setFixedWidth(_COLUMN_WIDTHS[1])
-            grid.addWidget(home_link, row_index, 1)
+            home_holder = QWidget()
+            home_layout = QHBoxLayout(home_holder)
+            home_layout.setContentsMargins(0, 0, 0, 0)
+            home_layout.setSpacing(6)
+            home_layout.addWidget(TeamCrest(row.home_name, size=18), 0)
+            home_layout.addWidget(home_link, 1)
+            grid.addWidget(home_holder, row_index, 1)
 
             score_link = EntityLink(row.score_text, Route("match", match=row.match_id), navigate)
             score_link.setFixedWidth(_COLUMN_WIDTHS[2])
@@ -466,8 +535,13 @@ class DashboardPage(EntityPageBase):
                 Route("team", team=row.away_id, season=season),
                 navigate,
             )
-            away_link.setFixedWidth(_COLUMN_WIDTHS[3])
-            grid.addWidget(away_link, row_index, 3)
+            away_holder = QWidget()
+            away_layout = QHBoxLayout(away_holder)
+            away_layout.setContentsMargins(0, 0, 0, 0)
+            away_layout.setSpacing(6)
+            away_layout.addWidget(TeamCrest(row.away_name, size=18), 0)
+            away_layout.addWidget(away_link, 1)
+            grid.addWidget(away_holder, row_index, 3)
 
             status_label = QLabel(row.status_text)
             status_label.setStyleSheet(_MUTED_STYLE)

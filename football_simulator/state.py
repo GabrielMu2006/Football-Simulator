@@ -1,9 +1,10 @@
 import random
+import threading
 from contextlib import contextmanager
 from dataclasses import dataclass
 from itertools import combinations
 from pathlib import Path
-from typing import Callable, Dict, Iterable, List, Optional
+from typing import Callable, Dict, Iterable, List, Optional, Set
 
 from football_simulator.data import (
     REAL_PLAYER_ABILITY_MAX,
@@ -40,7 +41,7 @@ from football_simulator.models import (
 )
 from football_simulator.persistence.save_repository import SaveRepository
 from football_simulator.runtime import normalize_save_name, save_root
-from football_simulator.schedule import SUMMER_BREAK_WEEKS, TOTAL_WEEKS, WINTER_BREAK_WEEKS, build_league_schedule, build_week_calendar
+from football_simulator.schedule import CUP_EVENT_LABELS, SUMMER_BREAK_WEEKS, TOTAL_WEEKS, WINTER_BREAK_WEEKS, build_league_schedule, build_week_calendar
 
 
 SAVE_DATABASE_FILE_NAME = "save.sqlite3"
@@ -99,6 +100,10 @@ AWARD_COMPETITIONS = (PREMIER_DIVISION, WINNERS_CUP, CHALLENGE_CUP, SUPER_CUP)
 WINTER_SETTLEMENT_WEEK = 24
 FINAL_SETTLEMENT_WEEK = 49
 
+# 次级联赛权重（用户确认 #3）：身价/Top20 计算时次级联赛权重要远低于一级。
+# 该值通过 足球模拟器总配置.json 的 second_division_weight 可选覆盖。
+SECOND_LEAGUE_WEIGHT = 0.35
+
 # 随机源注入（测试专用接口）。生产默认仍是 random.SystemRandom，与历史行为
 # 完全一致；测试通过 set_rng_provider 注入可复现随机源。注入只允许替换随机
 # 源本身，不得改变公式或随机调用顺序。
@@ -107,6 +112,73 @@ _RNG_PROVIDER: Callable[[], random.Random] = random.SystemRandom
 
 def _rng() -> random.Random:
     return _RNG_PROVIDER()
+
+
+def _league_weight_for_team(team_name: str, second_team_names: Set[str]) -> float:
+    """球队联赛权重：次级联赛 = SECOND_LEAGUE_WEIGHT，其余 = 1.0。"""
+    return SECOND_LEAGUE_WEIGHT if team_name in second_team_names else 1.0
+
+
+def _apply_cup_activation_to_weeks(
+    weeks: List[WeekScheduleEntry],
+    cup_state: dict,
+) -> List[WeekScheduleEntry]:
+    """按杯赛是否激活修饰赛历（用户确认 #11）。
+
+    未激活的杯赛事件从周次中移除；移除后仍无联赛轮次则变为“无比赛周”，
+    避免第 1 赛季出现“联赛周 + 优胜者杯小组赛第1轮”但实际没有杯赛的标签。
+    """
+    active_prefixes = set()
+    if cup_state.get("winners_cup", {}).get("active"):
+        active_prefixes.add("winners_cup_")
+    if cup_state.get("challenge_cup", {}).get("active"):
+        active_prefixes.add("challenge_cup_")
+    if cup_state.get("super_cup", {}).get("active"):
+        active_prefixes.add("super_cup_")
+
+    def is_active(event_key: str) -> bool:
+        return any(event_key.startswith(prefix) for prefix in active_prefixes)
+
+    decorated: List[WeekScheduleEntry] = []
+    for week in weeks:
+        kept = tuple(event_key for event_key in week.cup_events if is_active(event_key))
+        if week.kind == "league_week":
+            label = "联赛周"
+            if kept:
+                cup_labels = " / ".join(CUP_EVENT_LABELS[key] for key in kept)
+                label = f"联赛周 + {cup_labels}"
+            decorated.append(
+                WeekScheduleEntry(
+                    week_number=week.week_number,
+                    label=label,
+                    kind="league_week",
+                    premier_round_numbers=week.premier_round_numbers,
+                    second_round_numbers=week.second_round_numbers,
+                    cup_events=kept,
+                )
+            )
+        elif week.kind == "cup_week":
+            if kept:
+                label = " / ".join(CUP_EVENT_LABELS[key] for key in kept)
+                decorated.append(
+                    WeekScheduleEntry(
+                        week_number=week.week_number,
+                        label=label,
+                        kind="cup_week",
+                        cup_events=kept,
+                    )
+                )
+            else:
+                decorated.append(
+                    WeekScheduleEntry(
+                        week_number=week.week_number,
+                        label="无比赛周",
+                        kind="open_week",
+                    )
+                )
+        else:
+            decorated.append(week)
+    return decorated
 
 
 def set_rng_provider(provider: Optional[Callable[[], random.Random]]) -> None:
@@ -186,7 +258,9 @@ def initialize_save_state(save_name: str) -> SaveSnapshot:
                 # 旧 JSON 语义：未完成赛季被重新初始化时整体丢弃（不归档、
                 # 直接进入下一赛季编号）。SQLite 下清空被放弃赛季的比赛、
                 # 统计等派生数据，避免孤儿行残留。
-                _ACTIVE_REPO.reset_season_data(previous_season)
+                active_repo = _active_repo()
+                if active_repo is not None:
+                    active_repo.reset_season_data(previous_season)
             premier_team_names = previous_state.get("next_premier_team_names", previous_state.get("premier_team_names", config.premier_teams))
             second_team_names = previous_state.get("next_second_team_names", previous_state.get("second_team_names", config.second_division_teams))
             real_player_pool = _deserialize_real_player_pool(previous_state.get("real_player_pool", []))
@@ -216,6 +290,8 @@ def initialize_save_state(save_name: str) -> SaveSnapshot:
             second_teams=second_teams,
             rng=rng,
         )
+        # 未激活的杯赛不进入赛历标签（用户确认 #11）。
+        weeks = _apply_cup_activation_to_weeks(weeks, cup_state)
 
         state = {
             "save_name": save_name,
@@ -286,7 +362,8 @@ def simulate_next_week(save_name: str) -> WeekSimulationResult:
         for round_number in week.second_round_numbers:
             matchday = MatchdayReport(round_number=round_number, competition=SECOND_DIVISION)
             for fixture in second_schedule_by_round[round_number]:
-                matchday.results.append(_simulate_quick_match(fixture, rng))
+                # 次级联赛完整模拟（用户确认 #3）：与顶级同引擎，产出六项统计与事件。
+                matchday.results.append(simulate_match(fixture, rng))
             second_matchdays.append(matchday)
 
         if week.cup_events:
@@ -492,7 +569,12 @@ def apply_draft_prospects(save_name: str, prospects: List[dict]) -> SaveSnapshot
         second_teams = [_deserialize_team(data) for data in state.get("second_teams", [])]
         teams_by_name = {team.name: team for team in [*premier_teams, *second_teams]}
         snapshot = build_snapshot_from_state(state)
-        draft_order = [row.team.name for row in reversed(snapshot.premier_table)]
+        # 用户确认 #6：两联赛统一倒序，全体 40 队参与——
+        # 次级倒数第1 → … → 次级第1 → 一级倒数第1 → … → 一级第1。
+        draft_order = (
+            [row.team.name for row in reversed(snapshot.second_table)]
+            + [row.team.name for row in reversed(snapshot.premier_table)]
+        )
 
         prospects_remaining = new_profiles[:]
         rng.shuffle(prospects_remaining)
@@ -597,6 +679,7 @@ def build_snapshot_from_state(state: dict) -> SaveSnapshot:
     _normalize_rosters_and_registry(state)
     premier_teams = [_deserialize_team(data) for data in state.get("premier_teams", [])]
     second_teams = [_deserialize_team(data) for data in state.get("second_teams", [])]
+    second_team_names = {team.name for team in second_teams}
     weeks = [_deserialize_week(data) for data in state.get("weeks", [])]
     simulated_weeks = state.get("simulated_weeks", [])
     team_lookup = {team.name: team for team in [*premier_teams, *second_teams]}
@@ -632,6 +715,9 @@ def build_snapshot_from_state(state: dict) -> SaveSnapshot:
             for result in matchday.results:
                 second_results.append(result)
                 _apply_table_result(second_table_map, result)
+                for player_id, delta in result.player_stats.items():
+                    if player_id in player_stats_map:
+                        player_stats_map[player_id].apply_delta(delta)
 
         for matchday_data in simulated_week.get("cup_matchdays", []):
             matchday = _deserialize_matchday(matchday_data, team_lookup)
@@ -698,10 +784,16 @@ def build_snapshot_from_state(state: dict) -> SaveSnapshot:
         settled_row = settlement_player_stats.get(player_stats.player.player_id)
         settled_matches = settlement_team_matches.get(player_stats.team_name, 0)
         if settled_row is not None and settled_matches > 0:
-            player_stats.season_rating = _calculate_player_rating(settled_row, settled_matches)
             if player_stats.player.is_real:
-                player_stats.market_value = _calculate_market_value(player_stats.player, player_stats.season_rating)
+                player_stats.season_rating = _calculate_player_rating(settled_row, settled_matches)
+                league_weight = _league_weight_for_team(player_stats.team_name, second_team_names)
+                player_stats.market_value = round(
+                    _calculate_market_value(player_stats.player, player_stats.season_rating) * league_weight,
+                    2,
+                )
             else:
+                # 默认球员只统计六项数据：评分与身价仍仅真实球员。
+                player_stats.season_rating = None
                 player_stats.market_value = None
         elif player_stats.player.is_real:
             cached_rating, cached_value = _cached_settlement_values(
@@ -991,7 +1083,7 @@ def _latest_settlement_week(current_week: int) -> Optional[int]:
 def _build_team_match_counts(simulated_weeks: List[dict]) -> Dict[str, int]:
     team_match_counts: Dict[str, int] = {}
     for simulated_week in simulated_weeks:
-        for matchday_key in ("premier_matchdays", "cup_matchdays"):
+        for matchday_key in ("premier_matchdays", "second_matchdays", "cup_matchdays"):
             for matchday_data in simulated_week.get(matchday_key, []):
                 for result_data in matchday_data.get("results", []):
                     home_name = result_data["home_team"]
@@ -1023,7 +1115,7 @@ def _build_settlement_period_stats(
     for simulated_week in simulated_weeks:
         if int(simulated_week.get("week_number", 0)) > cutoff_week:
             continue
-        for matchday_key in ("premier_matchdays", "cup_matchdays"):
+        for matchday_key in ("premier_matchdays", "second_matchdays", "cup_matchdays"):
             for matchday_data in simulated_week.get(matchday_key, []):
                 competition = matchday_data.get("competition", PREMIER_DIVISION)
                 round_number = int(matchday_data["round_number"])
@@ -3051,11 +3143,18 @@ def _build_season_awards(snapshot: SaveSnapshot) -> dict:
         return _empty_season_awards()
 
     team_enrichment = _build_team_season_enrichment(snapshot)
+    second_team_names = {team.name for team in snapshot.second_teams}
     top20_candidates = []
     for row in player_rows:
         rating = row.season_rating if row.season_rating is not None else _calculate_player_rating(row, max(1, row.appearances))
         team_context = team_enrichment.get(row.team_name, {})
-        award_score = _calculate_top20_score(row, rating, team_context.get("honor_points", 0))
+        league_weight = _league_weight_for_team(row.team_name, second_team_names)
+        award_score = _calculate_top20_score(
+            row,
+            rating,
+            team_context.get("honor_points", 0),
+            league_weight=league_weight,
+        )
         top20_candidates.append(
             {
                 "player_id": _player_history_key_for_player(row.player),
@@ -3094,7 +3193,12 @@ def _build_season_awards(snapshot: SaveSnapshot) -> dict:
     }
 
 
-def _calculate_top20_score(row: PlayerSeasonStats, rating: float, team_honor_points: int) -> float:
+def _calculate_top20_score(
+    row: PlayerSeasonStats,
+    rating: float,
+    team_honor_points: int,
+    league_weight: float = 1.0,
+) -> float:
     if row.player.position == POSITION_GOALKEEPER:
         production = 0.08 * row.successful_saves + 1.35 * row.clean_sheets
     else:
@@ -3105,7 +3209,7 @@ def _calculate_top20_score(row: PlayerSeasonStats, rating: float, team_honor_poi
             + 0.36 * row.successful_defenses
         )
     score = 74.0 * rating + 1.15 * row.player.ability + production + 0.18 * team_honor_points
-    return round(score, 2)
+    return round(score * league_weight, 2)
 
 
 def _build_competition_player_stats(snapshot: SaveSnapshot) -> Dict[str, List[dict]]:
@@ -3119,10 +3223,10 @@ def _build_competition_player_stats(snapshot: SaveSnapshot) -> Dict[str, List[di
     matches_by_competition: Dict[str, Dict[str, int]] = {}
 
     for simulated_week in snapshot.simulated_weeks:
-        for matchday_key in ("premier_matchdays", "cup_matchdays"):
+        for matchday_key in ("premier_matchdays", "second_matchdays", "cup_matchdays"):
             for matchday_data in simulated_week.get(matchday_key, []):
                 competition = matchday_data.get("competition", PREMIER_DIVISION)
-                if competition not in AWARD_COMPETITIONS:
+                if competition not in AWARD_COMPETITIONS and competition != SECOND_DIVISION:
                     continue
                 round_number = int(matchday_data["round_number"])
                 player_stats_map = stats_by_competition.setdefault(competition, {})
@@ -3574,9 +3678,24 @@ def _open_repo(save_name: str, *, create: bool = False) -> SaveRepository:
     return SaveRepository.open(_save_dir(save_name), save_name)
 
 
-# 当前活动的存档写事务。公开 API 通过 _state_transaction 建立事务；
-# _load_state_json/_write_state_json 在事务内直接委托给该仓库。
-_ACTIVE_REPO: Optional[SaveRepository] = None
+# 数据安全（用户确认 #2）：写事务改“线程本地句柄 + 按存档名进程内锁”，
+# 消除单例 _ACTIVE_REPO 被跨线程/跨存档覆盖、以及读线程误用写连接的隐患。
+_SAVE_LOCKS: Dict[str, threading.RLock] = {}
+_SAVE_LOCKS_GUARD = threading.Lock()
+_thread_state = threading.local()
+
+
+def _lock_for_save(save_name: str) -> "threading.RLock":
+    with _SAVE_LOCKS_GUARD:
+        lock = _SAVE_LOCKS.get(save_name)
+        if lock is None:
+            lock = threading.RLock()
+            _SAVE_LOCKS[save_name] = lock
+        return lock
+
+
+def _active_repo() -> Optional[SaveRepository]:
+    return getattr(_thread_state, "repo", None)
 
 
 @contextmanager
@@ -3588,23 +3707,21 @@ def _state_transaction(save_name: str, *, create: bool = False):
     事务内任何异常（包括 COMMIT 本身失败）都会整体回滚，不产生半提交状态，
     并保证连接关闭、事务句柄清理。
     """
-    global _ACTIVE_REPO
-    if _ACTIVE_REPO is not None:
-        raise RuntimeError("存档事务不可嵌套。")
-    repo = _open_repo(save_name, create=create)
-    try:
-        repo.begin()
-        _ACTIVE_REPO = repo
+    with _lock_for_save(save_name):
+        repo = _open_repo(save_name, create=create)
         try:
-            yield repo
-            repo.commit()
-        except BaseException:
-            repo.rollback()
-            raise
-    finally:
-        if _ACTIVE_REPO is repo:
-            _ACTIVE_REPO = None
-        repo.close()
+            repo.begin()
+            _thread_state.repo = repo
+            try:
+                yield repo
+                repo.commit()
+            except BaseException:
+                repo.rollback()
+                raise
+        finally:
+            if _active_repo() is repo:
+                _thread_state.repo = None
+            repo.close()
 
 
 def _load_state_json(save_name: str) -> dict:
@@ -3615,12 +3732,14 @@ def _load_state_json(save_name: str) -> dict:
 
 
 def _load_state_json_if_exists(save_name: str) -> Optional[dict]:
-    if _ACTIVE_REPO is not None:
-        if _ACTIVE_REPO.save_name != save_name:
-            raise RuntimeError(f"存档事务指向 '{_ACTIVE_REPO.save_name}'，不能读取 '{save_name}'。")
-        state = _ACTIVE_REPO.load_state()
+    active = _active_repo()
+    if active is not None:
+        if active.save_name != save_name:
+            raise RuntimeError(f"存档事务指向 '{active.save_name}'，不能读取 '{save_name}'。")
+        state = active.load_state()
     else:
-        repo = _open_repo(save_name)
+        # 读路径使用独立只读连接，避免与写事务共享线程绑定的连接。
+        repo = SaveRepository.open_readonly(_save_dir(save_name), save_name)
         try:
             state = repo.load_state()
         finally:
@@ -3632,10 +3751,11 @@ def _load_state_json_if_exists(save_name: str) -> Optional[dict]:
 
 def _write_state_json(save_name: str, state: dict) -> None:
     _normalize_rosters_and_registry(state)
-    if _ACTIVE_REPO is not None:
-        if _ACTIVE_REPO.save_name != save_name:
-            raise RuntimeError(f"存档事务指向 '{_ACTIVE_REPO.save_name}'，不能写入 '{save_name}'。")
-        _ACTIVE_REPO.persist_state(state)
+    active = _active_repo()
+    if active is not None:
+        if active.save_name != save_name:
+            raise RuntimeError(f"存档事务指向 '{active.save_name}'，不能写入 '{save_name}'。")
+        active.persist_state(state)
         return
     repo = _open_repo(save_name)
     try:

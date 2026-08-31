@@ -392,7 +392,7 @@ class HistoryPage(EntityPageBase):
         selector_layout.addWidget(self._season_combo)
         self._page_header = PageHeader(
             "历史与荣誉",
-            breadcrumbs=navigation.breadcrumbs(Route("history")),
+            breadcrumbs=[],
             navigator=self._context.navigate,
             actions=[selector],
             parent=self._content,

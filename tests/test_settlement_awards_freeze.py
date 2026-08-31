@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import unittest
 
-from football_simulator.state import FINAL_SETTLEMENT_WEEK, WINTER_SETTLEMENT_WEEK
+from football_simulator.state import FINAL_SETTLEMENT_WEEK, SECOND_LEAGUE_WEIGHT, WINTER_SETTLEMENT_WEEK
 
 from tests.support import (
     FreezeTestCase,
@@ -80,9 +80,18 @@ class SettlementTests(FreezeTestCase):
                 self.assertAlmostEqual(item["market_value"], row.market_value, places=2)
                 self.assertGreaterEqual(row.season_rating, 0.0)
                 self.assertLessEqual(row.season_rating, 10.0)
-                self.assertGreaterEqual(row.market_value, 8.0, "身价公式下限为 8.0")
-            elif name in summer_transferred:
+                min_value = 8.0 if row.team_name in premier_names else 8.0 * SECOND_LEAGUE_WEIGHT
+                self.assertGreaterEqual(
+                    row.market_value,
+                    min_value,
+                    "身价公式下限（一级 8.0；次级按 SECOND_LEAGUE_WEIGHT 加权）",
+                )
+            elif name in summer_transferred or row.team_name not in premier_names:
+                # 次级联赛完整模拟后：次级真实球员也参与评分/身价（权重打折）；
+                # 夏窗转会的球员按 ≤49 周口径现算评分。
                 self.assertIsNotNone(row.season_rating)
+                self.assertGreaterEqual(row.season_rating, 0.0)
+                self.assertLessEqual(row.season_rating, 10.0)
             elif row.team_name in premier_names:
                 # 夏窗才转入一级联赛的球员：按 ≤49 周口径现算评分，
                 # 不出现在第 49 周写入的缓存中。
@@ -90,7 +99,7 @@ class SettlementTests(FreezeTestCase):
                 self.assertGreaterEqual(row.season_rating, 0.0)
                 self.assertLessEqual(row.season_rating, 10.0)
             else:
-                # 从未进入一级联赛结算口径的球员：无评分、无身价。
+                # 无出场痕迹：无评分、无身价。
                 self.assertIsNone(row.season_rating)
                 self.assertIsNone(row.market_value)
         self.assertTrue(winter_cache, "冬窗结算缓存应包含第 24 周口径球员")

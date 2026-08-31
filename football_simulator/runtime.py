@@ -2,7 +2,9 @@ import json
 import os
 import re
 import shutil
+import sqlite3
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
@@ -12,6 +14,7 @@ SHARED_CONFIG_FILE_NAME = "足球模拟器总配置.json"
 ALTERNATE_SHARED_CONFIG_FILE_NAMES = ("football_simulator_config.json",)
 SAVE_CONFIG_FILE_NAME = "config.json"
 CURRENT_SAVE_FILE_NAME = "current_save.txt"
+SAVE_DATABASE_FILE_NAME = "save.sqlite3"
 
 # 存档名白名单：中文、字母、数字、空格、下划线、连字符，1–64 个字符，
 # 首字符不能是空格或连字符。任何路径分隔符、盘符、控制字符、点号开头的
@@ -155,6 +158,137 @@ def save_config_path(save_name: str) -> Path:
     path = save_root() / normalized_name
     path.mkdir(parents=True, exist_ok=True)
     return path / SAVE_CONFIG_FILE_NAME
+
+
+def _safe_save_dir(save_name: str) -> Path:
+    """返回校验后的存档目录（拒绝符号链接与越界）。"""
+    root = save_root().resolve()
+    normalized_name = normalize_save_name(save_name)
+    path = root / normalized_name
+    if path.is_symlink():
+        raise ValueError("存档路径不能是符号链接。")
+    resolved = path.resolve()
+    if resolved != root and resolved.parent != root:
+        raise ValueError("只能访问存档根目录下的直接子目录。")
+    return path
+
+
+def backup_save(save_name: str) -> Path:
+    """用 SQLite Online Backup API 为存档创建独立备份（WAL 安全）。"""
+    normalized_name = normalize_save_name(save_name)
+    db_path = _safe_save_dir(normalized_name) / SAVE_DATABASE_FILE_NAME
+    if not db_path.exists():
+        raise ValueError(f"存档 '{normalized_name}' 还没有数据库（未初始化）。")
+    backup_dir = save_root().parent / "backups" / normalized_name
+    backup_dir.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    target = backup_dir / f"{timestamp}.sqlite3"
+    src_conn = sqlite3.connect(str(db_path))
+    dst_conn = sqlite3.connect(str(target))
+    try:
+        with dst_conn:
+            src_conn.backup(dst_conn)
+    finally:
+        src_conn.close()
+        dst_conn.close()
+    return target
+
+
+def list_backups(save_name: str) -> list[Path]:
+    normalized_name = normalize_save_name(save_name)
+    backup_dir = save_root().parent / "backups" / normalized_name
+    if not backup_dir.exists():
+        return []
+    return sorted(backup_dir.glob("*.sqlite3"), key=lambda p: p.name, reverse=True)
+
+
+def export_save(save_name: str, dest_path: Path) -> Path:
+    """把存档数据库导出到用户选择的位置（Online Backup API）。"""
+    normalized_name = normalize_save_name(save_name)
+    db_path = _safe_save_dir(normalized_name) / SAVE_DATABASE_FILE_NAME
+    if not db_path.exists():
+        raise ValueError(f"存档 '{normalized_name}' 还没有数据库（未初始化）。")
+    dest_path = Path(dest_path)
+    dest_path.parent.mkdir(parents=True, exist_ok=True)
+    src_conn = sqlite3.connect(str(db_path))
+    dst_conn = sqlite3.connect(str(dest_path))
+    try:
+        with dst_conn:
+            src_conn.backup(dst_conn)
+    finally:
+        src_conn.close()
+        dst_conn.close()
+    return dest_path
+
+
+def import_save_database(save_name: str, src_path: Path) -> Path:
+    """从外部 .sqlite3 导入为存档数据库（同名存档目录已存在时覆盖）。"""
+    normalized_name = normalize_save_name(save_name)
+    src_path = Path(src_path)
+    if not src_path.exists():
+        raise FileNotFoundError(f"导入文件不存在：{src_path}")
+    target_dir = _safe_save_dir(normalized_name)
+    target_dir.mkdir(parents=True, exist_ok=True)
+    target = target_dir / SAVE_DATABASE_FILE_NAME
+    src_conn = sqlite3.connect(str(src_path))
+    dst_conn = sqlite3.connect(str(target))
+    try:
+        with dst_conn:
+            src_conn.backup(dst_conn)
+    finally:
+        src_conn.close()
+        dst_conn.close()
+    return target
+
+
+def move_save_to_trash(save_name: str) -> Path:
+    """把存档移入回收站（而非直接删除），可以恢复。"""
+    normalized_name = normalize_save_name(save_name)
+    root = save_root().resolve()
+    path = root / normalized_name
+    if not path.exists() or path.is_symlink():
+        raise FileNotFoundError(f"未找到存档 '{normalized_name}'。")
+    trash_dir = save_root().parent / "trash"
+    trash_dir.mkdir(parents=True, exist_ok=True)
+    target = trash_dir / normalized_name
+    if target.exists():
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        target = trash_dir / f"{normalized_name}-{timestamp}"
+    shutil.move(str(path), str(target))
+    return target
+
+
+def list_trash_saves() -> list[Path]:
+    trash_dir = save_root().parent / "trash"
+    if not trash_dir.exists():
+        return []
+    return sorted(trash_dir.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True)
+
+
+def restore_trash_save(trash_path: Path, save_name: Optional[str] = None) -> Path:
+    trash_path = Path(trash_path)
+    if not trash_path.exists() or not trash_path.is_dir():
+        raise FileNotFoundError(f"回收站中不存在：{trash_path}")
+    target_name = normalize_save_name(save_name or trash_path.name)
+    target = save_root() / target_name
+    if target.exists():
+        raise ValueError(f"存档 '{target_name}' 已存在，无法恢复。")
+    shutil.move(str(trash_path), str(target))
+    return target
+
+
+def empty_trash() -> list[Path]:
+    trash_dir = save_root().parent / "trash"
+    if not trash_dir.exists():
+        return []
+    removed: list[Path] = []
+    for entry in list(trash_dir.iterdir()):
+        if entry.is_dir():
+            shutil.rmtree(entry)
+        elif entry.is_symlink() or entry.is_file():
+            entry.unlink()
+        removed.append(entry)
+    return removed
 
 
 def load_current_save_name(default_name: str = "default") -> str:

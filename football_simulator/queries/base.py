@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import sqlite3
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -145,6 +146,14 @@ def resolve_current_season(conn: sqlite3.Connection) -> SeasonRef:
         if season.status == "active":
             return season
     return seasons[-1]
+
+
+def load_week_labels(conn: sqlite3.Connection) -> Tuple[dict, ...]:
+    """读取存档 save_meta 中当前（进行中）赛季的赛历条目（已按杯赛激活修饰）。"""
+    row = conn.execute("SELECT value_json FROM save_meta WHERE key = 'weeks'").fetchone()
+    if row is None:
+        return ()
+    return tuple(json.loads(row["value_json"]))
 
 
 def season_id_for(conn: sqlite3.Connection, season_number: int) -> int:

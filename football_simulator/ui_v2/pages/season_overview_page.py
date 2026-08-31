@@ -53,16 +53,28 @@ from PySide6.QtWidgets import (
 from football_simulator.queries import base, competition_queries, history_queries
 from football_simulator.schedule import TOTAL_WEEKS, build_week_calendar
 from football_simulator.ui_v2 import navigation
-from football_simulator.ui_v2.components import TEXT_COLOR_MUTED, EntityLink, EmptyState, PageHeader
+from football_simulator.ui_v2.components import TEXT_COLOR_BRIGHT, TEXT_COLOR_MUTED, EntityLink, EmptyState, PageHeader
+from football_simulator.ui_v2.design_tokens import (
+    DANGER_COLOR,
+    LINK_COLOR,
+    SUCCESS_HIGHLIGHT,
+    WEEK_CUP_BG,
+    WEEK_CURRENT_BG,
+    WEEK_LEAGUE_BG,
+    WEEK_PLAYED_BG,
+    WEEK_PLAYOFF_BG,
+    WEEK_SUMMER_BG,
+    WEEK_WINTER_BG,
+)
 from football_simulator.ui_v2.navigation import Route
 from football_simulator.ui_v2.pages.entity_page_base import EntityPageBase
 from football_simulator.ui_v2.widgets import section_header
 
 _MUTED_STYLE = f"color: {TEXT_COLOR_MUTED}; background: transparent;"
-_BRIGHT_STYLE = "color: #f8fbff; background: transparent; font-weight: 700;"
-_ACCENT_STYLE = "color: #7dd3fc; background: transparent; font-weight: 800;"
-_POSITIVE_STYLE = "color: #4ade80; background: transparent; font-weight: 800;"
-_NEGATIVE_STYLE = "color: #f87171; background: transparent; font-weight: 800;"
+_BRIGHT_STYLE = f"color: {TEXT_COLOR_BRIGHT}; background: transparent; font-weight: 700;"
+_ACCENT_STYLE = f"color: {LINK_COLOR}; background: transparent; font-weight: 800;"
+_POSITIVE_STYLE = f"color: {SUCCESS_HIGHLIGHT}; background: transparent; font-weight: 800;"
+_NEGATIVE_STYLE = f"color: {DANGER_COLOR}; background: transparent; font-weight: 800;"
 
 # 联赛赛历固定为 38 轮；build_week_calendar 只使用轮数与固定常量推导 52 周日历，
 # 与 initialize_save_state 构建的赛历完全一致（确定性，无随机源）。
@@ -70,14 +82,14 @@ _WEEK_CALENDAR = build_week_calendar([[] for _ in range(38)])
 
 # 时间线周次着色（沿用旧页的语义配色；底色加深以承载链接文字）。
 _WEEK_KIND_COLORS = {
-    "winter_break": "#26381f",
-    "summer_break": "#342a1d",
-    "promotion_playoff": "#3a3217",
-    "cup_week": "#2c2543",
-    "league_week": "#16233a",
+    "winter_break": WEEK_WINTER_BG,
+    "summer_break": WEEK_SUMMER_BG,
+    "promotion_playoff": WEEK_PLAYOFF_BG,
+    "cup_week": WEEK_CUP_BG,
+    "league_week": WEEK_LEAGUE_BG,
 }
-_PLAYED_COLOR = "#18355a"
-_CURRENT_COLOR = "#1d4f8f"
+_PLAYED_COLOR = WEEK_PLAYED_BG
+_CURRENT_COLOR = WEEK_CURRENT_BG
 _TIMELINE_COLUMNS = 13
 
 _REVIEW_HEADERS = ("球员", "位置", "当前能力", "新能力", "变化", "决定")
@@ -341,7 +353,7 @@ class SeasonOverviewPage(EntityPageBase):
 
         header = PageHeader(
             f"第 {data.season_number} 赛季",
-            breadcrumbs=navigation.breadcrumbs(Route("season_overview", season=data.season_number)),
+            breadcrumbs=[],
             navigator=navigate,
             actions=[selector],
         )

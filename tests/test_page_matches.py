@@ -309,7 +309,7 @@ class MatchCenterTests(_PageTestCase):
         expected = self._query_rows(2, status="scheduled")
         self.assertEqual(len(page._rows), len(expected))
         self.assertEqual(len(expected), 700)
-        self.assertTrue(all(row.score_text == "未赛" for row in page._rows))
+        self.assertTrue(all(row.score_text == "vs" for row in page._rows))
         page._status_combo.setCurrentText("全部状态")
         self.assertEqual(len(page._rows), len(self._query_rows(2)))
 

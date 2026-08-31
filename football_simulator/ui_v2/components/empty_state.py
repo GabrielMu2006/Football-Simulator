@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Callable, Optional
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QLabel, QSizePolicy, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QLabel, QPushButton, QSizePolicy, QVBoxLayout, QWidget
 
 from football_simulator.ui_v2.components import TEXT_COLOR_BRIGHT, TEXT_COLOR_MUTED
 
@@ -24,10 +24,13 @@ class EmptyState(QWidget):
         description: Optional[str] = None,
         hint: Optional[str] = None,
         parent: Optional[QWidget] = None,
+        action_text: str | None = None,
+        action_callback: Optional[Callable[[], None]] = None,
     ) -> None:
         super().__init__(parent)
         self.setObjectName("emptyState")
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self._action_callback = action_callback
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(24, 24, 24, 24)
@@ -71,4 +74,16 @@ class EmptyState(QWidget):
         else:
             self._hint_label = None
 
+        if action_text:
+            self._action_button = QPushButton(action_text, self)
+            self._action_button.setObjectName("emptyStateActionButton")
+            self._action_button.clicked.connect(self._on_action_clicked)
+            layout.addWidget(self._action_button, 0, Qt.AlignmentFlag.AlignHCenter)
+        else:
+            self._action_button = None
+
         layout.addStretch(1)
+
+    def _on_action_clicked(self) -> None:
+        if self._action_callback is not None:
+            self._action_callback()

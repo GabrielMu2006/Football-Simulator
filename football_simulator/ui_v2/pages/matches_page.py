@@ -50,6 +50,7 @@ from football_simulator.ui_v2.components import (
     FilterBar,
     PageHeader,
 )
+from football_simulator.ui_v2.components.crest_delegate import TeamCrestTextDelegate
 from football_simulator.ui_v2.navigation import Route
 from football_simulator.ui_v2.pages.entity_page_base import EntityPageBase, PageContext
 
@@ -96,13 +97,13 @@ def _to_list_row(source: match_queries.MatchRow) -> _ListRow:
     if source.is_completed and home_goals is not None and away_goals is not None:
         score_text = f"{home_goals}-{away_goals}"
         if home_goals > away_goals:
-            result_text = "胜"
+            result_text = "主胜"
         elif home_goals == away_goals:
             result_text = "平"
         else:
-            result_text = "负"
+            result_text = "客胜"
     else:
-        score_text = "未赛"
+        score_text = "vs"
         result_text = "未赛"
     return _ListRow(
         match_id=source.match_id,
@@ -158,9 +159,14 @@ class MatchCenterPage(EntityPageBase):
         layout.addWidget(self._summary_label)
 
         self._table = EntityTable(_LIST_COLUMNS, navigator=self._context.navigate)
-        # 结果列口径：主队视角（胜=主队胜、负=客队胜）。
+        # 队徽：主客队名列（UI#5 统一）。
+        self._home_crest_delegate = TeamCrestTextDelegate(parent=self._table.view, crest_size=22)
+        self._away_crest_delegate = TeamCrestTextDelegate(parent=self._table.view, crest_size=22)
+        self._table.view.setItemDelegateForColumn(3, self._home_crest_delegate)
+        self._table.view.setItemDelegateForColumn(5, self._away_crest_delegate)
+        # 结果列口径：主队视角（主胜/平/客胜）。
         self._table.view.horizontalHeader().setToolTip(
-            "结果列为主队视角：胜=主队胜，平=平局，负=客队胜；未赛=比赛尚未进行。"
+            "结果列为主队视角：主胜=主队胜，平=平局，客胜=客队胜；未赛=比赛尚未进行。"
         )
         table_page = QWidget()
         table_layout = QVBoxLayout(table_page)

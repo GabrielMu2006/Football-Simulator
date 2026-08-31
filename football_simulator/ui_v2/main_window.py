@@ -26,8 +26,8 @@ import importlib
 import traceback
 from typing import Dict, Optional, Tuple, Type
 
-from PySide6.QtCore import QRectF, QThread, Qt, Signal
-from PySide6.QtGui import QColor, QFont, QIcon, QKeySequence, QPainter, QPixmap, QShortcut
+from PySide6.QtCore import QRectF, QThread, Qt, QUrl, Signal
+from PySide6.QtGui import QColor, QDesktopServices, QFont, QIcon, QKeySequence, QPainter, QPixmap, QShortcut
 from PySide6.QtWidgets import (
     QComboBox,
     QFrame,
@@ -36,9 +36,12 @@ from PySide6.QtWidgets import (
     QListWidget,
     QListWidgetItem,
     QMainWindow,
+    QMenu,
+    QMenuBar,
     QMessageBox,
     QPushButton,
     QStackedWidget,
+    QToolButton,
     QVBoxLayout,
     QWidget,
 )
@@ -168,28 +171,63 @@ def _load_page_class(module_name: str, class_name: str) -> Optional[type]:
     return cls
 
 
-class _SimulateWorker(QThread):
-    """在后台线程推进一周（§12.5：模拟期间 GUI 不冻结）。
+def _snapshot_has_pending(snapshot: SaveSnapshot) -> bool:
+    return bool(snapshot.pending_ability_review) or bool(
+        snapshot.pending_transfer_review
+    ) or snapshot.pending_draft.get("status") == "awaiting_input"
 
-    状态机的 SQLite 事务由线程内自建连接完成；期间 UI 端的查询若撞上
-    写锁，会按 busy_timeout 短暂等待后成功，不会静默覆盖。
+
+class _SimulateWorker(QThread):
+    """后台线程批量推进（§12.5：模拟期间 GUI 不冻结）。
+
+    mode：
+    - one：只推进一周（保持旧行为）；
+    - until_pending：连续推进到出现能力/转会/选秀待办或赛季结束；
+    - until_season_end：连续推进到第 52 周/赛季结束，可被待办拦停。
+    状态机的 SQLite 事务由线程内自建连接完成；期间 UI 端查询会按
+    busy_timeout 短暂等待，不会静默覆盖。
     """
 
     succeeded = Signal(object)
     failed = Signal(str)
+    progress = Signal(int, int, str)
+    stopped = Signal()
 
-    def __init__(self, service: "SimulatorUIService", save_name: str, parent: Optional[QWidget] = None) -> None:
+    def __init__(
+        self,
+        service: "SimulatorUIService",
+        save_name: str,
+        mode: str = "one",
+        parent: Optional[QWidget] = None,
+    ) -> None:
         super().__init__(parent)
         self._service = service
         self._save_name = save_name
+        self._mode = mode
 
     def run(self) -> None:
+        result = None
         try:
-            result = self._service.simulate_week(self._save_name)
+            while True:
+                result = self._service.simulate_week(self._save_name)
+                total = len(result.snapshot.weeks)
+                current = result.snapshot.current_week
+                self.progress.emit(current, total, result.week.label)
+                if self._mode == "one":
+                    break
+                if result.season_completed_now:
+                    break
+                if _snapshot_has_pending(result.snapshot):
+                    break
+                if self.isInterruptionRequested():
+                    break
         except Exception as exc:  # noqa: BLE001 - 与外壳错误对话框口径一致
             self.failed.emit(str(exc))
-        else:
-            self.succeeded.emit(result)
+            return
+        if result is None:
+            self.failed.emit("模拟没有产生结果。")
+            return
+        self.succeeded.emit(result)
 
 
 class MainWindow(QMainWindow):
@@ -205,6 +243,7 @@ class MainWindow(QMainWindow):
         self._nav_syncing = False
         self._init_in_progress = False
         self._simulate_in_progress = False
+        self._simulate_mode = "one"
         self.setWindowTitle("Football Simulator UI v2")
         self.resize(1680, 980)
         self.setMinimumSize(1440, 860)
@@ -217,6 +256,7 @@ class MainWindow(QMainWindow):
     # ------------------------------------------------------------------
 
     def _build_ui(self) -> None:
+        self._build_menu_bar()
         root = QWidget()
         root_layout = QHBoxLayout(root)
         root_layout.setContentsMargins(18, 18, 18, 18)
@@ -225,6 +265,52 @@ class MainWindow(QMainWindow):
 
         root_layout.addWidget(self._build_nav_panel(), 0)
         root_layout.addLayout(self._build_content_area(), 1)
+
+    def _build_menu_bar(self) -> None:
+        """系统菜单栏（UI#10）：文件 / 推进 / 视图 / 帮助。"""
+        self.menu_bar = QMenuBar(self)
+        self.setMenuBar(self.menu_bar)
+
+        def add(menu, text, callback, shortcut=None):
+            action = menu.addAction(text)
+            if shortcut:
+                action.setShortcut(QKeySequence(shortcut))
+            action.triggered.connect(callback)
+            return action
+
+        file_menu = self.menu_bar.addMenu("文件")
+        add(file_menu, "新建存档", lambda: self.router.navigate(Route("saves")))
+        add(file_menu, "打开存档目录", self._open_save_directory)
+        file_menu.addSeparator()
+        add(file_menu, "退出", lambda: self.close(), "Ctrl+Q")
+
+        advance_menu = self.menu_bar.addMenu("推进")
+        add(advance_menu, "模拟下一周", lambda: self._start_simulation("one"), "Ctrl+Return")
+        add(advance_menu, "模拟到下一待办", lambda: self._start_simulation("until_pending"), "Ctrl+Shift+Return")
+        add(advance_menu, "模拟到赛季末", lambda: self._start_simulation("until_season_end"), "Ctrl+Alt+Return")
+        add(advance_menu, "本周战报", self._open_weekly_report, "Ctrl+Shift+W")
+
+        view_menu = self.menu_bar.addMenu("视图")
+        add(view_menu, "刷新", lambda: self._load_save(self._current_save_name()), "Ctrl+R")
+
+        help_menu = self.menu_bar.addMenu("帮助")
+        add(help_menu, "打开存档目录", self._open_save_directory)
+        add(help_menu, "关于 Football Simulator", self._show_about)
+
+    def _open_save_directory(self) -> None:
+        try:
+            directory = self.service.save_directory()
+        except Exception:
+            return
+        QDesktopServices.openUrl(QUrl.fromLocalFile(directory))
+
+    def _show_about(self) -> None:
+        QMessageBox.about(
+            self,
+            "关于 Football Simulator UI v2",
+            "Football Simulator UI v2\n本地足球联赛模拟器（数据工作台）\n"
+            "路线：主队观赛模式 · 双级联赛 · 三杯赛 · 转会/选秀/荣誉",
+        )
 
     def _build_nav_panel(self) -> QFrame:
         nav_panel = QFrame()
@@ -327,10 +413,22 @@ class MainWindow(QMainWindow):
         self.init_button = QPushButton("初始化赛季")
         self.init_button.clicked.connect(self._initialize_current_save)
         self.simulate_button = QPushButton("模拟下一周")
-        self.simulate_button.clicked.connect(self._simulate_week)
+        self.simulate_button.setObjectName("simulateButton")
+        self.simulate_button.clicked.connect(self._on_simulate_clicked)
         self.weekly_button = QPushButton("本周战报")
         self.weekly_button.setToolTip("查看最近一个已模拟周次的战报")
         self.weekly_button.clicked.connect(self._open_weekly_report)
+        # 批量推进菜单：到下一待办 / 到赛季末（用户确认 #9）。
+        self.advance_button = QToolButton()
+        self.advance_button.setObjectName("advanceButton")
+        self.advance_button.setText("推进 ▾")
+        self.advance_button.setToolTip("批量推进：到下一待办 / 到赛季末")
+        self.advance_button.setPopupMode(QToolButton.ToolButtonPopupMode.MenuButtonPopup)
+        self.advance_menu = QMenu(self.advance_button)
+        self.advance_menu.addAction("模拟到下一待办", lambda: self._start_simulation("until_pending"))
+        self.advance_menu.addAction("模拟到赛季末", lambda: self._start_simulation("until_season_end"))
+        self.advance_button.setMenu(self.advance_menu)
+        self.advance_button.clicked.connect(lambda: self._start_simulation("until_pending"))
         self.pending_button = QPushButton("处理待办")
         self.pending_button.setEnabled(False)
         self.pending_button.clicked.connect(self._focus_pending_workflow)
@@ -338,8 +436,10 @@ class MainWindow(QMainWindow):
         self.reload_button.clicked.connect(lambda: self._load_save(self._current_save_name()))
         control_row.addWidget(self.save_picker)
         control_row.addWidget(self.status_label, 1)
+        control_row.addWidget(self.init_button)
         control_row.addWidget(self.pending_button)
         control_row.addWidget(self.simulate_button)
+        control_row.addWidget(self.advance_button)
         control_row.addWidget(self.weekly_button)
         control_row.addWidget(self.reload_button)
         bar_layout.addLayout(control_row)
@@ -508,7 +608,6 @@ class MainWindow(QMainWindow):
             item = self.breadcrumb_layout.takeAt(0)
             widget = item.widget()
             if widget is not None:
-                # setParent(None) 让旧 crumb 立即从父层消失（deleteLater 只延迟释放）。
                 widget.setParent(None)
                 widget.deleteLater()
         for index, crumb in enumerate(navigation.breadcrumbs(route, context)):
@@ -577,8 +676,23 @@ class MainWindow(QMainWindow):
         self._init_in_progress = True
         self.init_button.setEnabled(False)
         save_name = self._current_save_name()
+        # 数据安全（用户确认 #2）：赛季进行中被初始化会丢弃进度，必须强确认。
+        if self.snapshot is not None and not self.snapshot.season_complete:
+            answer = QMessageBox.warning(
+                self,
+                "初始化赛季",
+                f"当前存档第 {self.snapshot.season_number} 赛季尚未结束"
+                f"（已进行到第 {self.snapshot.current_week} 周）。\n"
+                "重新初始化将放弃该赛季（不归档）并直接进入下一赛季。确定继续？",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No,
+            )
+            if answer != QMessageBox.StandardButton.Yes:
+                self._init_in_progress = False
+                self.init_button.setEnabled(True)
+                return
         try:
-            state = self.service.initialize(save_name)
+            state = self.service.initialize(save_name, force=True)
         except Exception as exc:
             QMessageBox.critical(self, "Football Simulator UI v2", str(exc))
             return
@@ -590,33 +704,73 @@ class MainWindow(QMainWindow):
         self._refresh_views()
         QMessageBox.information(self, "Football Simulator UI v2", f"已为存档 {save_name} 初始化新赛季。")
 
+    def _on_simulate_clicked(self) -> None:
+        # 模拟正在运行 → 点击=请求取消；有待办 → 点击=前往待办处理。
+        if self._simulate_in_progress:
+            if self._simulate_worker is not None:
+                self._simulate_worker.requestInterruption()
+                self.simulate_button.setText("正在取消…")
+            return
+        if self.snapshot is not None and _snapshot_has_pending(self.snapshot):
+            self._focus_pending_workflow()
+            return
+        self._simulate_week()
+
     def _simulate_week(self) -> None:
+        self._start_simulation("one")
+
+    def _start_simulation(self, mode: str) -> None:
         if self._simulate_in_progress:
             return
         if self.snapshot is None:
             QMessageBox.warning(self, "Football Simulator UI v2", "当前存档还没有赛季数据，请先初始化赛季。")
             return
+        if mode != "one" and _snapshot_has_pending(self.snapshot):
+            # 已有待办时先引导处理，避免“按到待办却报错”。
+            self._focus_pending_workflow()
+            return
         self._simulate_in_progress = True
+        self._simulate_mode = mode
         self.simulate_button.setEnabled(False)
         self.simulate_button.setText("正在模拟…")
-        self._simulate_worker = _SimulateWorker(self.service, self._current_save_name(), self)
+        self.advance_button.setEnabled(False)
+        self._simulate_worker = _SimulateWorker(
+            self.service, self._current_save_name(), mode, self
+        )
         self._simulate_worker.succeeded.connect(self._on_simulate_succeeded)
         self._simulate_worker.failed.connect(self._on_simulate_failed)
+        self._simulate_worker.progress.connect(self._on_simulate_progress)
         self._simulate_worker.start()
+
+    def _on_simulate_progress(self, week: int, total: int, phase: str) -> None:
+        self.status_label.setText(f"正在模拟第 {week}/{total} 周 · {phase}")
+        self.simulate_button.setText(f"模拟中 {week}/{total}…")
 
     def _on_simulate_succeeded(self, result: object) -> None:
         self._simulate_worker = None
         self._simulate_in_progress = False
         self.simulate_button.setEnabled(True)
+        self.advance_button.setEnabled(True)
         self.simulate_button.setText("模拟下一周")
         self.snapshot = result.snapshot
         self._refresh_views()
-        self._open_weekly_report()
+        # 用户确认 #9：单步不再自动打开战报；批量到赛季末/待办给出结果页。
+        if self._simulate_mode == "until_season_end":
+            if result.season_completed_now:
+                self._open_weekly_report()
+            elif _snapshot_has_pending(result.snapshot):
+                self._focus_pending_workflow()
+        elif self._simulate_mode == "until_pending":
+            if _snapshot_has_pending(result.snapshot):
+                self._focus_pending_workflow()
+            elif result.season_completed_now:
+                self._open_weekly_report()
 
     def _on_simulate_failed(self, message: str) -> None:
         self._simulate_worker = None
         self._simulate_in_progress = False
         self.simulate_button.setEnabled(True)
+        self.advance_button.setEnabled(True)
         self.simulate_button.setText("模拟下一周")
         QMessageBox.warning(self, "Football Simulator UI v2", message)
 
@@ -641,6 +795,15 @@ class MainWindow(QMainWindow):
             pending_count = self._pending_count(snapshot)
             self.pending_button.setText(f"处理待办({pending_count})" if pending_count else "处理待办")
             self.pending_button.setEnabled(pending_count > 0)
+            if pending_count:
+                # 有待办时模拟按钮变为“前往待办”，不再让用户点模拟报错。
+                self.simulate_button.setEnabled(True)
+                self.simulate_button.setText(f"→ 处理待办({pending_count})")
+                self.advance_button.setEnabled(False)
+            else:
+                self.simulate_button.setEnabled(not self._simulate_in_progress)
+                self.simulate_button.setText("模拟下一周")
+                self.advance_button.setEnabled(not self._simulate_in_progress)
         # legacy 页面保持原有 set_snapshot 流程（matches/teams/players 已迁移，
         # 由并行页面按路由自行查询，不再吃快照）。
         # 当前若停留在迁移后的实体页面，强制按新数据重建。

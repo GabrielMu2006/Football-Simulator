@@ -78,7 +78,7 @@ from football_simulator.ui_v2.design_tokens import (
     SUCCESS_COLOR,
     SUCCESS_DEEP_BG,
 )
-from football_simulator.ui_v2.components.team_crest import TeamCrest
+from football_simulator.ui_v2.components.team_crest import TeamCrest, draw_team_crest
 from football_simulator.ui_v2.pages.entity_page_base import (
     EntityPageBase,
     PageContext,
@@ -237,11 +237,13 @@ class _LinkColumnDelegate(QStyledItemDelegate):
         resolver: Callable[[Any], Optional[navigation.Route]],
         alignment: Qt.AlignmentFlag,
         parent: Optional[QWidget] = None,
+        crest: bool = False,
     ) -> None:
         super().__init__(parent)
         self._table = table
         self._resolver = resolver
         self._alignment = Qt.AlignmentFlag(alignment)
+        self._crest = crest
 
     def paint(self, painter: QPainter, option: QStyleOptionViewItem, index) -> None:  # noqa: N802 - Qt API
         opt = QStyleOptionViewItem(option)
@@ -253,11 +255,27 @@ class _LinkColumnDelegate(QStyledItemDelegate):
         if not text:
             return
         painter.save()
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         font = opt.font
         font.setUnderline(bool(opt.state & QStyle.State.State_MouseOver))
         painter.setFont(font)
         painter.setPen(QColor(LINK_COLOR))
         rect = opt.rect.adjusted(8, 0, -8, 0)
+        if self._crest:
+            crest_size = min(rect.height(), 22)
+            crest_rect = QRect(
+                rect.left(),
+                rect.top() + (rect.height() - crest_size) // 2,
+                crest_size,
+                crest_size,
+            )
+            draw_team_crest(painter, crest_rect, str(text), size=crest_size)
+            rect = QRect(
+                rect.left() + crest_size + 6,
+                rect.top(),
+                max(0, rect.width() - crest_size - 6),
+                rect.height(),
+            )
         painter.drawText(rect, int(self._alignment | Qt.AlignmentFlag.AlignVCenter), str(text))
         painter.restore()
 
@@ -484,6 +502,7 @@ class TeamProfilePage(EntityPageBase):
             self._fixture_opponent_route,
             _FIXTURE_COLUMNS[opponent_index].alignment,
             parent=self._fixtures_table.view,
+            crest=True,
         )
         self._fixtures_table.view.setItemDelegateForColumn(
             opponent_index, self._fixture_link_delegate
@@ -544,7 +563,7 @@ class TeamProfilePage(EntityPageBase):
             self._season_combo.setParent(None)
             self._page_header.setParent(None)
             self._page_header.deleteLater()
-        breadcrumbs = navigation.breadcrumbs(route, {"team_name": title}) if route is not None else []
+        breadcrumbs: list = []
         self._team_crest = TeamCrest(title, size=42)
         self._page_header = PageHeader(
             title,

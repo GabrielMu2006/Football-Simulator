@@ -26,3 +26,9 @@ release/**/*.zip
 release/**/*.dmg
 release/**/*.app
 *.log
+
+# 本地备份/回收站（不进入 git）
+backup-v0.2.0/
+backups/
+trash/
+.local/

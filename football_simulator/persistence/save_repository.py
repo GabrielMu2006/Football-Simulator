@@ -74,6 +74,14 @@ class SaveRepository:
         apply_schema(conn)
         return cls(save_name, conn)
 
+    @classmethod
+    def open_readonly(cls, save_dir: Path, save_name: str) -> "SaveRepository":
+        # 数据安全（用户确认 #2）：读路径使用独立只读连接，绝不与写事务
+        # 共享连接（SQLite 连接是线程绑定的）。
+        conn = db_connection.connect(save_dir)
+        conn.execute("PRAGMA query_only = ON")
+        return cls(save_name, conn)
+
     def close(self) -> None:
         self._conn.close()
 
@@ -267,8 +275,7 @@ class SaveRepository:
             f"""
             SELECT pms.player_id AS player_id, {', '.join(f'pms.{column}' for column in STAT_COLUMNS)}
             FROM player_match_stats AS pms
-            JOIN players AS p ON p.player_id = pms.player_id
-            WHERE pms.match_id = ? AND p.is_real = 1
+            WHERE pms.match_id = ?
             ORDER BY pms.rowid
             """,
             (match_id,),

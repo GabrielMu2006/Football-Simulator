@@ -335,7 +335,7 @@ class MatchDetailPage(EntityPageBase):
         }
         header = PageHeader(
             label,
-            breadcrumbs=navigation.breadcrumbs(Route("match", match=match.match_id), context),
+            breadcrumbs=[],
             navigator=self._context.navigate,
             actions=[prev_button, next_button],
         )

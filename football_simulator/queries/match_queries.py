@@ -196,6 +196,7 @@ def list_matches(
     week_number: Optional[int] = None,
     status: Optional[str] = None,
     team_id: Optional[int] = None,
+    search: Optional[str] = None,
 ) -> List[MatchRow]:
     """赛季比赛目录，按 (week_number, category, round_number, ordinal) 排序。"""
     season_id = base.season_id_for(conn, season_number)
@@ -213,6 +214,10 @@ def list_matches(
     if team_id is not None:
         clauses.append("(m.home_team_id = ? OR m.away_team_id = ?)")
         params.extend([int(team_id), int(team_id)])
+    if search:
+        like = f"%{search}%"
+        clauses.append("(t1.name LIKE ? OR t2.name LIKE ? OR m.competition LIKE ?)")
+        params.extend([like, like, like])
     rows = conn.execute(
         f"""
         SELECT m.match_id AS match_id,
@@ -228,6 +233,8 @@ def list_matches(
                m.away_goals AS away_goals
         FROM matches AS m
         JOIN seasons AS s ON s.season_id = m.season_id
+        JOIN teams AS t1 ON t1.team_id = m.home_team_id
+        JOIN teams AS t2 ON t2.team_id = m.away_team_id
         WHERE {' AND '.join(clauses)}
         ORDER BY m.week_number, m.category, m.round_number, m.ordinal, m.match_id
         """,

@@ -39,6 +39,7 @@ from football_simulator.queries import base, match_queries
 from football_simulator.schedule import TOTAL_WEEKS, build_week_calendar
 from football_simulator.ui_v2 import navigation
 from football_simulator.ui_v2.components import ColumnSpec, EmptyState, EntityTable, PageHeader
+from football_simulator.ui_v2.components.crest_delegate import TeamCrestTextDelegate
 from football_simulator.ui_v2.navigation import Route
 from football_simulator.ui_v2.pages.entity_page_base import EntityPageBase
 
@@ -201,6 +202,7 @@ class WeeklyReportPage(EntityPageBase):
             with base.open_read_connection(self.save_name()) as conn:
                 season = base.resolve_current_season(conn).season_number
                 matches = match_queries.list_matches(conn, season, week_number=week)
+                week_labels = base.load_week_labels(conn)
         except base.MissingSaveError as exc:
             self._show_fatal("还没有可用的存档数据", str(exc), "请先在顶部选择存档，然后点击“初始化赛季”。")
             return
@@ -209,9 +211,13 @@ class WeeklyReportPage(EntityPageBase):
             return
 
         self._season = season
-        self._phase_text = (
-            _WEEK_CALENDAR[week - 1].label if 1 <= week <= len(_WEEK_CALENDAR) else "赛季已结束"
-        )
+        self._week_labels = week_labels
+        if week_labels and 1 <= week <= len(week_labels):
+            self._phase_text = week_labels[week - 1]["label"]
+        elif 1 <= week <= len(_WEEK_CALENDAR):
+            self._phase_text = _WEEK_CALENDAR[week - 1].label
+        else:
+            self._phase_text = "赛季已结束"
         self._render_header(navigate)
         if matches:
             self._render_groups(matches, navigate)
@@ -246,7 +252,7 @@ class WeeklyReportPage(EntityPageBase):
 
         header = PageHeader(
             f"第 {self._week} 周战报",
-            breadcrumbs=navigation.breadcrumbs(Route("weekly_report", week=self._week)),
+            breadcrumbs=[],
             actions=[actions],
         )
         self._header_slot.addWidget(header)
@@ -302,6 +308,10 @@ class WeeklyReportPage(EntityPageBase):
 
         table = EntityTable(_MATCH_COLUMNS, navigator=navigate)
         table.view.verticalHeader().setDefaultSectionSize(_ROW_HEIGHT)
+        table._home_crest_delegate = TeamCrestTextDelegate(parent=table.view, crest_size=20)
+        table._away_crest_delegate = TeamCrestTextDelegate(parent=table.view, crest_size=20)
+        table.view.setItemDelegateForColumn(0, table._home_crest_delegate)
+        table.view.setItemDelegateForColumn(2, table._away_crest_delegate)
         dtos = [_weekly_row(row) for row in rows]
         table.set_rows(dtos, route_for_row=lambda row: Route("match", match=row.match_id))
         # 完整展开：固定高度 = 表头 + 行数 × 行高 + 缓冲，纵向滚动条永不激活。
@@ -314,9 +324,11 @@ class WeeklyReportPage(EntityPageBase):
     # -- 空状态 -----------------------------------------------------------------
 
     def _empty_texts(self, week: int):
-        label = (
-            _WEEK_CALENDAR[week - 1].label if 1 <= week <= len(_WEEK_CALENDAR) else "休赛期"
-        )
+        labels = getattr(self, "_week_labels", ())
+        if labels and 1 <= week <= len(labels):
+            label = labels[week - 1]["label"]
+        else:
+            label = _WEEK_CALENDAR[week - 1].label if 1 <= week <= len(_WEEK_CALENDAR) else "休赛期"
         if label in ("冬窗休赛期", "夏窗休赛期"):
             return (
                 f"第 {week} 周为休赛周（冬窗/夏窗）",

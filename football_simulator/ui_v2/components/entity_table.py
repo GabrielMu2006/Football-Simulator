@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, List, Optional, Sequence
 
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, QSortFilterProxyModel, Qt, Signal
-from PySide6.QtWidgets import QHeaderView, QSizePolicy, QTableView, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QHeaderView, QSizePolicy, QStyledItemDelegate, QTableView, QVBoxLayout, QWidget
 
 from football_simulator.ui_v2 import navigation
 from football_simulator.ui_v2.components import (
@@ -112,6 +112,8 @@ class _EntityTableModel(QAbstractTableModel):
         value = getattr(self._rows[index.row()], column.key, None)
         if role == int(Qt.ItemDataRole.DisplayRole):
             return _PLACEHOLDER if value is None else str(value)
+        if role == int(Qt.ItemDataRole.ToolTipRole):
+            return None if value is None else str(value)
         if role == _SORT_ROLE:
             if not column.sort_role:
                 return None
@@ -161,6 +163,14 @@ class _EntitySortProxyModel(QSortFilterProxyModel):
         return str(left_value) < str(right_value)
 
 
+class _EllipsizeDelegate(QStyledItemDelegate):
+    """长文本省略号 + 完整内容 tooltip（UI#11 长文本溢出）。"""
+
+    def initStyleOption(self, option, index) -> None:  # noqa: N802 - Qt API
+        super().initStyleOption(option, index)
+        option.textElideMode = Qt.TextElideMode.ElideRight
+
+
 class _EntityTableView(QTableView):
     """内部表格视图。
 
@@ -203,6 +213,7 @@ class EntityTable(QWidget):
 
         self._view = _EntityTableView(self)
         self._view.setObjectName("entityTableView")
+        self._view.setItemDelegate(_EllipsizeDelegate(self._view))
         self._view.setModel(self._proxy)
         self._view.setSortingEnabled(True)
         # setSortingEnabled 会按表头默认指示器（第 0 列）立即排序，这里恢复为

@@ -335,7 +335,10 @@ class ThreeSeasonCupTests(FreezeTestCase):
         fields = ("goals", "assists", "chances_created", "successful_defenses", "successful_saves", "clean_sheets")
         merged: dict = {}
         for competition, rows in competition_stats.items():
-            self.assertIn(competition, AWARD_COMPETITIONS)
+            self.assertTrue(
+                competition in AWARD_COMPETITIONS or competition == "次级联赛",
+                f"未知赛事统计：{competition}",
+            )
             for row in rows:
                 self.assertIn(row["label"], season_rows, f"{row['label']} 不在赛季统计中")
                 entry = merged.setdefault(row["label"], {field: 0 for field in fields})

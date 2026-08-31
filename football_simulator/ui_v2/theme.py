@@ -1,3 +1,6 @@
+# 说明：全局 QSS 保留字面量颜色，作为“主题层”唯一映射；其取值与
+# design_tokens.py 一一对应（链接青= LINK_COLOR、背景= BG_COLOR 等）。
+# 组件与页面层一律从 design_tokens / components 取值，不再直接写十六进制。
 APP_STYLE = """
 QWidget {
     background: #0b1220;

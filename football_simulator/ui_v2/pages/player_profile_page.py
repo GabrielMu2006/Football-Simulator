@@ -275,7 +275,7 @@ def _split_row(split: player_queries.PlayerCompetitionSplit) -> _SplitRow:
         successful_defenses=split.stats.successful_defenses,
         successful_saves=split.stats.successful_saves,
         clean_sheets=split.stats.clean_sheets,
-        rating=_FormattedNumber(split.rating),
+        rating=None if split.rating is None else _FormattedNumber(split.rating),
     )
 
 
@@ -638,7 +638,7 @@ class PlayerProfilePage(EntityPageBase):
         route = Route("player", player=self._player_id or "", season=self._season)
         header = PageHeader(
             identity.display_name,
-            breadcrumbs=navigation.breadcrumbs(route, {"player_name": identity.display_name}),
+            breadcrumbs=[],
             navigator=self._context.navigate,
             actions=[selector],
         )
@@ -868,7 +868,7 @@ class PlayerProfilePage(EntityPageBase):
             label.setFixedWidth(width)
             label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
             layout.addWidget(label)
-        rating_label = QLabel(f"{split.rating:.2f}")
+        rating_label = QLabel("—" if split.rating is None else f"{split.rating:.2f}")
         rating_label.setStyleSheet(_BRIGHT_STYLE)
         rating_label.setFixedWidth(self._SUMMARY_WIDTHS[-1])
         rating_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)

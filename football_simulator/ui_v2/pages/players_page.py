@@ -44,6 +44,7 @@ from football_simulator.ui_v2.components import (
     FilterBar,
     PageHeader,
 )
+from football_simulator.ui_v2.components.crest_delegate import TeamCrestTextDelegate
 from football_simulator.ui_v2.pages.entity_page_base import EntityPageBase, PageContext
 
 _POSITION_OPTIONS = ("全部位置", "GK", "DF", "MF", "FW")
@@ -161,6 +162,9 @@ class PlayersPage(EntityPageBase):
         self._filter_bar.add_reset()
         # 引擎只对真实球员结算身价；列头说明口径，避免逐行重复长文案。
         self._table = EntityTable(_DIRECTORY_COLUMNS, navigator=self._context.navigate)
+        # 球队列队徽（UI#5 统一）。
+        self._team_crest_delegate = TeamCrestTextDelegate(parent=self._table.view, crest_size=22)
+        self._table.view.setItemDelegateForColumn(2, self._team_crest_delegate)
         self._table.view.horizontalHeader().setToolTip(
             "身价仅真实球员在冬窗/赛季末结算产生；默认球员不参与身价结算。"
         )

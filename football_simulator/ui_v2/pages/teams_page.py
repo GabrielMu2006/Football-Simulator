@@ -143,7 +143,7 @@ class TeamsPage(EntityPageBase):
 
         self._page_header = PageHeader(
             "球队",
-            navigation.breadcrumbs(navigation.Route("teams")),
+            [],
             self._context.navigate,
         )
         season_caption = QLabel("赛季")
@@ -298,6 +298,8 @@ class TeamsPage(EntityPageBase):
     # -- 空状态 / 连接辅助 -------------------------------------------------------
 
     def _show_empty(self, title: str, description: str, hint: Optional[str] = None) -> None:
+        # 空状态时清空表格，避免旧行残留导致 rowCount 失真。
+        self._table.set_rows([], route_for_row=None)
         previous = self._empty
         self._empty = EmptyState(title, description, hint)
         self._stack.addWidget(self._empty)

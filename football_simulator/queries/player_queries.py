@@ -92,7 +92,7 @@ class PlayerDirectoryRow:
     successful_defenses: int
     successful_saves: int
     clean_sheets: int
-    rating: float  # 按本口径推导的评分
+    rating: Optional[float]  # 按本口径推导的评分；默认球员不参与评分（None -> UI 显示“—”）
     market_value: Optional[float]  # 该赛季最近一次结算身价；无结算为 None
 
 
@@ -103,7 +103,7 @@ class PlayerCompetitionSplit:
     competition: str
     team: base.TeamRef
     stats: PlayerStatLine
-    rating: float
+    rating: Optional[float]  # 默认球员不参与评分，None 显示“—”
 
 
 @dataclass(frozen=True)
@@ -446,8 +446,13 @@ def _derived_rating(
     display_name: str,
     slot_number: int,
     stats: PlayerStatLine,
-) -> float:
-    """用冻结公式按查询层口径推导评分（matches_played=该口径出场数）。"""
+) -> Optional[float]:
+    """用冻结公式按查询层口径推导评分（matches_played=该口径出场数）。
+
+    默认球员只统计六项，不参与评分 → 返回 None（界面显示“—”）。
+    """
+    if not is_real:
+        return None
     model_player = ModelPlayer(
         player_id=stable_id,
         name=display_name,

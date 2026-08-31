@@ -305,8 +305,7 @@ def _record_stat(
     stat_name: str,
     amount: int = 1,
 ) -> None:
-    if not player.is_real:
-        return
+    # 默认球员也记录六项统计（用户确认：#4 默认球员统计，但不参与评选）。
     delta = player_stats.setdefault(player.player_id, PlayerStatDelta())
     delta.add(stat_name, amount)
 

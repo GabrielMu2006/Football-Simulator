@@ -109,11 +109,11 @@ class _CountingService:
     def __getattr__(self, name: str):  # noqa: D105 - 其余调用透传
         return getattr(self._inner, name)
 
-    def initialize(self, save_name: str):
+    def initialize(self, save_name: str, force: bool = False):
         self.init_calls += 1
         if self.on_initialize is not None:
             self.on_initialize()
-        return self._inner.initialize(save_name)
+        return self._inner.initialize(save_name, force=force)
 
     def simulate_week(self, save_name: str):
         self.simulate_calls += 1
@@ -452,19 +452,18 @@ class MainWindowShellTests(unittest.TestCase):
         self.assertEqual(window.router.current.name, "transfers")
         self.assertEqual(window.router.current.int_param("season"), snapshot.season_number)
 
-    def test_simulate_week_navigates_weekly_report(self) -> None:
+    def test_simulate_week_keeps_page_and_weekly_button_works(self) -> None:
         window = self._make_window()
         before = window.snapshot.current_week
         window._simulate_week()
         _wait_simulate_done(window)  # 模拟已移入后台线程（§12.5）
         self.assertFalse(window._simulate_in_progress)
         self.assertEqual(window.snapshot.current_week, before + 1)
-        self.assertEqual(window.router.current.name, "weekly_report")
-        self.assertEqual(window.router.current.int_param("week"), window.snapshot.current_week)
-
-        window.router.navigate(Route("dashboard"))
+        # 用户确认 #9：单步模拟不再自动打开本周战报，停留在原页面。
+        self.assertEqual(window.router.current.name, "dashboard")
         window.weekly_button.click()
         self.assertEqual(window.router.current.name, "weekly_report")
+        self.assertEqual(window.router.current.int_param("week"), window.snapshot.current_week)
         # weekly_report 不在一级导航中，侧栏不应有高亮项
         self.assertEqual(window.nav_list.currentRow(), -1)
 

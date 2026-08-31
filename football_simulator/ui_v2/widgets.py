@@ -15,29 +15,49 @@ from PySide6.QtWidgets import (
 )
 
 
+from football_simulator.ui_v2.design_tokens import (
+    BADGE_DEFAULT_COLOR,
+    POSITION_DF_COLOR,
+    POSITION_FW_COLOR,
+    POSITION_GK_COLOR,
+    POSITION_MF_COLOR,
+    STATUS_ACTIVE_COLOR,
+    STATUS_CUP_COLOR,
+    STATUS_DISABLED_COLOR,
+    STATUS_DONE_COLOR,
+    STATUS_PENDING_COLOR,
+    STATUS_PREMIER_COLOR,
+    STATUS_SECOND_COLOR,
+    ZONE_CHAMPION_BG,
+    ZONE_CURRENT_BG,
+    ZONE_PLAYOFF_BG,
+    ZONE_PROMOTION_BG,
+    ZONE_RELEGATION_BG,
+)
+
 POSITION_COLORS = {
-    "GK": "#7dd3fc",
-    "DF": "#86efac",
-    "MF": "#facc15",
-    "FW": "#fb7185",
+    "GK": POSITION_GK_COLOR,
+    "DF": POSITION_DF_COLOR,
+    "MF": POSITION_MF_COLOR,
+    "FW": POSITION_FW_COLOR,
 }
 
 STATUS_COLORS = {
-    "一级联赛": "#8ec5ff",
-    "次级联赛": "#9ae6b4",
-    "杯赛": "#f9c74f",
-    "待处理": "#fca5a5",
-    "已完成": "#a7f3d0",
-    "进行中": "#93c5fd",
-    "未启用": "#94a3b8",
+    "一级联赛": STATUS_PREMIER_COLOR,
+    "次级联赛": STATUS_SECOND_COLOR,
+    "杯赛": STATUS_CUP_COLOR,
+    "待处理": STATUS_PENDING_COLOR,
+    "已完成": STATUS_DONE_COLOR,
+    "进行中": STATUS_ACTIVE_COLOR,
+    "未启用": STATUS_DISABLED_COLOR,
 }
 
 ZONE_BACKGROUNDS = {
-    "champion": "#173d32",
-    "promotion": "#153a30",
-    "playoff": "#3a3217",
-    "relegation": "#3b1f2a",
-    "current": "#18355a",
+    "champion": ZONE_CHAMPION_BG,
+    "promotion": ZONE_PROMOTION_BG,
+    "playoff": ZONE_PLAYOFF_BG,
+    "relegation": ZONE_RELEGATION_BG,
+    "current": ZONE_CURRENT_BG,
 }
 
 
@@ -153,7 +173,7 @@ def make_badge(text: str, color: str | None = None) -> QLabel:
     badge = QLabel(text)
     badge.setObjectName("badgeLabel")
     badge.setAlignment(Qt.AlignCenter)
-    badge.setStyleSheet(f"background: {color or STATUS_COLORS.get(text, '#94a3b8')};")
+    badge.setStyleSheet(f"background: {color or STATUS_COLORS.get(text, BADGE_DEFAULT_COLOR)};")
     return badge
 
 

@@ -31,11 +31,16 @@ None 时只读展示、全部写按钮禁用）：
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Callable, Dict, List, Optional
 
+from PySide6.QtCore import QUrl
+from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
+    QFileDialog,
     QFrame,
     QHBoxLayout,
+    QInputDialog,
     QLabel,
     QLineEdit,
     QMessageBox,
@@ -46,16 +51,26 @@ from PySide6.QtWidgets import (
 )
 
 from football_simulator.queries import base
-from football_simulator.ui_v2.components import PageHeader, TEXT_COLOR_MUTED
+from football_simulator.ui_v2.components import (
+    BG_COLOR_CARD,
+    BORDER_COLOR_SOFT,
+    DANGER_COLOR,
+    LINK_COLOR,
+    PageHeader,
+    TEXT_COLOR,
+    TEXT_COLOR_BRIGHT,
+    TEXT_COLOR_MUTED,
+)
+from football_simulator.ui_v2.design_tokens import SUCCESS_HIGHLIGHT
 from football_simulator.ui_v2.navigation import Route
 from football_simulator.ui_v2.pages.entity_page_base import EntityPageBase, PageContext
 from football_simulator.ui_v2.widgets import section_header
 
 _MUTED_STYLE = f"color: {TEXT_COLOR_MUTED}; background: transparent;"
-_BRIGHT_STYLE = "color: #f8fbff; background: transparent; font-weight: 700;"
-_ACCENT_STYLE = "color: #7dd3fc; background: transparent; font-weight: 700;"
-_ERROR_STYLE = "color: #f87171; background: transparent; font-weight: 600;"
-_OK_STYLE = "color: #4ade80; background: transparent; font-weight: 600;"
+_BRIGHT_STYLE = f"color: {TEXT_COLOR_BRIGHT}; background: transparent; font-weight: 700;"
+_ACCENT_STYLE = f"color: {LINK_COLOR}; background: transparent; font-weight: 700;"
+_ERROR_STYLE = f"color: {DANGER_COLOR}; background: transparent; font-weight: 600;"
+_OK_STYLE = f"color: {SUCCESS_HIGHLIGHT}; background: transparent; font-weight: 600;"
 
 
 class SavesPage(EntityPageBase):
@@ -149,6 +164,16 @@ class SavesPage(EntityPageBase):
         self._create_button = create_button
         create_row_layout.addWidget(self._create_input, 1)
         create_row_layout.addWidget(create_button)
+        import_button = QPushButton("⇧ 导入存档", create_row)
+        import_button.setObjectName("savesImportButton")
+        import_button.setEnabled(service is not None)
+        import_button.clicked.connect(self._on_import_clicked)
+        create_row_layout.addWidget(import_button)
+        open_dir_button = QPushButton("📂 打开目录", create_row)
+        open_dir_button.setObjectName("savesOpenDirButton")
+        open_dir_button.setEnabled(service is not None)
+        open_dir_button.clicked.connect(self._on_open_dir_clicked)
+        create_row_layout.addWidget(open_dir_button)
         create_layout.addWidget(create_row)
         self._create_status = QLabel("", create_frame)
         self._create_status.setObjectName("savesCreateStatus")
@@ -170,6 +195,31 @@ class SavesPage(EntityPageBase):
         saves_layout.addWidget(self._rows_container)
         content_layout.addWidget(self._saves_frame)
 
+        # 回收站卡：删除的存档移到这里，可恢复。
+        self._trash_frame = QFrame(content)
+        self._trash_frame.setObjectName("cardFrame")
+        trash_layout = QVBoxLayout(self._trash_frame)
+        trash_layout.setContentsMargins(12, 10, 12, 10)
+        trash_layout.setSpacing(8)
+        trash_header_row = QHBoxLayout()
+        trash_header_row.setContentsMargins(0, 0, 0, 0)
+        trash_header_row.setSpacing(8)
+        trash_header_row.addWidget(
+            section_header("回收站", "删除的存档移到这里，可一键恢复；确认不再需要后清空。"),
+            1,
+        )
+        self._empty_trash_button = QPushButton("清空回收站", self._trash_frame)
+        self._empty_trash_button.setObjectName("savesEmptyTrashButton")
+        self._empty_trash_button.setEnabled(service is not None)
+        self._empty_trash_button.clicked.connect(self._on_empty_trash_clicked)
+        trash_header_row.addWidget(self._empty_trash_button)
+        trash_layout.addLayout(trash_header_row)
+        self._trash_layout = QVBoxLayout()
+        self._trash_layout.setContentsMargins(0, 0, 0, 0)
+        self._trash_layout.setSpacing(8)
+        trash_layout.addLayout(self._trash_layout)
+        content_layout.addWidget(self._trash_frame)
+
         # 行内状态条（写流程反馈）。
         self._status_label = QLabel("", content)
         self._status_label.setObjectName("savesStatusLabel")
@@ -184,6 +234,7 @@ class SavesPage(EntityPageBase):
         if route is None or route.name != "saves":
             return
         self._rebuild_rows()
+        self._rebuild_trash()
         self._apply_status_label()
 
     # -- 存档列表 -------------------------------------------------------------
@@ -248,7 +299,8 @@ class SavesPage(EntityPageBase):
         row = QFrame(self._rows_container)
         row.setObjectName("savesRowFrame")
         row.setStyleSheet(
-            "QFrame#savesRowFrame { background: #111c2e; border: 1px solid #223653; border-radius: 9px; }"
+            "QFrame#savesRowFrame { background: " + BG_COLOR_CARD
+            + "; border: 1px solid " + BORDER_COLOR_SOFT + "; border-radius: 9px; }"
         )
         row_layout = QHBoxLayout(row)
         row_layout.setContentsMargins(12, 8, 12, 8)
@@ -256,7 +308,7 @@ class SavesPage(EntityPageBase):
 
         name_label = QLabel(save_name + ("　（当前存档）" if is_current else ""))
         name_label.setObjectName("savesRowNameLabel")
-        name_label.setStyleSheet(_BRIGHT_STYLE if is_current else "color: #e8eef7; background: transparent; font-weight: 600;")
+        name_label.setStyleSheet(_BRIGHT_STYLE if is_current else f"color: {TEXT_COLOR}; background: transparent; font-weight: 600;")
         name_label.setToolTip(save_name)
         row_layout.addWidget(name_label)
 
@@ -279,9 +331,24 @@ class SavesPage(EntityPageBase):
         initialize_button.clicked.connect(lambda _=False, name=save_name: self._initialize_save(name))
         row_layout.addWidget(initialize_button)
 
-        delete_button = QPushButton("✕ 删除", row)
+        backup_button = QPushButton("⤓ 备份", row)
+        backup_button.setObjectName("savesBackupButton")
+        backup_button.setEnabled(service is not None and initialized)
+        backup_button.setToolTip("用 SQLite 在线备份为独立 .sqlite3（WAL 安全）")
+        backup_button.clicked.connect(lambda _=False, name=save_name: self._on_backup_clicked(name))
+        row_layout.addWidget(backup_button)
+
+        export_button = QPushButton("⇩ 导出", row)
+        export_button.setObjectName("savesExportButton")
+        export_button.setEnabled(service is not None and initialized)
+        export_button.setToolTip("把存档数据库导出到本地其它位置")
+        export_button.clicked.connect(lambda _=False, name=save_name: self._on_export_clicked(name))
+        row_layout.addWidget(export_button)
+
+        delete_button = QPushButton("🗑 移入回收站", row)
         delete_button.setObjectName("savesDeleteButton")
         delete_button.setEnabled(service is not None)
+        delete_button.setToolTip("移入回收站，可恢复，不会立即丢失")
         delete_button.clicked.connect(lambda _=False, name=save_name: self._delete_save(name))
         row_layout.addWidget(delete_button)
 
@@ -291,6 +358,8 @@ class SavesPage(EntityPageBase):
             "state": state_label,
             "open": open_button,
             "initialize": initialize_button,
+            "backup": backup_button,
+            "export": export_button,
             "delete": delete_button,
         }
         return row
@@ -304,6 +373,124 @@ class SavesPage(EntityPageBase):
                 reload_hook(save_name)
             except Exception as exc:
                 self._set_status(f"切换存档失败：{exc}", is_error=True)
+
+    def _rebuild_trash(self) -> None:
+        assert self._trash_layout is not None
+        service = self._context.service
+        while self._trash_layout.count():
+            item = self._trash_layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.setParent(None)
+                widget.deleteLater()
+        trash_paths = service.list_trash() if service is not None else []
+        self._trash_frame.setVisible(bool(trash_paths))
+        for trash_path in trash_paths:
+            row = QWidget(self._trash_frame)
+            row_layout = QHBoxLayout(row)
+            row_layout.setContentsMargins(0, 0, 0, 0)
+            row_layout.setSpacing(10)
+            label = QLabel(str(trash_path))
+            label.setObjectName("savesTrashLabel")
+            label.setStyleSheet(_MUTED_STYLE)
+            label.setToolTip(str(trash_path))
+            row_layout.addWidget(label, 1)
+            restore_button = QPushButton("恢复", row)
+            restore_button.setObjectName("savesRestoreButton")
+            restore_button.clicked.connect(
+                lambda _=False, p=trash_path, name=Path(trash_path).name: self._on_restore_clicked(p, name)
+            )
+            row_layout.addWidget(restore_button)
+            self._trash_layout.addWidget(row)
+
+    def _on_backup_clicked(self, save_name: str) -> None:
+        service = self._context.service
+        if service is None:
+            return
+        try:
+            backup_path = service.backup_save(save_name)
+        except Exception as exc:
+            QMessageBox.warning(self, "Football Simulator UI v2", f"备份存档失败：{exc}")
+            return
+        self._set_status(f"已备份存档 {save_name}：{backup_path}", is_error=False)
+
+    def _on_export_clicked(self, save_name: str) -> None:
+        service = self._context.service
+        if service is None:
+            return
+        dest, _ = QFileDialog.getSaveFileName(
+            self, "导出存档", f"{save_name}.sqlite3", "SQLite (*.sqlite3 *.db)"
+        )
+        if not dest:
+            return
+        try:
+            exported = service.export_save(save_name, dest)
+        except Exception as exc:
+            QMessageBox.warning(self, "Football Simulator UI v2", f"导出存档失败：{exc}")
+            return
+        self._set_status(f"已导出存档 {save_name}：{exported}", is_error=False)
+
+    def _on_import_clicked(self) -> None:
+        service = self._context.service
+        if service is None:
+            return
+        src, _ = QFileDialog.getOpenFileName(
+            self, "选择存档数据库", "", "SQLite (*.sqlite3 *.db)"
+        )
+        if not src:
+            return
+        save_name, ok = QInputDialog.getText(self, "导入存档", "为新存档命名：")
+        if not ok or not save_name.strip():
+            return
+        save_name = save_name.strip()
+        try:
+            imported = service.import_save(save_name, src)
+        except Exception as exc:
+            QMessageBox.warning(self, "Football Simulator UI v2", f"导入存档失败：{exc}")
+            return
+        self._set_status(f"已导入存档 {save_name}：{imported}", is_error=False)
+        self._rebuild_rows()
+        self._request_reload(save_name)
+
+    def _on_open_dir_clicked(self) -> None:
+        service = self._context.service
+        if service is None:
+            return
+        QDesktopServices.openUrl(QUrl.fromLocalFile(service.save_directory()))
+
+    def _on_restore_clicked(self, trash_path: str, target_name: str) -> None:
+        service = self._context.service
+        if service is None:
+            return
+        try:
+            restored = service.restore_trash(trash_path, target_name)
+        except Exception as exc:
+            QMessageBox.warning(self, "Football Simulator UI v2", f"恢复存档失败：{exc}")
+            return
+        self._set_status(f"已从回收站恢复：{restored}", is_error=False)
+        self._rebuild_rows()
+        self._rebuild_trash()
+
+    def _on_empty_trash_clicked(self) -> None:
+        service = self._context.service
+        if service is None:
+            return
+        answer = QMessageBox.question(
+            self,
+            "清空回收站",
+            "确定要清空回收站吗？已移入回收站的存档将被永久删除，不可恢复。",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+        try:
+            service.empty_trash()
+        except Exception as exc:
+            QMessageBox.warning(self, "Football Simulator UI v2", f"清空回收站失败：{exc}")
+            return
+        self._set_status("回收站已清空。", is_error=False)
+        self._rebuild_trash()
 
     def _on_create_clicked(self) -> None:
         assert self._create_input is not None and self._create_status is not None

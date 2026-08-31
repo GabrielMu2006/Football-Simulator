@@ -73,8 +73,10 @@ from football_simulator.ui_v2.components import (
     EmptyState,
     EntityLink,
     EntityTable,
+    FilterBar,
     PageHeader,
 )
+from football_simulator.ui_v2.components.team_crest import draw_team_crest
 from football_simulator.ui_v2.navigation import Route
 from football_simulator.ui_v2.pages.entity_page_base import EntityPageBase
 from football_simulator.ui_v2.widgets import section_header
@@ -164,11 +166,13 @@ class _LinkColumnDelegate(QStyledItemDelegate):
         resolver,
         alignment: Qt.AlignmentFlag,
         parent: Optional[QWidget] = None,
+        crest: bool = False,
     ) -> None:
         super().__init__(parent)
         self._table = table
         self._resolver = resolver
         self._alignment = Qt.AlignmentFlag(alignment)
+        self._crest = crest
 
     def paint(self, painter: QPainter, option: QStyleOptionViewItem, index) -> None:  # noqa: N802 - Qt API
         opt = QStyleOptionViewItem(option)
@@ -180,11 +184,27 @@ class _LinkColumnDelegate(QStyledItemDelegate):
         if not text:
             return
         painter.save()
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         font = opt.font
         font.setUnderline(bool(opt.state & QStyle.State.State_MouseOver))
         painter.setFont(font)
         painter.setPen(QColor(LINK_COLOR))
         rect = opt.rect.adjusted(8, 0, -8, 0)
+        if self._crest:
+            crest_size = min(rect.height(), 22)
+            crest_rect = QRect(
+                rect.left(),
+                rect.top() + (rect.height() - crest_size) // 2,
+                crest_size,
+                crest_size,
+            )
+            draw_team_crest(painter, crest_rect, str(text), size=crest_size)
+            rect = QRect(
+                rect.left() + crest_size + 6,
+                rect.top(),
+                max(0, rect.width() - crest_size - 6),
+                rect.height(),
+            )
         painter.drawText(rect, int(self._alignment | Qt.AlignmentFlag.AlignVCenter), str(text))
         painter.restore()
 
@@ -342,6 +362,7 @@ class TransfersPage(EntityPageBase):
         self._season_combo: Optional[QComboBox] = None
         self._team_ids: Dict[str, int] = {}
         self._history_hint: Optional[QLabel] = None
+        self._history_all_rows: Optional[List[_HistoryRow]] = None
         # delegate 生命周期：页面引用列表只增不清（见模块级生命周期说明）。
         self._table_delegates: list = []
         super().__init__(context, parent)
@@ -410,6 +431,18 @@ class TransfersPage(EntityPageBase):
             )
         )
 
+        # 历史筛选（UI#8）：赛季内支持球队/球员搜索与状态筛选。
+        self._history_filter = FilterBar(on_search_changed=self._on_history_filters_changed)
+        self._history_status_combo = self._history_filter.add_combo(
+            "状态",
+            ["全部状态", "玩家通过", "系统重算通过", "玩家拒绝", "系统拒绝"],
+            "transfersHistoryStatusCombo",
+        )
+        self._history_status_combo.currentIndexChanged.connect(self._on_history_filters_changed)
+        self._history_search = self._history_filter.add_search("搜索球队 / 球员…")
+        self._history_filter.add_reset()
+        layout.addWidget(self._history_filter)
+
         # 历史表一次构建：refresh 中替换行并按“表头 + 全部行”固定高度完整展开
         # （纵向滚动条 AlwaysOff，不构成第二个纵向滚动面，§8.2）。
         self._history_table = EntityTable(
@@ -436,6 +469,7 @@ class TransfersPage(EntityPageBase):
                 team_route(key),
                 _TRANSFER_COLUMNS[index].alignment,
                 parent=view,
+                crest=True,
             )
             view.setItemDelegateForColumn(index, delegate)
             self._table_delegates.append(delegate)
@@ -591,6 +625,27 @@ class TransfersPage(EntityPageBase):
         self._rebuild_slot(self._pending_slot, self._build_pending_section(data))
 
         rows = [self._to_history_row(item) for item in data.history]
+        self._history_all_rows = rows
+        self._render_history_table()
+
+    def _on_history_filters_changed(self, *_args) -> None:
+        self._render_history_table()
+
+    def _render_history_table(self) -> None:
+        rows = self._history_all_rows or []
+        filter_state = self._history_filter.state() if hasattr(self, "_history_filter") else {}
+        search = str(filter_state.get("search") or "").strip().lower()
+        status = str(filter_state.get("transfersHistoryStatusCombo") or "全部状态")
+        if search:
+            rows = [
+                row
+                for row in rows
+                if search in row.team_a.lower()
+                or search in row.team_b.lower()
+                or search in " ".join(row.team_a_players + row.team_b_players).lower()
+            ]
+        if status != "全部状态":
+            rows = [row for row in rows if row.status == status]
         if rows:
             assert self._history_hint is not None
             self._history_hint.setVisible(False)
@@ -632,7 +687,7 @@ class TransfersPage(EntityPageBase):
 
         return PageHeader(
             "转会中心",
-            breadcrumbs=navigation.breadcrumbs(Route("transfers", season=data.season_number)),
+            breadcrumbs=[],
             navigator=self._context.navigate,
             actions=[selector],
         )

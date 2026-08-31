@@ -40,7 +40,7 @@ import json
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence, Tuple
 
-from PySide6.QtCore import QEvent, Qt
+from PySide6.QtCore import QEvent, QRect, Qt
 from PySide6.QtGui import QColor, QPainter
 from PySide6.QtWidgets import (
     QApplication,
@@ -69,8 +69,10 @@ from football_simulator.ui_v2.components import (
     ColumnSpec,
     EmptyState,
     EntityTable,
+    FilterBar,
     PageHeader,
 )
+from football_simulator.ui_v2.components.team_crest import draw_team_crest
 from football_simulator.ui_v2.navigation import Route
 from football_simulator.ui_v2.pages.entity_page_base import EntityPageBase
 from football_simulator.ui_v2.widgets import section_header
@@ -150,11 +152,13 @@ class _LinkColumnDelegate(QStyledItemDelegate):
         resolver,
         alignment: Qt.AlignmentFlag,
         parent: Optional[QWidget] = None,
+        crest: bool = False,
     ) -> None:
         super().__init__(parent)
         self._table = table
         self._resolver = resolver
         self._alignment = Qt.AlignmentFlag(alignment)
+        self._crest = crest
 
     def paint(self, painter: QPainter, option: QStyleOptionViewItem, index) -> None:  # noqa: N802 - Qt API
         opt = QStyleOptionViewItem(option)
@@ -166,11 +170,27 @@ class _LinkColumnDelegate(QStyledItemDelegate):
         if not text:
             return
         painter.save()
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         font = opt.font
         font.setUnderline(bool(opt.state & QStyle.State.State_MouseOver))
         painter.setFont(font)
         painter.setPen(QColor(LINK_COLOR))
         rect = opt.rect.adjusted(8, 0, -8, 0)
+        if self._crest:
+            crest_size = min(rect.height(), 22)
+            crest_rect = QRect(
+                rect.left(),
+                rect.top() + (rect.height() - crest_size) // 2,
+                crest_size,
+                crest_size,
+            )
+            draw_team_crest(painter, crest_rect, str(text), size=crest_size)
+            rect = QRect(
+                rect.left() + crest_size + 6,
+                rect.top(),
+                max(0, rect.width() - crest_size - 6),
+                rect.height(),
+            )
         painter.drawText(rect, int(self._alignment | Qt.AlignmentFlag.AlignVCenter), str(text))
         painter.restore()
 
@@ -212,6 +232,7 @@ class DraftPage(EntityPageBase):
         self._season_combo: Optional[QComboBox] = None
         self._team_ids: Dict[str, int] = {}
         self._results_hint: Optional[QLabel] = None
+        self._results_all_rows: Optional[List[_DraftResultRow]] = None
         # delegate 生命周期：页面引用列表只增不清（见模块级生命周期说明）。
         self._table_delegates: list = []
         super().__init__(context, parent)
@@ -274,11 +295,23 @@ class DraftPage(EntityPageBase):
         layout.addWidget(
             section_header(
                 "选秀结果",
-                "本届新秀按一级联赛排名逆序轮询分配到各队（位置配额限制下可能跳过）;"
+                "本届新秀按两联赛统一倒序轮询分配到各队（位置配额限制下可能跳过）;"
                 "单击球队/新秀名打开详情。引擎快照仅保留当前赛季，历史赛季结果读取自"
                 "存档数据库中的选秀日志，没有日志的赛季显示空状态。",
             )
         )
+
+        # 结果筛选（UI#8）：按球队/新秀搜索 + 位置筛选。
+        self._results_filter = FilterBar(on_search_changed=self._on_results_filters_changed)
+        self._results_position_combo = self._results_filter.add_combo(
+            "位置",
+            ["全部位置", "GK", "DF", "MF", "FW"],
+            "draftResultsPositionCombo",
+        )
+        self._results_position_combo.currentIndexChanged.connect(self._on_results_filters_changed)
+        self._results_search = self._results_filter.add_search("搜索球队 / 新秀…")
+        self._results_filter.add_reset()
+        layout.addWidget(self._results_filter)
 
         # 结果表一次构建：refresh 中替换行并按“表头 + 全部行”固定高度完整展开
         # （纵向滚动条 AlwaysOff，不构成第二个纵向滚动面，§8.2）。
@@ -296,6 +329,7 @@ class DraftPage(EntityPageBase):
             self._team_route_for_row,
             _DRAFT_COLUMNS[team_index].alignment,
             parent=view,
+            crest=True,
         )
         view.setItemDelegateForColumn(team_index, self._team_delegate)
         self._table_delegates.append(self._team_delegate)
@@ -477,16 +511,21 @@ class DraftPage(EntityPageBase):
         """
         if service_snapshot is not None and int(service_snapshot.season_number) == season:
             return tuple(
-                reversed([row.team.name for row in service_snapshot.premier_table])
+                [row.team.name for row in reversed(service_snapshot.second_table)]
+                + [row.team.name for row in reversed(service_snapshot.premier_table)]
             )
         try:
             archive = competition_queries.load_archive(conn, season)
         except Exception:
             archive = None
         if archive:
+            second_order = archive.get("second_order") or []
             premier_order = archive.get("premier_order") or []
-            if premier_order:
-                return tuple(reversed([str(name) for name in premier_order]))
+            if second_order or premier_order:
+                return tuple(
+                    list(reversed([str(name) for name in second_order]))
+                    + list(reversed([str(name) for name in premier_order]))
+                )
         return ()
 
     @staticmethod
@@ -552,7 +591,7 @@ class DraftPage(EntityPageBase):
 
         return PageHeader(
             "选秀中心",
-            breadcrumbs=navigation.breadcrumbs(Route("draft", season=data.season_number)),
+            breadcrumbs=[],
             navigator=self._context.navigate,
             actions=[selector],
         )
@@ -731,10 +770,37 @@ class DraftPage(EntityPageBase):
             )
             for index, item in enumerate(results)
         ]
-        self._results_table.set_rows(rows, route_for_row=None)  # 行激活不导航
-        self._results_table.setFixedHeight(
-            _HEADER_HEIGHT + len(rows) * _ROW_HEIGHT + _TABLE_BORDER
-        )
+        self._results_all_rows = rows
+        self._render_results_table()
+
+    def _on_results_filters_changed(self, *_args) -> None:
+        self._render_results_table()
+
+    def _render_results_table(self) -> None:
+        rows = self._results_all_rows or []
+        filter_state = self._results_filter.state() if hasattr(self, "_results_filter") else {}
+        search = str(filter_state.get("search") or "").strip().lower()
+        position = str(filter_state.get("draftResultsPositionCombo") or "全部位置")
+        if search:
+            rows = [
+                row
+                for row in rows
+                if search in row.team_name.lower() or search in row.player_name.lower()
+            ]
+        if position != "全部位置":
+            rows = [row for row in rows if row.position == position]
+        if rows:
+            assert self._results_hint is not None
+            self._results_hint.setVisible(False)
+            self._results_table.setVisible(True)
+            self._results_table.set_rows(rows, route_for_row=None)  # 行激活不导航
+            self._results_table.setFixedHeight(
+                _HEADER_HEIGHT + len(rows) * _ROW_HEIGHT + _TABLE_BORDER
+            )
+        else:
+            assert self._results_hint is not None
+            self._results_table.setVisible(False)
+            self._results_hint.setVisible(True)
 
     def _team_route_for_row(self, row: _DraftResultRow) -> Optional[Route]:
         team_id = self._team_ids.get(row.team_name)

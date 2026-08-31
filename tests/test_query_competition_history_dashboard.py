@@ -386,7 +386,11 @@ class LeaderboardTests(QueryTestBase):
             stats.successful_defenses = int(bucket["successful_defenses"])
             stats.successful_saves = int(bucket["successful_saves"])
             stats.clean_sheets = int(bucket["clean_sheets"])
-            rating = formulas.calculate_player_rating(stats, int(bucket["matches"]))
+            rating = (
+                None
+                if not bool(bucket["is_real"])
+                else formulas.calculate_player_rating(stats, int(bucket["matches"]))
+            )
             entries.append(
                 {
                     "stable": stable,
@@ -416,15 +420,24 @@ class LeaderboardTests(QueryTestBase):
             max_assists = max(entry["assists"] for entry in entries)
             self.assertEqual(boards.top_assisters[0].assists, max_assists)
 
-            best_rating = max(entry["rating"] for entry in entries)
+            rated_entries = [entry for entry in entries if entry["rating"] is not None]
+            self.assertTrue(rated_entries)
+            best_rating = max(entry["rating"] for entry in rated_entries)
             self.assertEqual(boards.top_rated[0].rating, best_rating)
-            best_ids = {
-                entry["stable"]
-                for entry in entries
-                if entry["rating"] == best_rating
-                and entry["ability"] == max(e["ability"] for e in entries if e["rating"] == best_rating)
-            }
-            self.assertIn(boards.top_rated[0].player.player_id, best_ids)
+            # 查询层平局次序：评分降序 → (进球+助攻)降序 → 能力降序 → 稳定 ID。
+            manual_top_rated = sorted(
+                rated_entries,
+                key=lambda entry: (
+                    -entry["rating"],
+                    -(entry["goals"] + entry["assists"]),
+                    -entry["ability"],
+                    entry["stable"],
+                ),
+            )
+            self.assertEqual(
+                boards.top_rated[0].player.player_id,
+                manual_top_rated[0]["stable"],
+            )
 
             # 榜单整体排序确定性：重复查询一致。
             again = competition_queries.get_competition_profile(conn, "一级联赛", 2)

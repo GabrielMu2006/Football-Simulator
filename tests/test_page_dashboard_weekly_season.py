@@ -271,8 +271,14 @@ class DashboardPageTests(unittest.TestCase):
         labels = {key: label.text() for key, label in self.page._status_labels.items()}
         self.assertEqual(labels["season"], f"第 {snapshot.current_season} 赛季")
         self.assertEqual(labels["week"], f"第 {snapshot.current_week} / {TOTAL_WEEKS} 周")
-        # 当前阶段 = 周指针所指周次（本周）的赛历 label。
-        expected_phase = _WEEK_CALENDAR[snapshot.current_week].label
+        # 当前阶段 = 周指针所指周次（本周）的赛历 label（存档真实赛历，已按杯赛激活修饰）。
+        with base.open_read_connection(SAVE_A) as conn:
+            week_labels = base.load_week_labels(conn)
+        expected_phase = (
+            week_labels[snapshot.current_week]["label"]
+            if snapshot.current_week < len(week_labels)
+            else "赛季已结束"
+        )
         self.assertEqual(labels["phase"], expected_phase)
         self.assertEqual(labels["pending"], "0")
 
@@ -452,7 +458,10 @@ class WeeklyReportPageTests(unittest.TestCase):
         matches = self._week_matches(3)
         self.assertTrue(matches)
         harness, page = _make_weekly(3)
-        self.assertEqual(page._phase_label.text(), f"第 3 周 · {_WEEK_CALENDAR[2].label}")
+        with base.open_read_connection(SAVE_A) as conn:
+            week_labels = base.load_week_labels(conn)
+        expected_phase = week_labels[2]["label"] if len(week_labels) > 2 else _WEEK_CALENDAR[2].label
+        self.assertEqual(page._phase_label.text(), f"第 3 周 · {expected_phase}")
         # 分组行数之和 == list_matches(week=3)；各分组行数 == 各赛事该周场数。
         total_rows = sum(table.model.rowCount() for table in page._tables)
         self.assertEqual(total_rows, len(matches))

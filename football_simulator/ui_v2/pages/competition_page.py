@@ -57,6 +57,7 @@ from PySide6.QtWidgets import (
 from football_simulator.queries import base, competition_queries, history_queries, player_queries
 from football_simulator.ui_v2 import navigation
 from football_simulator.ui_v2.components import (
+    TEXT_COLOR_BRIGHT,
     TEXT_COLOR_MUTED,
     ColumnSpec,
     EmptyState,
@@ -65,6 +66,16 @@ from football_simulator.ui_v2.components import (
     PageHeader,
 )
 from football_simulator.ui_v2.components.team_crest import draw_team_crest
+from football_simulator.ui_v2.design_tokens import (
+    LINK_COLOR,
+    LINK_DARK_BG,
+    NEUTRAL_BADGE_BG,
+    NEUTRAL_BADGE_FG,
+    STATUS_NOT_HELD_BG,
+    STATUS_NOT_HELD_FG,
+    SUCCESS_BG,
+    SUCCESS_COLOR,
+)
 from football_simulator.ui_v2.navigation import Route
 from football_simulator.ui_v2.pages.entity_page_base import EntityPageBase, PageContext
 from football_simulator.ui_v2.widgets import CardFrame
@@ -73,14 +84,14 @@ _TAB_TITLES: Tuple[str, ...] = ("概览", "积分榜 / 签表", "赛程与结果
 _TAB_OVERVIEW, _TAB_STAGE, _TAB_MATCHES, _TAB_LEADERS, _TAB_AWARDS, _TAB_HISTORY = range(6)
 
 _MUTED_STYLE = f"color: {TEXT_COLOR_MUTED}; background: transparent;"
-_BRIGHT_STYLE = "color: #f8fbff; background: transparent;"
+_BRIGHT_STYLE = f"color: {TEXT_COLOR_BRIGHT}; background: transparent;"
 
 # 状态徽标配色（前景色铺满圆角底、深色文字保证可读）。
 _STATUS_BADGE_COLORS: Dict[str, Tuple[str, str]] = {
-    competition_queries.STATUS_NOT_STARTED: ("#94a3b8", "#0f172a"),
-    competition_queries.STATUS_IN_PROGRESS: ("#7dd3fc", "#082032"),
-    competition_queries.STATUS_FINISHED: ("#86efac", "#0a2e1a"),
-    competition_queries.STATUS_NOT_HELD: ("#64748b", "#101828"),
+    competition_queries.STATUS_NOT_STARTED: (NEUTRAL_BADGE_FG, NEUTRAL_BADGE_BG),
+    competition_queries.STATUS_IN_PROGRESS: (LINK_COLOR, LINK_DARK_BG),
+    competition_queries.STATUS_FINISHED: (SUCCESS_COLOR, SUCCESS_BG),
+    competition_queries.STATUS_NOT_HELD: (STATUS_NOT_HELD_FG, STATUS_NOT_HELD_BG),
 }
 
 _AWARD_TYPE_LABELS: Dict[str, str] = {
@@ -232,7 +243,7 @@ class _LeaderRow:
     appeared: int
     stat_text: str
     stat_value: int
-    rating: float
+    rating: Optional[float]  # 默认球员无评分 -> None（显示“—”）
 
 
 @dataclass(frozen=True)
@@ -698,7 +709,7 @@ class CompetitionPage(EntityPageBase):
             self._season_combo.setParent(None)
             self._page_header.setParent(None)
             self._page_header.deleteLater()
-        breadcrumbs = navigation.breadcrumbs(route, {"competition_name": title}) if route is not None else []
+        breadcrumbs: list = []
         self._page_header = PageHeader(
             title,
             breadcrumbs,
@@ -1078,7 +1089,7 @@ class CompetitionPage(EntityPageBase):
                         appeared=entry.matches_played,
                         stat_text=stat_text(entry),
                         stat_value=stat_value(entry),
-                        rating=_FormattedNumber(entry.rating),
+                        rating=None if entry.rating is None else _FormattedNumber(entry.rating),
                     )
                 )
         if rows:

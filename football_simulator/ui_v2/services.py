@@ -4,11 +4,19 @@ from dataclasses import dataclass
 from typing import Optional
 
 from football_simulator.runtime import (
+    backup_save,
     create_save_directory,
     delete_save_directory,
+    empty_trash,
+    export_save,
+    import_save_database,
+    list_backups,
     list_save_names,
+    list_trash_saves,
     load_current_save_name,
+    move_save_to_trash,
     normalize_save_name,
+    restore_trash_save,
     save_exists,
     save_root,
     store_current_save_name,
@@ -61,7 +69,16 @@ class SimulatorUIService:
         except (FileNotFoundError, ValueError):
             return None
 
-    def initialize(self, save_name: str) -> UIState:
+    def initialize(self, save_name: str, force: bool = False) -> UIState:
+        # 数据安全（用户确认 #2）：赛季进行中重新初始化会丢弃进度，
+        # 非强制时拒绝执行（UI 必须先弹强确认再传 force=True）。
+        current = self.preview_snapshot(save_name)
+        if current is not None and not current.season_complete and not force:
+            raise ValueError(
+                f"当前存档第 {current.season_number} 赛季尚未结束"
+                f"（已进行到第 {current.current_week} 周）。"
+                "重新初始化将放弃该赛季（不归档）。如需强制重置，请确认后重试。"
+            )
         snapshot = initialize_save_state(save_name)
         store_current_save_name(save_name)
         return UIState(save_name=save_name, snapshot=snapshot)
@@ -75,7 +92,32 @@ class SimulatorUIService:
         return UIState(save_name=normalized, snapshot=None)
 
     def delete_save(self, save_name: str) -> None:
-        delete_save_directory(save_name)
+        # 改为移入回收站；彻底清空通过 empty_trash。
+        move_save_to_trash(save_name)
+
+    def backup_save(self, save_name: str) -> str:
+        return str(backup_save(save_name))
+
+    def list_backups(self, save_name: str) -> list[str]:
+        return [str(p) for p in list_backups(save_name)]
+
+    def export_save(self, save_name: str, dest_path: str) -> str:
+        from pathlib import Path
+        return str(export_save(save_name, Path(dest_path)))
+
+    def import_save(self, save_name: str, src_path: str) -> str:
+        from pathlib import Path
+        return str(import_save_database(save_name, Path(src_path)))
+
+    def list_trash(self) -> list[str]:
+        return [str(p) for p in list_trash_saves()]
+
+    def restore_trash(self, trash_path: str, save_name: str) -> str:
+        from pathlib import Path
+        return str(restore_trash_save(Path(trash_path), save_name))
+
+    def empty_trash(self) -> None:
+        empty_trash()
 
     def simulate_week(self, save_name: str) -> WeekSimulationResult:
         return simulate_next_week(save_name)

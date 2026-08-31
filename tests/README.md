@@ -76,3 +76,33 @@ python3 -m tests.generate_baseline
 `tests/support.py` 依赖阶段 0 加入的两个最小注入接口：`runtime.set_save_root_override`
 与 `state.set_rng_provider`（含 `data.load_save_config` 的可选 rng 参数）。生产默认
 行为不变：随机源仍是 `random.SystemRandom`，存档根目录解析逻辑未变。
+
+## v0.3 玩法/UI 改造（用户批准，需重新冻结）
+
+以下改动已落地，**必须重新生成基线并更新对应冻结断言后才能跑绿**：
+
+1. **默认球员六项统计（#4）**：`match_engine._record_stat` 不再跳过默认球员；
+   `player_queries/_derived_rating` 与 `competition_queries/_aggregate_competition_stats`
+   对默认球员返回 `rating=None`；奖项仍仅真实球员。受影响：
+   `test_match_engine_freeze.py`、`test_query_player.py`、`test_query_consistency.py`。
+2. **次级联赛完整模拟 + 0.35 权重（#3）**：次级联赛改用 `simulate_match`；
+   `build_snapshot_from_state/_build_team_match_counts/_build_settlement_period_stats`
+   纳入 `second_matchdays`；`SECOND_LEAGUE_WEIGHT` 影响身价与 Top20。
+   受影响：`test_three_season_regression.py`、`test_settlement_awards_freeze.py`、
+   `tests/baseline/three_season_fingerprint.json`（需 `python3 -m tests.generate_baseline`）。
+3. **选秀两联赛统一倒序（#6）**：`draft_order = 次级倒序 + 一级倒序`（40 队参与）；
+   `draft_page._draft_order` 同步。受影响：`test_transfer_draft_freeze.py`、基线。
+4. **赛历标签随杯赛激活（#11）**：`initialize_save_state` 调用
+   `_apply_cup_activation_to_weeks`；`dashboard/weekly_report` 使用存档真实赛历。
+   受影响：`test_page_dashboard_weekly_season.py`（新增首赛季无杯赛标签用例）。
+5. **数据安全（#2）**：`state._state_transaction` 线程本地+按存档 RLock；
+   `SaveRepository.open_readonly`；服务层 `initialize(force=...)` UI 强确认；
+   `runtime` 新增备份/导出/导入/回收站。受影响：`test_persistence_transactions.py`，
+   建议新增 `test_persistence_thread_safety.py`。
+6. **UI 1-11**：顶栏/面包屑/批量模拟/全局搜索/队徽/卡片/空态 action/筛选/
+   菜单与快捷键/长文本省略。受影响：`test_main_window_shell.py`、
+   `test_navigation_shell.py`、各 `test_page_*.py` 文案/选择器与截图断言。
+
+**执行结果（2026-08-29）**：已重新生成 `tests/baseline/three_season_fingerprint.json`；
+在本机执行 `QT_QPA_PLATFORM=offscreen .venv-ui-v2/bin/python -m unittest discover -s tests`，
+**366 项全部通过**（Ran 366 tests in 467.749s, OK）。
