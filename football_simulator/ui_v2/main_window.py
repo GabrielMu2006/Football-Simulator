@@ -26,8 +26,8 @@ import importlib
 import traceback
 from typing import Dict, Optional, Tuple, Type
 
-from PySide6.QtCore import QRectF, QSize, QThread, Qt, QUrl, Signal
-from PySide6.QtGui import QColor, QDesktopServices, QFont, QIcon, QKeySequence, QPainter, QPen, QPixmap, QShortcut
+from PySide6.QtCore import QPointF, QRectF, QSize, QThread, Qt, QUrl, Signal
+from PySide6.QtGui import QColor, QDesktopServices, QFont, QIcon, QKeySequence, QPainter, QPixmap, QPolygonF, QShortcut
 from PySide6.QtWidgets import (
     QComboBox,
     QFrame,
@@ -146,25 +146,28 @@ class _ArrowButton(QPushButton):
             arrow_color = QColor("#ffffff")
         else:
             arrow_color = QColor("#7dd3fc")
-        pen = QPen(
-            arrow_color,
-            3.4,
-            Qt.PenStyle.SolidLine,
-            Qt.PenCapStyle.RoundCap,
-            Qt.PenJoinStyle.RoundJoin,
-        )
-        painter.setPen(pen)
-        painter.setBrush(Qt.BrushStyle.NoBrush)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(arrow_color)
         cx = self.width() // 2
         cy = self.height() // 2
+        head_half = 12.0
+        shaft_half = 7.0
+        shaft_len = 16.0
+
         if self._direction < 0:
-            painter.drawLine(cx + 9, cy - 9, cx - 8, cy)
-            painter.drawLine(cx - 8, cy, cx + 9, cy + 9)
-            painter.drawLine(cx - 4, cy, cx + 10, cy)
+            tip = QPointF(cx - 10, cy)
+            base_x = cx + 6
+            shaft_rect = QRectF(base_x - 2, cy - shaft_half, shaft_len + 4, shaft_half * 2)
         else:
-            painter.drawLine(cx - 9, cy - 9, cx + 8, cy)
-            painter.drawLine(cx + 8, cy, cx - 9, cy + 9)
-            painter.drawLine(cx - 10, cy, cx + 4, cy)
+            tip = QPointF(cx + 10, cy)
+            base_x = cx - 6
+            shaft_rect = QRectF(base_x + 2 - shaft_len, cy - shaft_half, shaft_len + 4, shaft_half * 2)
+
+        head = QPolygonF(
+            [tip, QPointF(base_x, cy - head_half), QPointF(base_x, cy + head_half)]
+        )
+        painter.drawPolygon(head)
+        painter.drawRect(shaft_rect)
 
 # 实体详情路由 → 所属一级导航（侧栏高亮镜像用）。
 _SIDEBAR_PARENT_BY_ROUTE = {
