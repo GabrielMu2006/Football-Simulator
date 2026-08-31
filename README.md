@@ -39,7 +39,7 @@ python3 -m venv .venv-ui-v2
 - 200 名真实球员池：每个新存档随机排序，前 50 名作为初始真实球员，其余依次进入后续选秀池。
 - 每队基础阵容：1 名门将、4 名后卫、3 名中场、3 名前锋。
 - 一级联赛：完整比赛模拟，统计进球、助攻、创造机会、成功防守、扑救、零封、评分和身价。
-- 次级联赛：独立简化模拟。
+- 次级联赛：完整比赛模拟，统计权重低于一级；独立升降级与杯赛。
 - 升降级、杯赛（优胜者杯 / 挑战杯 / 超级杯）、转会系统、选秀系统、历史与荣誉。
 - 存档管理：新建、选择、删除存档；存档为 SQLite 数据库。
 
@@ -52,7 +52,8 @@ python3 -m venv .venv-ui-v2
 
 ## 应用图标与队徽
 
-- 应用图标：`assets/app.icns`（生成脚本 `scripts/generate_app_icon.py`）。
+- 应用图标：`assets/app.icns`（macOS）与 `assets/app.ico`（Windows），
+  均由 `scripts/generate_app_icon.py` 生成。
 - 虚拟队徽：`football_simulator/ui_v2/components/team_crest.py`，按队名确定性生成；
   未来可通过 `set_custom_crest_provider()` 替换为自定义图片。
 
@@ -74,6 +75,24 @@ QT_QPA_PLATFORM=offscreen .venv-ui-v2/bin/python scripts/generate_app_icon.py
 - `dist-ui-v2/Football Simulator UI v2.app`
 - `release/macos/Football Simulator UI v2.dmg`
 
+## 构建 Windows 版
+
+PyInstaller 不支持跨平台交叉编译，Windows 版必须在 Windows 本机构建。
+在 Windows 的仓库根目录执行：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\build_windows.ps1
+```
+
+或双击根目录 `build_windows_ui_v2.bat`。脚本会用 conda 创建独立构建环境、
+安装依赖、执行 PyInstaller，并组装：
+
+- `release/windows/Football-Simulator-UI-v2-Windows/`
+- `release/windows/Football-Simulator-UI-v2-Windows.zip`
+
+Mac 可通过 SSH（Windows 开启 OpenSSH Server）远程执行同一脚本，再把 zip 拉回，
+详见 `release/windows/README.md`。
+
 ## 测试
 
 ```bash
@@ -91,7 +110,8 @@ QT_QPA_PLATFORM=offscreen .venv-ui-v2/bin/python -m unittest discover -s tests
 
 ```bash
 git add football_simulator tests assets scripts README.md \
-    "Football Simulator UI v2.spec" build_macos_ui_v2_app.sh release/README.md
+    "Football Simulator UI v2.spec" "Football Simulator UI v2 Windows.spec" \
+    build_macos_ui_v2_app.sh build_windows_ui_v2.bat release/README.md
 git commit -m "feat: UI overhaul, team crests, app icon, DMG packaging"
 git push origin main
 
@@ -104,6 +124,7 @@ gh release create v0.2.0 \
 
 - 源码运行时：项目目录 `saves/`。
 - 打包后的 macOS 应用：`~/Library/Application Support/Football Simulator/saves`。
+- 打包后的 Windows 应用：`%APPDATA%\Football Simulator\saves`。
 
 旧版 `state.json` 存档不兼容；请使用新版 SQLite 存档。
 
@@ -112,10 +133,13 @@ gh release create v0.2.0 \
 ```text
 ui_v2_main.py                唯一入口
 football_simulator/          游戏逻辑、SQLite 持久化、查询层、UI
-assets/                      应用图标（app.icns / PNG）
-scripts/                     图标生成、DMG 打包脚本
+assets/                      应用图标（app.icns / app.ico / PNG）
+scripts/                     图标生成、DMG 打包、Windows 构建脚本
 tests/                       冻结测试 / 页面验收测试
 build_macos_ui_v2_app.sh     macOS PyInstaller 构建
+build_windows_ui_v2.bat      Windows 构建快捷入口（调用 scripts/build_windows.ps1）
+"Football Simulator UI v2.spec"/"...Windows.spec"  macOS / Windows PyInstaller 配置
 scripts/create_macos_dmg.sh  DMG 打包
 release/macos/               发布产物（DMG / zip）
+release/windows/             Windows 发布产物与说明
 ```

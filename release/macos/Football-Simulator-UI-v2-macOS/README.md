@@ -127,16 +127,20 @@ cd dist-ui-v2
 
 ## 构建 Windows 版
 
-Windows `.exe` 需要在 Windows 系统上构建。把整个项目复制到 Windows 后运行：
+Windows `.exe` 需要在 Windows 系统上构建（PyInstaller 不支持跨平台交叉编译）。
+在 Windows 的仓库根目录运行：
 
-```bat
-build_windows_ui_v2.bat
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\build_windows.ps1
 ```
+
+或双击根目录的 `build_windows_ui_v2.bat`。
 
 构建产物：
 
 ```text
 dist-windows-ui-v2\Football Simulator UI v2\Football Simulator UI v2.exe
+release\windows\Football-Simulator-UI-v2-Windows.zip
 ```
 
 ## 项目结构
@@ -153,6 +157,7 @@ football_simulator/
 ui_v2_main.py          UI v2 入口
 build_macos_ui_v2_app.sh
 build_windows_ui_v2.bat
+scripts/build_windows.ps1
 足球模拟器总配置.json
 ```
 

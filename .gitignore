@@ -27,6 +27,10 @@ release/**/*.dmg
 release/**/*.app
 *.log
 
+# Windows 构建脚本生成的英文配置副本与本地组装产物
+football_simulator_config.json
+release/windows/Football-Simulator-UI-v2-Windows/
+
 # 本地备份/回收站（不进入 git）
 backup-v0.2.0/
 backups/

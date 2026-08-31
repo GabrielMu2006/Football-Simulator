@@ -16,6 +16,7 @@ from PySide6.QtGui import (
     QColor,
     QFont,
     QGuiApplication,
+    QImage,
     QLinearGradient,
     QPainter,
     QPainterPath,
@@ -142,6 +143,13 @@ def main() -> None:
         draw_icon(painter, size)
         painter.end()
         pixmap.save(str(ASSETS / f"app_icon_{size}.png"))
+
+    # Windows PyInstaller exe 图标（Qt 的 ICO 插件支持写出；用 256px 单层即可）。
+    win_icon = QImage(str(ASSETS / "app_icon_256.png"))
+    win_icon_ok = win_icon.save(str(ASSETS / "app.ico"), "ICO")
+    if not win_icon_ok:
+        raise SystemExit("failed to write assets/app.ico")
+    print("generated:", ASSETS / "app.ico")
 
     # macOS iconutil 需要的 Icons.icns 目录结构。
     iconset = ASSETS / "AppIcon.iconset"
