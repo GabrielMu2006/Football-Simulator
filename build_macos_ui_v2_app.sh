@@ -31,6 +31,7 @@ arch -arm64 "$VENV_DIR/bin/pyinstaller" \
   --distpath "$DIST_DIR" \
   --workpath "build-ui-v2" \
   --add-data "${SHARED_CONFIG_NAME}:." \
+  --add-data "team_badges_40_v2/PNG:team_badges_40_v2/PNG" \
   --paths "$ROOT_DIR" \
   --hidden-import football_simulator.ui_v2.pages.competition_page \
   --hidden-import football_simulator.ui_v2.pages.dashboard_page \
