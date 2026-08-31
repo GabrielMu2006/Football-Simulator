@@ -23,24 +23,37 @@ function Fail([string]$Message) {
 }
 
 # ---------- 定位 conda ----------
+# 优先 conda.exe（conda.bat 在 Windows PowerShell 5.1 下会把 stderr 包成
+# NativeCommandError，配合 $ErrorActionPreference=Stop 会中断脚本）。
 $condaExe = $null
-if ($env:CONDA_EXE -and (Test-Path -LiteralPath $env:CONDA_EXE)) {
+$cmdExe = Get-Command conda.exe -ErrorAction SilentlyContinue
+if ($cmdExe -and $cmdExe.Source -and (Test-Path -LiteralPath $cmdExe.Source)) {
+    $condaExe = $cmdExe.Source
+}
+if (-not $condaExe -and $env:CONDA_EXE -and (Test-Path -LiteralPath $env:CONDA_EXE)) {
     $condaExe = $env:CONDA_EXE
-} else {
-    $cmd = Get-Command conda -ErrorAction SilentlyContinue
-    if ($cmd -and $cmd.CommandType -eq "Application" -and $cmd.Source -and (Test-Path -LiteralPath $cmd.Source)) {
-        $condaExe = $cmd.Source
-    } else {
-        $cmd = Get-Command conda.bat -ErrorAction SilentlyContinue
-        if ($cmd -and $cmd.Source -and (Test-Path -LiteralPath $cmd.Source)) {
-            $condaExe = $cmd.Source
-        }
+}
+if (-not $condaExe) {
+    $cmdBat = Get-Command conda.bat -ErrorAction SilentlyContinue
+    if ($cmdBat -and $cmdBat.Source -and (Test-Path -LiteralPath $cmdBat.Source)) {
+        $condaExe = $cmdBat.Source
     }
 }
 if (-not $condaExe) {
     Fail "未找到 conda。请先安装 Miniconda/Anaconda，并从 Anaconda Prompt（conda 已初始化）运行本脚本。"
 }
 Write-Step "使用 conda: $condaExe"
+
+function Test-CondaEnvExists([string]$Name) {
+    $raw = & $condaExe env list --json
+    $json = ($raw | Out-String) | ConvertFrom-Json
+    foreach ($envPath in $json.envs) {
+        if ((Split-Path -Leaf $envPath) -eq $Name) {
+            return $true
+        }
+    }
+    return $false
+}
 
 function Invoke-Conda([string[]]$ArgsList) {
     & $condaExe run -n $EnvName @ArgsList
@@ -50,8 +63,7 @@ function Invoke-Conda([string[]]$ArgsList) {
 }
 
 # ---------- 确保构建环境存在 ----------
-& $condaExe run -n $EnvName python --version *> $null
-if ($LASTEXITCODE -ne 0) {
+if (-not (Test-CondaEnvExists $EnvName)) {
     Write-Step "创建 conda 环境 '$EnvName'（python $PythonVersion）"
     & $condaExe create -y -n $EnvName "python=$PythonVersion"
     if ($LASTEXITCODE -ne 0) {
@@ -97,20 +109,20 @@ Invoke-Conda @(
 
 # ---------- 组装 release 目录并压缩 ----------
 Write-Step "组装 release 产物"
-$distApp = Join-Path $Root "dist-windows-ui-v2Football Simulator UI v2"
+$distApp = Join-Path $Root "dist-windows-ui-v2/Football Simulator UI v2"
 if (-not (Test-Path -LiteralPath $distApp)) {
     Fail "未找到构建产物: $distApp"
 }
 
-$releaseDir = Join-Path $Root "releasewindowsFootball-Simulator-UI-v2-Windows"
-$zipPath = Join-Path $Root "releasewindowsFootball-Simulator-UI-v2-Windows.zip"
+$releaseDir = Join-Path $Root "release/windows/Football-Simulator-UI-v2-Windows"
+$zipPath = Join-Path $Root "release/windows/Football-Simulator-UI-v2-Windows.zip"
 
 if (Test-Path -LiteralPath $releaseDir) {
     Remove-Item -LiteralPath $releaseDir -Recurse -Force
 }
 New-Item -ItemType Directory -Path $releaseDir -Force | Out-Null
 Get-ChildItem -LiteralPath $distApp | Copy-Item -Destination $releaseDir -Recurse -Force
-Copy-Item -LiteralPath (Join-Path $Root "releasewindowsREADME.md") -Destination $releaseDir -Force
+Copy-Item -LiteralPath (Join-Path $Root "release/windows/README.md") -Destination $releaseDir -Force
 Copy-Item -LiteralPath $zhConfig -Destination $releaseDir -Force
 Copy-Item -LiteralPath $enConfig -Destination $releaseDir -Force
 
@@ -121,5 +133,5 @@ Compress-Archive -Path $releaseDir -DestinationPath $zipPath -Force
 
 Write-Host ""
 Write-Host "构建完成" -ForegroundColor Green
-Write-Host "  exe : $distAppFootball Simulator UI v2.exe"
+Write-Host "  exe : $distApp/Football Simulator UI v2.exe"
 Write-Host "  zip : $zipPath"
