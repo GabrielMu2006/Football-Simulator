@@ -3,7 +3,13 @@
 一个本地运行的足球联赛模拟游戏：创建存档、初始化球队与球员，按周推进赛季，
 在路由式数据工作台中查看联赛、杯赛、转会、选秀、荣誉和球员历史。
 
-**当前版本：v1.0.0（首个正式版）**
+**当前版本：v1.0.1**（修复 macOS Tahoe 全屏下存档操作触发 Space 滑动并退回桌面的问题）
+
+版本历史：
+
+- v1.0.1 — 修复 macOS Tahoe（26.x）全屏下"新建/打开/初始化/移入回收站"存档操作时
+  反复滑动并退回桌面；存档列表/回收站重建不再产生临时顶层窗口。
+- v1.0.0 — 首个正式版：40 队双级联赛、250 名真实球员池、V2 队标、首次启动教程、大图标侧栏与实心大箭头。
 
 ## 下载安装
 
@@ -12,7 +18,7 @@
 从 GitHub Release 下载并安装：
 
 ```text
-https://github.com/GabrielMu2006/Football-Simulator/releases/tag/v1.0.0
+https://github.com/GabrielMu2006/Football-Simulator/releases/tag/v1.0.1
 ```
 
 1. 下载 `Football.Simulator.UI.v2.dmg`；
@@ -149,10 +155,10 @@ release/windows/                   Windows 发布产物与说明（本地）
 git add football_simulator tests assets scripts README.md \
     "Football Simulator UI v2.spec" "Football Simulator UI v2 Windows.spec" \
     build_macos_ui_v2_app.sh build_windows_ui_v2.bat release/README.md
-git commit -m "release: v1.0.0"
+git commit -m "release: v1.0.1"
 git push origin main
 
-gh release create v1.0.0 \
+gh release create v1.0.1 \
     "release/macos/Football Simulator UI v2.dmg" \
     "release/windows/Football-Simulator-UI-v2-Windows.zip"
 ```

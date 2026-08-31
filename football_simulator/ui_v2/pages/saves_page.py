@@ -51,6 +51,7 @@ from PySide6.QtWidgets import (
 )
 
 from football_simulator.queries import base
+from football_simulator.ui_v2.components import debug_log
 from football_simulator.ui_v2.components import (
     BG_COLOR_CARD,
     BORDER_COLOR_SOFT,
@@ -258,6 +259,7 @@ class SavesPage(EntityPageBase):
             return False
 
     def _rebuild_rows(self) -> None:
+        debug_log.log("saves._rebuild_rows begin")
         assert self._rows_layout is not None
         service = self._context.service
         current = None
@@ -272,7 +274,8 @@ class SavesPage(EntityPageBase):
             item = self._rows_layout.takeAt(0)
             widget = item.widget()
             if widget is not None:
-                widget.setParent(None)
+                # 不要 setParent(None)：那会把小组件临时变成顶层窗口，
+                # macOS 全屏下创建顶层窗口会触发 Space 滑动并退出全屏。
                 widget.deleteLater()
         self._save_rows = {}
 
@@ -287,10 +290,12 @@ class SavesPage(EntityPageBase):
             note.setObjectName("savesEmptyNote")
             note.setStyleSheet(_MUTED_STYLE)
             self._rows_layout.addWidget(note)
+            debug_log.log("saves._rebuild_rows end (empty)")
             return
 
         for save_name in saves:
             self._rows_layout.addWidget(self._build_save_row(save_name, save_name == current))
+        debug_log.log(f"saves._rebuild_rows end count={len(saves)}")
 
     def _build_save_row(self, save_name: str, is_current: bool) -> QWidget:
         service = self._context.service
@@ -367,21 +372,24 @@ class SavesPage(EntityPageBase):
     # -- 写流程 ----------------------------------------------------------------
 
     def _request_reload(self, save_name: str) -> None:
+        debug_log.log(f"saves._request_reload save={save_name!r}")
         reload_hook: Optional[Callable[[str], None]] = self._context.request_save_reload
         if reload_hook is not None:
             try:
                 reload_hook(save_name)
             except Exception as exc:
+                debug_log.log(f"saves._request_reload failed: {exc}")
                 self._set_status(f"切换存档失败：{exc}", is_error=True)
 
     def _rebuild_trash(self) -> None:
+        debug_log.log("saves._rebuild_trash begin")
         assert self._trash_layout is not None
         service = self._context.service
         while self._trash_layout.count():
             item = self._trash_layout.takeAt(0)
             widget = item.widget()
             if widget is not None:
-                widget.setParent(None)
+                # 同上：避免创建临时顶层窗口触发全屏退场。
                 widget.deleteLater()
         trash_paths = service.list_trash() if service is not None else []
         self._trash_frame.setVisible(bool(trash_paths))
@@ -402,6 +410,7 @@ class SavesPage(EntityPageBase):
             )
             row_layout.addWidget(restore_button)
             self._trash_layout.addWidget(row)
+        debug_log.log(f"saves._rebuild_trash end count={len(trash_paths)}")
 
     def _on_backup_clicked(self, save_name: str) -> None:
         service = self._context.service
@@ -472,6 +481,7 @@ class SavesPage(EntityPageBase):
         self._rebuild_trash()
 
     def _on_empty_trash_clicked(self) -> None:
+        debug_log.log("saves._on_empty_trash_clicked begin")
         service = self._context.service
         if service is None:
             return
@@ -491,6 +501,7 @@ class SavesPage(EntityPageBase):
             return
         self._set_status("回收站已清空。", is_error=False)
         self._rebuild_trash()
+        debug_log.log("saves._on_empty_trash_clicked end")
 
     def _on_create_clicked(self) -> None:
         assert self._create_input is not None and self._create_status is not None
@@ -518,10 +529,12 @@ class SavesPage(EntityPageBase):
         self._request_reload(created)
 
     def _open_save(self, save_name: str) -> None:
+        debug_log.log(f"saves._open_save save={save_name!r}")
         self._set_status(f"正在打开存档 {save_name}。", is_error=False)
         self._request_reload(save_name)
 
     def _initialize_save(self, save_name: str) -> None:
+        debug_log.log(f"saves._initialize_save begin save={save_name!r}")
         service = self._context.service
         if service is None:
             return
@@ -533,8 +546,10 @@ class SavesPage(EntityPageBase):
         self._set_status(f"已初始化存档 {state.save_name} 的第 1 赛季，正在切换到该存档。", is_error=False)
         self._rebuild_rows()
         self._request_reload(state.save_name)
+        debug_log.log(f"saves._initialize_save end save={state.save_name!r}")
 
     def _delete_save(self, save_name: str) -> None:
+        debug_log.log(f"saves._delete_save begin save={save_name!r}")
         service = self._context.service
         if service is None:
             return
@@ -546,8 +561,10 @@ class SavesPage(EntityPageBase):
             QMessageBox.StandardButton.No,
         )
         if answer != QMessageBox.StandardButton.Yes:
+            debug_log.log(f"saves._delete_save cancelled save={save_name!r}")
             self._set_status(f"已取消删除存档 {save_name}。", is_error=False)
             return
+        debug_log.log(f"saves._delete_save confirmed save={save_name!r}")
         try:
             service.delete_save(save_name)
         except Exception as exc:
@@ -563,6 +580,7 @@ class SavesPage(EntityPageBase):
         # 让外壳重载：删除当前存档时外壳按 current_save_name 的回退结果切换。
         if current:
             self._request_reload(current)
+        debug_log.log(f"saves._delete_save end save={save_name!r} current={current!r}")
 
     # -- 状态条 ----------------------------------------------------------------
 

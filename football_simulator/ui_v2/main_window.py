@@ -26,7 +26,7 @@ import importlib
 import traceback
 from typing import Dict, Optional, Tuple, Type
 
-from PySide6.QtCore import QPointF, QRectF, QSize, QThread, Qt, QUrl, Signal
+from PySide6.QtCore import QEvent, QPointF, QRectF, QSize, QThread, Qt, QUrl, Signal
 from PySide6.QtGui import QColor, QDesktopServices, QFont, QIcon, QKeySequence, QPainter, QPixmap, QPolygonF, QShortcut
 from PySide6.QtWidgets import (
     QComboBox,
@@ -51,11 +51,14 @@ from football_simulator.queries.base import open_read_connection
 from football_simulator.state import SaveSnapshot
 from football_simulator.ui_v2 import navigation
 from football_simulator.ui_v2.components import EmptyState, EntityLink
+from football_simulator.ui_v2.components import debug_log
 from football_simulator.ui_v2.components.global_search import GlobalSearchBox
 from football_simulator.ui_v2.components.tutorial import TutorialDialog
 from football_simulator.ui_v2.navigation import Route, Router
 from football_simulator.ui_v2.pages.entity_page_base import EntityPageBase, PageContext
 from football_simulator.ui_v2.services import SimulatorUIService
+
+debug_log.hook_qmessagebox()
 
 
 # ---------------------------------------------------------------------------
@@ -291,6 +294,7 @@ class MainWindow(QMainWindow):
 
     def __init__(self, service: SimulatorUIService) -> None:
         super().__init__()
+        debug_log.log("app.main_window __init__ begin")
         self.service = service
         self.snapshot: SaveSnapshot | None = None
         self.router = Router()
@@ -303,17 +307,24 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Football Simulator UI v2")
         self.resize(1680, 980)
         self.setMinimumSize(1440, 860)
-        # macOS Tahoe（26.x）上原生全屏 + 模态弹窗/窗口重建会触发 Space 滑动并退回桌面；
-        # 禁用原生全屏：绿钮变为“填满屏幕/最大化”，不进入全屏 Space。
-        self.setWindowFlag(Qt.WindowType.WindowFullscreenButtonHint, False)
         self._build_ui()
         self.router.navigate(Route("dashboard"))
         self._load_save(self.service.current_save_name())
         TutorialDialog.show_first_run_if_needed(self)
+        debug_log.log("app.main_window ready")
 
     # ------------------------------------------------------------------
     # UI 构建
     # ------------------------------------------------------------------
+
+    def changeEvent(self, event: QEvent) -> None:  # noqa: N802 - Qt API
+        if event.type() == QEvent.Type.WindowStateChange:
+            state = self.windowState()
+            debug_log.log(
+                f"main.changeEvent state={state} "
+                f"fullscreen={bool(state & Qt.WindowState.WindowFullScreen)}"
+            )
+        super().changeEvent(event)
 
     def _build_ui(self) -> None:
         self._build_menu_bar()
@@ -671,7 +682,7 @@ class MainWindow(QMainWindow):
             item = self.breadcrumb_layout.takeAt(0)
             widget = item.widget()
             if widget is not None:
-                widget.setParent(None)
+                # 避免 setParent(None) 产生临时顶层窗口（macOS 全屏退场触发点之一）。
                 widget.deleteLater()
         for index, crumb in enumerate(navigation.breadcrumbs(route, context)):
             if index:
@@ -707,6 +718,7 @@ class MainWindow(QMainWindow):
     def _load_save(self, save_name: str) -> None:
         if not save_name:
             return
+        debug_log.log(f"main._load_save begin save={save_name!r}")
         try:
             state = self.service.load_state(save_name)
         except Exception as exc:
@@ -732,6 +744,7 @@ class MainWindow(QMainWindow):
             self._apply_route(current)
         self._refresh_views()
         self._focus_pending_workflow(silent=True)
+        debug_log.log(f"main._load_save end save={save_name!r}")
 
     def _initialize_current_save(self) -> None:
         if self._init_in_progress:
