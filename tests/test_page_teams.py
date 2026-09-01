@@ -419,7 +419,7 @@ class TeamProfilePageTests(unittest.TestCase):
     def test_overview_shows_team_honors_and_form(self) -> None:
         harness, page, route = _make_profile_page(self.champion.team.team_id, 1)
         profile = self._profile_of(self.champion.team.team_id, 1)
-        self.assertIn("第 1 名", profile.team_honors)
+        self.assertIn("联赛 第 1 名", profile.team_honors)
         texts = [label.text() for label in page._overview_scroll.widget().findChildren(QLabel)]
         for honor in profile.team_honors:
             self.assertIn(honor, texts)

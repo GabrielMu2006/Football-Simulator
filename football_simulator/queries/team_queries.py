@@ -29,6 +29,12 @@ _LEAGUE_CATEGORIES = ("premier", "second")
 
 # 归档荣誉标签中的占位值：不代表实际荣誉，展示时剔除。
 _NON_HONOR_LABELS = {"", "未参赛", "未知", "未定"}
+_HONOR_FIELD_LABELS = {
+    "league_result": "联赛",
+    "winners_cup_result": "优胜者杯",
+    "challenge_cup_result": "挑战杯",
+    "super_cup_result": "超级杯",
+}
 
 # 排名链占位阵容：Team 构造要求 1GK/4DF/3MF/3FW，排名计算只使用队名。
 _PLACEHOLDER_SLOTS = (("GK", (1,)), ("DF", (1, 2, 3, 4)), ("MF", (1, 2, 3)), ("FW", (1, 2, 3)))
@@ -514,13 +520,18 @@ def _team_honors(conn: sqlite3.Connection, season_number: int, team_name: str) -
         return []
     for row in archive.get("team_stats", []):
         if row.get("team_name") == team_name:
-            labels = [
-                row.get("league_result"),
-                row.get("winners_cup_result"),
-                row.get("challenge_cup_result"),
-                row.get("super_cup_result"),
-            ]
-            return [label for label in labels if label and label not in _NON_HONOR_LABELS]
+            fields = (
+                ("league_result", row.get("league_result")),
+                ("winners_cup_result", row.get("winners_cup_result")),
+                ("challenge_cup_result", row.get("challenge_cup_result")),
+                ("super_cup_result", row.get("super_cup_result")),
+            )
+            labels = []
+            for field, value in fields:
+                if value and value not in _NON_HONOR_LABELS:
+                    prefix = _HONOR_FIELD_LABELS.get(field, "")
+                    labels.append(f"{prefix} {value}".strip())
+            return labels
     return []
 
 

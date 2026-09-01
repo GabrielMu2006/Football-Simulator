@@ -44,6 +44,12 @@ _POSITION_ORDER = {"GK": 0, "DF": 1, "MF": 2, "FW": 3}
 _AWARD_TYPE_ORDER = ("top_scorer", "assist_leader", "mvp")
 _AWARD_TYPE_LABELS = {"top_scorer": "射手王", "assist_leader": "助攻王", "mvp": "MVP"}
 _HONOR_FIELDS = ("league_result", "winners_cup_result", "challenge_cup_result", "super_cup_result")
+_HONOR_FIELD_LABELS = {
+    "league_result": "联赛",
+    "winners_cup_result": "优胜者杯",
+    "challenge_cup_result": "挑战杯",
+    "super_cup_result": "超级杯",
+}
 _SKIPPED_HONOR_VALUES = {"未参赛", "未知"}
 _LEGACY_REAL_PREFIX = "real::"
 
@@ -602,7 +608,8 @@ def _load_team_honors(conn: sqlite3.Connection, season_id: int, team_names: List
         for field in _HONOR_FIELDS:
             value = entry.get(field)
             if value and value not in _SKIPPED_HONOR_VALUES:
-                honors.append(str(value))
+                label = _HONOR_FIELD_LABELS.get(field, "")
+                honors.append(f"{label} {value}".strip())
     return honors
 
 

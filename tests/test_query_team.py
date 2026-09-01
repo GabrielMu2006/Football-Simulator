@@ -371,16 +371,16 @@ class TeamProfileTests(TeamQueryTestBase):
             champion = min(rows, key=lambda row: row.rank or 10_000)
             champion_profile = team_queries.get_team_season_profile(conn, champion.team.team_id, 1)
 
-            # 球队荣誉：来自归档的球队成绩标签。
-            self.assertIn("第 1 名", champion_profile.team_honors)
+            # 球队荣誉：来自归档的球队成绩标签（带赛事前缀，如“联赛 第 1 名”）。
+            self.assertIn("联赛 第 1 名", champion_profile.team_honors)
             for honor in champion_profile.team_honors:
                 self.assertNotIn(honor, {"未参赛", "未知", ""})
                 self.assertNotIn(honor, {"top20", "top_scorer", "assist_leader", "mvp"})
 
-            # 非冠军球队的荣誉不应含“第 1 名”。
+            # 非冠军球队的荣誉不应含“联赛 第 1 名”。
             runner_up = max(rows, key=lambda row: row.rank or 0)
             runner_profile = team_queries.get_team_season_profile(conn, runner_up.team.team_id, 1)
-            self.assertNotIn("第 1 名", runner_profile.team_honors)
+            self.assertNotIn("联赛 第 1 名", runner_profile.team_honors)
 
             # 球员个人奖项：来自 awards 表，按 team_name 匹配（冠军球队可能
             # 没有球员获奖，因此取 Top20 榜首球员所属球队做逐行核对）。
