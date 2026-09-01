@@ -923,7 +923,7 @@ class CompetitionPage(EntityPageBase):
     def _build_cup_groups_knockout(
         self, profile: competition_queries.CompetitionProfile
     ) -> QWidget:
-        """杯赛头部信息：小组积分表 + 淘汰树。列表页签仍是下方整表。"""
+        """杯赛页签内容：小组积分表 + 淘汰树（唯一 QScrollArea 内）。"""
         holder = QWidget(self._stage_container)
         layout = QVBoxLayout(holder)
         layout.setContentsMargins(0, 0, 0, 0)
