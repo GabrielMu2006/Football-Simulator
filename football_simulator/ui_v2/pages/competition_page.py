@@ -11,17 +11,18 @@
 页签结构（QTabWidget；页签选择经 ``save_state``/``restore_state`` 记忆）：
 
 - 概览：状态摘要 + 赛制说明 + 冠军与晋级（内容型页签，单外层 QScrollArea）；
-- 积分榜 / 签表：联赛 → 积分榜 EntityTable；杯赛 → 签表 EntityTable；
-  升级附加赛 → 两回合比赛表 + 升级成功方横条。该页签按赛事类型在刷新时
-  重建、任何时刻只保留一个表格实例（§8.2：每页签恰一个纵向滚动面）；
+- 积分榜 / 签表：联赛 → 积分榜 EntityTable；杯赛 → 小组积分表 + 淘汰树
+  （唯一 QScrollArea 内完整展开）；升级附加赛 → 两回合比赛表 + 升级成功方
+  横条。该页签按赛事类型在刷新时重建（§8.2：每页签恰一个纵向滚动面）；
 - 赛程与结果：该赛事全部比赛的 EntityTable，行激活 → 比赛路由；
 - 球员榜：射手/助攻/评分三榜合并的单表（"类型"列区分，各前 10），球员可点；
 - 奖项：该赛事奖项表，球员可点；无奖项时空状态；
 - 历史：一行一赛季（赛季、冠军、冠军球员），冠军可点球队。
 
-滚动硬规则（§8.2）：表格页签的 EntityTable 是唯一纵向滚动面，外层不套
-QScrollArea；概览为单外层 QScrollArea 且内容完整展开；杯赛未举办时各页签
-显示"本届未举办"空状态，不引入额外滚动面。
+滚动硬规则（§8.2）：联赛/附加赛表格页签的 EntityTable 是唯一纵向滚动面，
+外层不套 QScrollArea；杯赛页签为唯一 QScrollArea 且内容完整展开；概览为
+单外层 QScrollArea 且内容完整展开；杯赛未举办时各页签显示"本届未举办"
+空状态，不引入额外滚动面。
 
 链接合同（§7.2）：积分榜/签表/晋级方球队 → ``Route("team", ...)``；比赛行 →
 ``Route("match", ...)``；榜单/奖项/历史球员 → ``Route("player", ...)``；页头
@@ -78,13 +79,19 @@ from football_simulator.ui_v2.design_tokens import (
 )
 from football_simulator.ui_v2.navigation import Route
 from football_simulator.ui_v2.pages.entity_page_base import EntityPageBase, PageContext
-from football_simulator.ui_v2.widgets import CardFrame
+from football_simulator.ui_v2.widgets import CardFrame, section_header
 
 _TAB_TITLES: Tuple[str, ...] = ("概览", "积分榜 / 签表", "赛程与结果", "球员榜", "奖项", "历史")
 _TAB_OVERVIEW, _TAB_STAGE, _TAB_MATCHES, _TAB_LEADERS, _TAB_AWARDS, _TAB_HISTORY = range(6)
 
 _MUTED_STYLE = f"color: {TEXT_COLOR_MUTED}; background: transparent;"
 _BRIGHT_STYLE = f"color: {TEXT_COLOR_BRIGHT}; background: transparent;"
+
+_GRID_HEADER_STYLE = (
+    "background: #172942; color: #dfe9f7; font-weight: 800;"
+    "padding: 8px 10px; border-bottom: 1px solid #23344d;"
+)
+_GRID_CELL_STYLE = "color: #e8eef7; background: transparent; padding: 6px 10px; border-bottom: 1px solid #223653;"
 
 # 状态徽标配色（前景色铺满圆角底、深色文字保证可读）。
 _STATUS_BADGE_COLORS: Dict[str, Tuple[str, str]] = {
@@ -873,19 +880,16 @@ class CompetitionPage(EntityPageBase):
             if not rows:
                 self._stage_container_layout.addWidget(self._stage_empty_state(overview.status))
                 return
-            table = EntityTable(_STAGE_COLUMNS, navigator=self._context.navigate, parent=self._stage_container)
-            table.set_rows(rows, route_for_row=self._stage_match_route)
-            self._install_stage_delegates(
-                table,
-                _STAGE_COLUMNS,
-                (
-                    ("home_name", self._stage_home_route),
-                    ("away_name", self._stage_away_route),
-                    ("advancing_name", self._stage_advancing_route),
-                ),
-            )
-            self._stage_container_layout.addWidget(table)
-            self._stage_table = table
+            # 杯赛页签：小组积分表 + 淘汰树放在唯一 QScrollArea 内（“赛程与结果”
+            # 页签仍提供全部比赛的可点表格），避免独立表格挤占窗口高度导致内容被裁剪。
+            scroll = QScrollArea(self._stage_container)
+            scroll.setObjectName("cupStageScroll")
+            scroll.setWidgetResizable(True)
+            scroll.setFrameShape(QFrame.Shape.NoFrame)
+            scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+            scroll.setWidget(self._build_cup_groups_knockout(profile))
+            self._stage_container_layout.addWidget(scroll, 1)
+            self._stage_table = None
             return
 
         if competition == base.COMPETITION_PLAYOFF:
@@ -915,6 +919,64 @@ class CompetitionPage(EntityPageBase):
             return
 
         self._stage_container_layout.addWidget(self._stage_empty_state(overview.status))
+
+    def _build_cup_groups_knockout(
+        self, profile: competition_queries.CompetitionProfile
+    ) -> QWidget:
+        """杯赛头部信息：小组积分表 + 淘汰树。列表页签仍是下方整表。"""
+        holder = QWidget(self._stage_container)
+        layout = QVBoxLayout(holder)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(8)
+
+        for group in profile.cup_groups:
+            group_title = group.group_name if group.group_name.endswith("组") else f"{group.group_name} 组"
+            layout.addWidget(section_header(group_title, "小组积分表（按积分、净胜球、进球排序）"))
+            grid = QGridLayout()
+            grid.setHorizontalSpacing(10)
+            grid.setVerticalSpacing(4)
+            headers = ("名次", "球队", "赛", "胜", "平", "负", "进", "失", "积分")
+            for column, header in enumerate(headers):
+                label = QLabel(header)
+                label.setStyleSheet(_GRID_HEADER_STYLE)
+                grid.addWidget(label, 0, column)
+            for row_index, row in enumerate(group.rows, start=1):
+                cells = (
+                    str(row.rank), row.team_name, str(row.played), str(row.wins),
+                    str(row.draws), str(row.losses), str(row.goals_for),
+                    str(row.goals_against), str(row.points),
+                )
+                for column, text in enumerate(cells):
+                    label = QLabel(text)
+                    label.setStyleSheet(_GRID_CELL_STYLE)
+                    grid.addWidget(label, row_index, column)
+            grid.setColumnStretch(1, 1)
+            layout.addLayout(grid)
+
+        for round_block in profile.knockout_rounds:
+            layout.addWidget(section_header(round_block.stage, "淘汰赛对局（→ 晋级方）"))
+            grid = QGridLayout()
+            grid.setHorizontalSpacing(10)
+            grid.setVerticalSpacing(4)
+            headers = ("主队", "比分", "客队", "晋级方")
+            for column, header in enumerate(headers):
+                label = QLabel(header)
+                label.setStyleSheet(_GRID_HEADER_STYLE)
+                grid.addWidget(label, 0, column)
+            for row_index, pair in enumerate(round_block.pairs, start=1):
+                score = "—"
+                if pair.home_goals is not None and pair.away_goals is not None:
+                    score = f"{pair.home_goals} - {pair.away_goals}"
+                cells = (pair.home, score, pair.away, pair.advancing or "待定")
+                for column, text in enumerate(cells):
+                    label = QLabel(text)
+                    label.setStyleSheet(_GRID_CELL_STYLE)
+                    grid.addWidget(label, row_index, column)
+            grid.setColumnStretch(0, 1)
+            grid.setColumnStretch(2, 1)
+            layout.addLayout(grid)
+
+        return holder
 
     def _cup_stage_row(self, item: competition_queries.CupStageRow, competition: str) -> _StageRow:
         match = item.match

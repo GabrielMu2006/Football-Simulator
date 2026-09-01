@@ -150,6 +150,49 @@ class CupStageRow:
 
 
 @dataclass(frozen=True)
+class CupGroupRow:
+    """杯赛小组积分表行。"""
+
+    rank: int
+    team_name: str
+    played: int
+    wins: int
+    draws: int
+    losses: int
+    goals_for: int
+    goals_against: int
+    points: int
+
+
+@dataclass(frozen=True)
+class CupGroupTable:
+    """一个杯赛小组的积分表。"""
+
+    group_name: str
+    rows: Tuple[CupGroupRow, ...]
+
+
+@dataclass(frozen=True)
+class KnockoutPair:
+    """淘汰赛一轮中的一场对局（含晋级方）。"""
+
+    label: str
+    home: str
+    away: str
+    home_goals: Optional[int]
+    away_goals: Optional[int]
+    advancing: Optional[str]
+
+
+@dataclass(frozen=True)
+class KnockoutRound:
+    """淘汰赛一个轮次（或一场主/次回合）。"""
+
+    stage: str
+    pairs: Tuple[KnockoutPair, ...]
+
+
+@dataclass(frozen=True)
 class CompetitionOverview:
     """赛事一览行。"""
 
@@ -176,6 +219,8 @@ class CompetitionProfile:
     season_number: int
     standings: Optional[Tuple[StandingRow, ...]]
     stage_rows: Tuple[CupStageRow, ...]
+    cup_groups: Tuple[CupGroupTable, ...]
+    knockout_rounds: Tuple[KnockoutRound, ...]
     matches: Tuple[base.MatchRef, ...]
     leaderboards: CompetitionLeaderboards
     awards: Tuple[AwardLine, ...]
@@ -609,6 +654,126 @@ def _cup_stage_rows(
     return tuple(rows)
 
 
+_KNOCKOUT_STAGE_LABELS: Dict[str, Dict[int, str]] = {
+    base.COMPETITION_WINNERS_CUP: {
+        7: "四分之一决赛（首回合）",
+        8: "四分之一决赛（次回合）",
+        9: "半决赛（首回合）",
+        10: "半决赛（次回合）",
+        11: "决赛（首回合）",
+        12: "决赛（次回合）",
+    },
+    base.COMPETITION_CHALLENGE_CUP: {
+        1: "三十二强",
+        2: "十六强",
+        3: "四分之一决赛",
+        4: "半决赛",
+        5: "决赛",
+    },
+    base.COMPETITION_SUPER_CUP: {1: "半决赛", 2: "决赛"},
+}
+
+
+def _cup_group_tables(
+    competition: str,
+    cup_state: dict,
+    stage_rows: Tuple[CupStageRow, ...],
+) -> Tuple[CupGroupTable, ...]:
+    """优胜者杯小组赛积分表：从 cup_state 分组 + matches 结果推导。"""
+    cup = cup_state.get(_CUP_STATE_KEY.get(competition, ""), {})
+    groups = cup.get("groups") or {}
+    if not groups:
+        return ()
+    tables: List[CupGroupTable] = []
+    for group_name in sorted(groups):
+        members = set(groups[group_name])
+        stats = {
+            name: {"played": 0, "wins": 0, "draws": 0, "losses": 0, "gf": 0, "ga": 0, "points": 0}
+            for name in members
+        }
+        for item in stage_rows:
+            match = item.match
+            if match.home.display_name not in members or match.away.display_name not in members:
+                continue
+            if match.home_goals is None or match.away_goals is None:
+                continue
+            home = stats[match.home.display_name]
+            away = stats[match.away.display_name]
+            home["played"] += 1
+            away["played"] += 1
+            home["gf"] += int(match.home_goals)
+            home["ga"] += int(match.away_goals)
+            away["gf"] += int(match.away_goals)
+            away["ga"] += int(match.home_goals)
+            if match.home_goals > match.away_goals:
+                home["wins"] += 1
+                away["losses"] += 1
+                home["points"] += 3
+            elif match.home_goals < match.away_goals:
+                away["wins"] += 1
+                home["losses"] += 1
+                away["points"] += 3
+            else:
+                home["draws"] += 1
+                away["draws"] += 1
+                home["points"] += 1
+                away["points"] += 1
+        ordered = sorted(
+            members,
+            key=lambda name: (
+                -stats[name]["points"],
+                -(stats[name]["gf"] - stats[name]["ga"]),
+                -stats[name]["gf"],
+                name,
+            ),
+        )
+        rows = tuple(
+            CupGroupRow(
+                rank=rank,
+                team_name=name,
+                played=stats[name]["played"],
+                wins=stats[name]["wins"],
+                draws=stats[name]["draws"],
+                losses=stats[name]["losses"],
+                goals_for=stats[name]["gf"],
+                goals_against=stats[name]["ga"],
+                points=stats[name]["points"],
+            )
+            for rank, name in enumerate(ordered, start=1)
+        )
+        tables.append(CupGroupTable(group_name=group_name, rows=rows))
+    return tuple(tables)
+
+
+def _knockout_rounds(
+    competition: str,
+    stage_rows: Tuple[CupStageRow, ...],
+) -> Tuple[KnockoutRound, ...]:
+    """淘汰赛轮次（按轮次标签分组，含晋级方）。"""
+    labels = _KNOCKOUT_STAGE_LABELS.get(competition, {})
+    grouped: Dict[str, List[KnockoutPair]] = {}
+    for item in stage_rows:
+        label = labels.get(item.round_number)
+        if label is None:
+            continue
+        pair = KnockoutPair(
+            label=label,
+            home=item.match.home.display_name,
+            away=item.match.away.display_name,
+            home_goals=item.match.home_goals,
+            away_goals=item.match.away_goals,
+            advancing=item.advancing.display_name if item.advancing else None,
+        )
+        grouped.setdefault(label, []).append(pair)
+    return tuple(
+        KnockoutRound(
+            stage=stage,
+            pairs=tuple(sorted(pairs, key=lambda p: (p.home, p.away))),
+        )
+        for stage, pairs in grouped.items()
+    )
+
+
 def _ref_by_name(refs_by_name: Dict[str, base.TeamRef], name: Optional[str]) -> Optional[base.TeamRef]:
     if not name:
         return None
@@ -907,6 +1072,8 @@ def get_competition_profile(
             season_number=season_number,
             standings=standings_rows,
             stage_rows=(),
+            cup_groups=(),
+            knockout_rounds=(),
             matches=tuple(matches),
             leaderboards=_leaderboards(conn, season_id, competition_id, is_real=leaderboards_is_real),
             awards=_competition_awards(conn, season_id, competition_id),
@@ -920,6 +1087,8 @@ def get_competition_profile(
             season_number=season_number,
             standings=None,
             stage_rows=(),
+            cup_groups=(),
+            knockout_rounds=(),
             matches=tuple(matches),
             leaderboards=_leaderboards(conn, season_id, competition_id, is_real=leaderboards_is_real),
             awards=(),
@@ -928,15 +1097,20 @@ def get_competition_profile(
 
     # 杯赛
     refs_by_name = {team_ref.display_name: team_ref for team_ref in base.load_team_refs(conn)}
+    cup_state = runtime.get("cup_state") or {}
     stage_rows = _cup_stage_rows(
-        conn, season_id, season_number, competition_id, runtime.get("cup_state") or {}, refs_by_name
+        conn, season_id, season_number, competition_id, cup_state, refs_by_name
     )
+    cup_groups = _cup_group_tables(competition_id, cup_state, stage_rows)
+    knockout_rounds = _knockout_rounds(competition_id, stage_rows)
     matches = _match_refs(conn, season_id, season_number, "AND category = 'cup' AND competition = ?", (competition_id,))
     return CompetitionProfile(
         competition=ref,
         season_number=season_number,
         standings=None,
         stage_rows=stage_rows,
+        cup_groups=cup_groups,
+        knockout_rounds=knockout_rounds,
         matches=tuple(matches),
         leaderboards=_leaderboards(conn, season_id, competition_id, is_real=leaderboards_is_real),
         awards=_competition_awards(conn, season_id, competition_id),

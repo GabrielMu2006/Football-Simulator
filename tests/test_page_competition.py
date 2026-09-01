@@ -442,19 +442,23 @@ class CupStageTests(unittest.TestCase):
         self.assertTrue(profile.stage_rows, "第 2 赛季优胜者杯应有签表行")
         self.assertTrue(profile.champion)
 
+        # 杯赛签表页签 = 唯一 QScrollArea：小组积分表 + 淘汰树（不再放独立表格）。
         page._tabs.setCurrentIndex(1)
-        table = page._stage_table
-        self.assertIsNotNone(table)
-        assert table is not None
-        self.assertEqual(table.model.rowCount(), len(profile.stage_rows))
+        self.assertIsNone(page._stage_table)
+        surfaces = page._stage_container.findChildren(QScrollArea)
+        self.assertEqual(len(surfaces), 1)
+        texts = _label_texts(page._stage_container)
+        self.assertIn("A 组", texts)
+        self.assertIn("淘汰赛对局（→ 晋级方）", texts)
 
-        # 签表按轮次确定性排序（round_number + match_id）。
-        round_numbers = [table.model.row_at(i).round_number for i in range(table.model.rowCount())]
-        self.assertEqual(round_numbers, sorted(round_numbers))
-
-        # 决赛行晋级方 == 冠军。
-        final_row = table.model.row_at(table.model.rowCount() - 1)
-        self.assertEqual(final_row.advancing_name, profile.champion)
+        # 决赛晋级方 == 冠军，且冠军名出现在页签内容里。
+        final_round = next(
+            round_block
+            for round_block in profile.knockout_rounds
+            if round_block.stage == "决赛（次回合）"
+        )
+        self.assertEqual(final_round.pairs[0].advancing, profile.champion)
+        self.assertIn(profile.champion, texts)
 
         # 状态摘要冠军可点。
         self.assertIsInstance(page._champion_link, EntityLink)
@@ -465,32 +469,51 @@ class CupStageTests(unittest.TestCase):
             Route("team", team=refs_by_name[profile.champion].team_id, season=2),
         )
 
-        # 行激活 → 比赛路由。
+        # 比赛行激活 → 比赛路由（全部比赛在“赛程与结果”页签）。
+        page._tabs.setCurrentIndex(2)
+        table = page._matches_table
+        self.assertEqual(table.model.rowCount(), len(profile.matches))
         table.view.activated.emit(table.view.model().index(0, 0))
         self.assertEqual(
             harness.routes[-1],
-            Route("match", match=profile.stage_rows[0].match.match_id),
+            Route("match", match=profile.matches[0].match_id),
         )
-
-        # 晋级方列单击 → 球队路由（用决赛行，晋级方必非空）。
-        from football_simulator.ui_v2.pages.competition_page import _STAGE_COLUMNS
-
-        advancing_column = _column_index(_STAGE_COLUMNS, "advancing_name")
-        expected = Route("team", team=final_row.advancing_team_id, season=2)
-        self.assertIsNotNone(final_row.advancing_team_id)
         _show_page(page)
-        before = len(harness.routes)
-        rect = table.view.visualRect(
-            table.view.model().index(table.model.rowCount() - 1, advancing_column)
-        )
-        QTest.mouseClick(
-            table.view.viewport(),
-            Qt.MouseButton.LeftButton,
-            Qt.KeyboardModifier.NoModifier,
-            rect.center(),
-        )
-        self.assertEqual(len(harness.routes), before + 1)
-        self.assertEqual(harness.routes[-1], expected)
+        page.hide()
+
+    def test_winners_cup_group_tables_and_knockout_tree(self) -> None:
+        harness, page, route = _make_page(_WINNERS, 2)
+        profile: competition_queries.CompetitionProfile = self.facts["winners2"]
+
+        # 小组积分表：4 组 × 4 队，全部来自已赛小组赛结果推导。
+        self.assertEqual(len(profile.cup_groups), 4)
+        self.assertEqual(sum(len(group.rows) for group in profile.cup_groups), 16)
+        groups_by_name = {group.group_name: group for group in profile.cup_groups}
+        self.assertEqual(set(groups_by_name), {"A", "B", "C", "D"})
+        for group in profile.cup_groups:
+            self.assertEqual([row.rank for row in group.rows], [1, 2, 3, 4])
+            self.assertEqual(sum(row.played for row in group.rows), 24)  # 每队 6 场双循环
+            # 积分排序链：积分 → 净胜球 → 进球。
+            points = [row.points for row in group.rows]
+            self.assertEqual(points, sorted(points, reverse=True))
+
+        # 淘汰树：按 6 个轮次标签分组，共 14 场（QF 8 场 + SF 4 场 + F 2 场）。
+        self.assertEqual(len(profile.knockout_rounds), 6)
+        self.assertEqual(sum(len(round_block.pairs) for round_block in profile.knockout_rounds), 14)
+        stages = [round_block.stage for round_block in profile.knockout_rounds]
+        self.assertIn("四分之一决赛（首回合）", stages)
+        self.assertIn("决赛（次回合）", stages)
+        final = next(round_block for round_block in profile.knockout_rounds if round_block.stage == "决赛（次回合）")
+        self.assertEqual(len(final.pairs), 1)
+        self.assertEqual(final.pairs[0].advancing, profile.champion)
+
+        # 页签内容：小组表 + 淘汰树渲染在签表表格上方。
+        page._tabs.setCurrentIndex(1)
+        _show_page(page)
+        texts = _label_texts(page._stage_container)
+        self.assertIn("A 组", texts)
+        self.assertIn("小组积分表（按积分、净胜球、进球排序）", texts)
+        self.assertIn("淘汰赛对局（→ 晋级方）", texts)
         page.hide()
 
     def test_playoff_stage_tab_shows_matches_and_champion_bar(self) -> None:
