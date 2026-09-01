@@ -97,8 +97,11 @@ _TAB_OVERVIEW = 0
 _TAB_STANDINGS = 1
 _TAB_AWARDS = 2
 _TAB_HONORS = 3
-_TAB_SETTLEMENT = 4
-_TAB_TITLES: Tuple[str, ...] = ("赛季总览", "最终排名", "个人奖项", "球队荣誉", "结算轨迹")
+_TAB_ALL_HONORS = 4
+_TAB_SETTLEMENT = 5
+_TAB_TITLES: Tuple[str, ...] = (
+    "赛季总览", "最终排名", "个人奖项", "球队荣誉", "总荣誉榜", "结算轨迹",
+)
 
 _DIVISION_CATEGORIES: Tuple[Tuple[str, str], ...] = (
     (base.COMPETITION_PREMIER, "premier"),
@@ -156,6 +159,17 @@ _HONOR_COLUMNS: Tuple[ColumnSpec, ...] = (
     ColumnSpec("winners_cup_result", "优胜者杯", width=104),
     ColumnSpec("challenge_cup_result", "挑战杯", width=96),
     ColumnSpec("super_cup_result", "超级杯", width=96),
+    ColumnSpec("honor_points", "荣誉积分", width=88, alignment=Qt.AlignmentFlag.AlignRight),
+    ColumnSpec("total_titles", "总冠军", width=76, alignment=Qt.AlignmentFlag.AlignRight),
+)
+
+_ALL_HONORS_COLUMNS: Tuple[ColumnSpec, ...] = (
+    ColumnSpec("team_name", "球队", width=200, stretch=True),
+    ColumnSpec("seasons", "赛季数", width=76, alignment=Qt.AlignmentFlag.AlignRight),
+    ColumnSpec("league_titles", "联赛冠军", width=84, alignment=Qt.AlignmentFlag.AlignRight),
+    ColumnSpec("winners_cup_titles", "优胜者杯", width=84, alignment=Qt.AlignmentFlag.AlignRight),
+    ColumnSpec("challenge_cup_titles", "挑战杯", width=84, alignment=Qt.AlignmentFlag.AlignRight),
+    ColumnSpec("super_cup_titles", "超级杯", width=84, alignment=Qt.AlignmentFlag.AlignRight),
     ColumnSpec("honor_points", "荣誉积分", width=88, alignment=Qt.AlignmentFlag.AlignRight),
     ColumnSpec("total_titles", "总冠军", width=76, alignment=Qt.AlignmentFlag.AlignRight),
 )
@@ -237,6 +251,18 @@ class _HonorRow:
     winners_cup_result: str
     challenge_cup_result: str
     super_cup_result: str
+    honor_points: int
+    total_titles: int
+
+
+@dataclass(frozen=True)
+class _AllHonorRow:
+    team_name: str
+    seasons: int
+    league_titles: int
+    winners_cup_titles: int
+    challenge_cup_titles: int
+    super_cup_titles: int
     honor_points: int
     total_titles: int
 
@@ -482,7 +508,13 @@ class HistoryPage(EntityPageBase):
         self._honor_stack = self._make_tab_stack(self._honor_table, self._honor_empty_slot)
         self._tabs.addTab(self._honor_stack, _TAB_TITLES[_TAB_HONORS])
 
-        # 页签 4：结算轨迹（筛选输入 + 全高 EntityTable，完整呈现不截断）。
+        # 页签 4：总荣誉榜（跨赛季汇总，全高 EntityTable）。
+        self._all_honors_table = EntityTable(_ALL_HONORS_COLUMNS, navigator=self._context.navigate, parent=self)
+        self._all_honors_empty_slot = self._make_empty_slot()
+        self._all_honors_stack = self._make_tab_stack(self._all_honors_table, self._all_honors_empty_slot)
+        self._tabs.addTab(self._all_honors_stack, _TAB_TITLES[_TAB_ALL_HONORS])
+
+        # 页签 5：结算轨迹（筛选输入 + 全高 EntityTable，完整呈现不截断）。
         settlement_page = QWidget(self)
         settlement_layout = QVBoxLayout(settlement_page)
         settlement_layout.setContentsMargins(0, 4, 0, 0)
@@ -731,6 +763,7 @@ class HistoryPage(EntityPageBase):
                 for point in detail.player_settlement_points
             )
 
+            all_honor_totals = history_queries.list_all_team_honor_totals(conn)
             return _HistoryData(
                 season_number=season,
                 archived_seasons=archived,
@@ -740,6 +773,7 @@ class HistoryPage(EntityPageBase):
                 standings_rows=standings_rows,
                 top20_rows=top20_rows,
                 settlement_rows=settlement_rows,
+                all_honor_totals=all_honor_totals,
             )
 
     # -- 渲染 -----------------------------------------------------------------
@@ -751,6 +785,7 @@ class HistoryPage(EntityPageBase):
         self._render_top20()
         self._render_awards_grid(data)
         self._render_honors()
+        self._render_all_honors(data)
         self._render_settlement(self._filter_settlement_rows(self._current_filter_text()))
 
     def _season_strip_data(self) -> Tuple[Tuple[int, ...], set, Optional[int]]:
@@ -1088,7 +1123,32 @@ class HistoryPage(EntityPageBase):
         detail = self._current_detail
         return detail.team_honor_table if detail is not None else ()
 
-    # -- 页签 4：结算轨迹 ------------------------------------------------------
+    # -- 页签 4：总荣誉榜 ------------------------------------------------------
+
+    def _render_all_honors(self, data: "_HistoryData") -> None:
+        rows = tuple(
+            _AllHonorRow(
+                team_name=item.team_name,
+                seasons=item.seasons,
+                league_titles=item.league_titles,
+                winners_cup_titles=item.winners_cup_titles,
+                challenge_cup_titles=item.challenge_cup_titles,
+                super_cup_titles=item.super_cup_titles,
+                honor_points=item.honor_points,
+                total_titles=item.total_titles,
+            )
+            for item in data.all_honor_totals
+        )
+        self._all_honors_table.set_rows(rows)
+        self._show_empty_slot(
+            self._all_honors_stack,
+            self._all_honors_table,
+            self._all_honors_empty_slot,
+            "还没有球队荣誉数据（完成赛季归档后生成）",
+            len(rows),
+        )
+
+    # -- 页签 5：结算轨迹 ------------------------------------------------------
 
     def _current_filter_text(self) -> str:
         if self._settlement_filter is None:
@@ -1227,6 +1287,7 @@ class _HistoryData:
     standings_rows: Dict[str, Tuple[_StandingRow, ...]]
     top20_rows: Tuple[_Top20Row, ...]
     settlement_rows: Tuple[_SettlementRow, ...]
+    all_honor_totals: Tuple[history_queries.AllTeamHonorTotal, ...]
 
 
 class _NoArchiveError(Exception):

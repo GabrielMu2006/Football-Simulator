@@ -337,3 +337,58 @@ def _archive_champion_player(archive: dict, competition_id: str) -> Optional[bas
     if not item:
         return None
     return _canonical_ref(item.get("label") or "", item.get("position") or "")
+
+
+
+@dataclass(frozen=True)
+class AllTeamHonorTotal:
+    """球队跨所有已归档赛季的总荣誉汇总。"""
+
+    team_name: str
+    seasons: int
+    league_titles: int
+    winners_cup_titles: int
+    challenge_cup_titles: int
+    super_cup_titles: int
+    honor_points: int
+    total_titles: int
+
+
+def list_all_team_honor_totals(conn: sqlite3.Connection) -> Tuple[AllTeamHonorTotal, ...]:
+    """聚合全部已归档赛季的球队荣誉积分/冠军数，按荣誉积分倒序。"""
+    totals: Dict[str, Dict[str, int]] = {}
+    for row in conn.execute("SELECT archive_json FROM season_archives"):
+        archive = json.loads(row["archive_json"])
+        for entry in archive.get("team_stats") or []:
+            name = str(entry.get("team_name") or "")
+            if not name:
+                continue
+            agg = totals.setdefault(name, {
+                "seasons": 0,
+                "league_titles": 0,
+                "winners_cup_titles": 0,
+                "challenge_cup_titles": 0,
+                "super_cup_titles": 0,
+                "honor_points": 0,
+                "total_titles": 0,
+            })
+            agg["seasons"] += 1
+            for field, key in (
+                ("league_result", "league_titles"),
+                ("winners_cup_result", "winners_cup_titles"),
+                ("challenge_cup_result", "challenge_cup_titles"),
+                ("super_cup_result", "super_cup_titles"),
+            ):
+                value = str(entry.get(field) or "")
+                if value and "冠军" in value and "未" not in value:
+                    agg[key] += 1
+            try:
+                agg["honor_points"] += int(entry.get("honor_points") or 0)
+            except Exception:
+                pass
+            try:
+                agg["total_titles"] += int(entry.get("total_titles") or 0)
+            except Exception:
+                pass
+    result = tuple(AllTeamHonorTotal(team_name=name, **agg) for name, agg in totals.items())
+    return tuple(sorted(result, key=lambda item: (-item.honor_points, -item.total_titles, item.team_name)))
