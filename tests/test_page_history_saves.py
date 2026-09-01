@@ -276,6 +276,9 @@ def _vertical_scroll_surfaces(widget: QWidget) -> List[QWidget]:
     for child in widget.findChildren(QAbstractScrollArea):
         if not isinstance(child, _SCROLL_SURFACE_CLASSES):
             continue
+        scrollbar = child.verticalScrollBar()
+        if scrollbar is not None and scrollbar.maximum() <= 0:
+            continue  # 完整展开的表格/空内容不算滚动面
         ancestor = child.parent()
         combo_popup = False
         while ancestor is not None:
@@ -697,6 +700,8 @@ class HistoryScrollRuleTests(unittest.TestCase):
     def _assert_each_tab_single_scroll_surface(self, page: HistoryPage) -> None:
         tabs = page._tabs
         for index in range(tabs.count()):
+            tabs.setCurrentIndex(index)
+            QApplication.processEvents()
             tab_page = tabs.widget(index)
             surfaces = _vertical_scroll_surfaces(tab_page)
             self.assertEqual(

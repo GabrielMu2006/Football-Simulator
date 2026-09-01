@@ -511,6 +511,9 @@ class MatchDetailCompletedTests(_PageTestCase):
     def test_player_table_fully_expanded_without_vertical_scroll(self) -> None:
         harness, page = self._make_page()
         _show_page(page)
+        if getattr(page, "_match_tabs", None) is not None:
+            page._match_tabs.setCurrentIndex(1)  # 球员数据页签
+            QApplication.processEvents()
         table = page._player_table
         view = table.view
         expected_height = _HEADER_HEIGHT + 22 * _ROW_HEIGHT + _TABLE_BORDER
@@ -752,6 +755,10 @@ class MatchScrollAndScreenshotTests(_PageTestCase):
                         self.assertEqual(surfaces[0], self.list_page._table.view)
                     elif key == "completed_detail":
                         # 已赛详情：外层 QScrollArea 是唯一滚动面；球员表完整展开不滚动
+                        self.completed_page._match_tabs.setCurrentIndex(1)
+                        QApplication.processEvents()
+                        _show_page(page, (width, height))
+                        surfaces = _scrollable_surfaces(page)
                         self.assertEqual(len(surfaces), 1)
                         self.assertIsInstance(surfaces[0], QScrollArea)
                         player_view = self.completed_page._player_table.view

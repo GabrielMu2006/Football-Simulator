@@ -38,6 +38,7 @@ from PySide6.QtWidgets import (
     QScrollArea,
     QStackedWidget,
     QStyle,
+    QTabWidget,
     QStyledItemDelegate,
     QStyleOptionViewItem,
     QVBoxLayout,
@@ -350,10 +351,20 @@ class MatchDetailPage(EntityPageBase):
         layout.addWidget(self._build_scoreboard(match, completed))
 
         if completed:
-            layout.addWidget(
-                section_header("关键事件", "按比赛原始顺序完整列出全部关键事件，不做截断。")
-            )
-            self._build_events(layout, detail.key_events)
+            # 关键事件 / 球员数据 拆成两个页签；页签内容完整展开（表格不滚动）。
+            self._match_tabs = QTabWidget(self)
+            events_page = QWidget(self._match_tabs)
+            events_layout = QVBoxLayout(events_page)
+            events_layout.setContentsMargins(0, 0, 0, 0)
+            events_layout.setSpacing(4)
+            self._build_events(events_layout, detail.key_events)
+            events_layout.addStretch(1)
+            self._match_tabs.addTab(events_page, "关键事件")
+
+            player_page = QWidget(self._match_tabs)
+            player_layout = QVBoxLayout(player_page)
+            player_layout.setContentsMargins(0, 0, 0, 0)
+            player_layout.setSpacing(6)
             header_row = QHBoxLayout()
             header_row.addWidget(
                 section_header(
@@ -363,9 +374,12 @@ class MatchDetailPage(EntityPageBase):
                 1,
             )
             header_row.addWidget(self._make_real_only_check(), 0, Qt.AlignmentFlag.AlignBottom)
-            layout.addLayout(header_row)
+            player_layout.addLayout(header_row)
             self._player_table = self._build_player_table(self._filtered_player_lines(detail.player_lines))
-            layout.addWidget(self._player_table)
+            player_layout.addWidget(self._player_table)
+            player_layout.addStretch(1)
+            self._match_tabs.addTab(player_page, "球员数据")
+            layout.addWidget(self._match_tabs, 1)
         else:
             layout.addWidget(
                 section_header(

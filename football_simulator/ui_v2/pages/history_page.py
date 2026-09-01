@@ -454,21 +454,27 @@ class HistoryPage(EntityPageBase):
         standings_layout.addWidget(self._standings_stack, 1)
         self._tabs.addTab(standings_page, _TAB_TITLES[_TAB_STANDINGS])
 
-        # 页签 2：个人奖项（Top20 全高表 + 赛事个人奖完整网格，表格为唯一滚动面）。
-        awards_page = QWidget(self)
-        awards_layout = QVBoxLayout(awards_page)
+        # 页签 2：个人奖项（Top20 完整展开 + 三个奖项分区；整个页签一个滚动面）。
+        awards_scroll = QScrollArea(self)
+        awards_scroll.setObjectName("historyAwardsScroll")
+        awards_scroll.setWidgetResizable(True)
+        awards_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        awards_body = QWidget(awards_scroll)
+        awards_layout = QVBoxLayout(awards_body)
         awards_layout.setContentsMargins(0, 4, 0, 4)
         awards_layout.setSpacing(10)
         self._top20_table = EntityTable(_TOP20_COLUMNS, navigator=self._context.navigate, parent=self)
         self._top20_empty_slot = self._make_empty_slot()
         self._top20_stack = self._make_tab_stack(self._top20_table, self._top20_empty_slot)
-        awards_layout.addWidget(self._top20_stack, 1)
-        self._awards_grid_slot = QWidget(awards_page)
+        awards_layout.addWidget(self._top20_stack)
+        self._awards_grid_slot = QWidget(awards_body)
         self._awards_grid_layout = QVBoxLayout(self._awards_grid_slot)
         self._awards_grid_layout.setContentsMargins(0, 0, 0, 0)
         self._awards_grid_layout.setSpacing(6)
         awards_layout.addWidget(self._awards_grid_slot)
-        self._tabs.addTab(awards_page, _TAB_TITLES[_TAB_AWARDS])
+        awards_layout.addStretch(1)
+        awards_scroll.setWidget(awards_body)
+        self._tabs.addTab(awards_scroll, _TAB_TITLES[_TAB_AWARDS])
 
         # 页签 3：球队荣誉（全高 EntityTable）。
         self._honor_table = EntityTable(_HONOR_COLUMNS, navigator=self._context.navigate, parent=self)
@@ -971,6 +977,10 @@ class HistoryPage(EntityPageBase):
             rows,
             route_for_row=lambda row: self._player_route(row.player_id),
         )
+        # 完整展开：固定高度 = 表头 + 20 行 × 行高 + 边框，表格自身不滚动。
+        header_h = self._top20_table.view.horizontalHeader().sizeHint().height()
+        row_h = self._top20_table.view.verticalHeader().defaultSectionSize()
+        self._top20_table.setFixedHeight(header_h + len(rows) * row_h + 2)
         self._show_empty_slot(
             self._top20_stack,
             self._top20_table,
