@@ -624,6 +624,12 @@ class HistoryPage(EntityPageBase):
                     """
                 )
             )
+            all_seasons = tuple(
+                int(row[0])
+                for row in conn.execute(
+                    "SELECT season_number FROM seasons ORDER BY season_number"
+                )
+            )
             if not archived:
                 raise _NoArchiveError()
             if season_param is None:
@@ -718,6 +724,7 @@ class HistoryPage(EntityPageBase):
             return _HistoryData(
                 season_number=season,
                 archived_seasons=archived,
+                all_seasons=all_seasons,
                 detail=detail,
                 team_ids=team_ids,
                 standings_rows=standings_rows,
@@ -746,12 +753,14 @@ class HistoryPage(EntityPageBase):
             if widget is not None:
                 widget.deleteLater()
         self._season_buttons = {}
-        if not data.archived_seasons:
-            empty_hint = QLabel("暂无已归档赛季（赛季结束后才会归档到此页）")
+        if not data.all_seasons:
+            empty_hint = QLabel("还没有任何赛季")
             empty_hint.setStyleSheet(_MUTED_STYLE)
             layout.addWidget(empty_hint)
-        for season_number in data.archived_seasons:
-            button = QPushButton(f"第 {season_number} 赛季")
+        archived_set = set(data.archived_seasons)
+        for season_number in data.all_seasons:
+            suffix = "（已归档）" if season_number in archived_set else ""
+            button = QPushButton(f"第 {season_number} 赛季{suffix}")
             button.setObjectName("historySeasonButton")
             button.setCheckable(True)
             button.setChecked(season_number == data.season_number)
@@ -1167,6 +1176,7 @@ class HistoryPage(EntityPageBase):
 class _HistoryData:
     season_number: int
     archived_seasons: Tuple[int, ...]
+    all_seasons: Tuple[int, ...]
     detail: history_queries.SeasonArchiveDetail
     team_ids: Dict[str, int]
     standings_rows: Dict[str, Tuple[_StandingRow, ...]]

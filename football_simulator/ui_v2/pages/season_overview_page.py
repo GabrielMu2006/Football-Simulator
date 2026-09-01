@@ -90,6 +90,16 @@ _WEEK_KIND_COLORS = {
 }
 _PLAYED_COLOR = WEEK_PLAYED_BG
 _CURRENT_COLOR = WEEK_CURRENT_BG
+# 周格清晰配色（与图例一致，保证色块在深色背景可见）。
+_BRIGHT_WEEK_COLORS = {
+    "league_week": "#3b6ea5",
+    "cup_week": "#7a5fc0",
+    "winter_break": "#3a7d4e",
+    "summer_break": "#a06a2c",
+    "promotion_playoff": "#b08a2e",
+}
+_BRIGHT_PLAYED_COLOR = "#2e6db4"
+_BRIGHT_CURRENT_COLOR = "#1167d8"
 _TIMELINE_COLUMNS = 13
 
 _REVIEW_HEADERS = ("球员", "位置", "当前能力", "新能力", "变化", "决定")
@@ -625,16 +635,18 @@ class SeasonOverviewPage(EntityPageBase):
             if data.is_current and week_number == min(max(current_week, 1), TOTAL_WEEKS) and current_week > 0:
                 text += "（当前）"
             link = EntityLink(text, Route("weekly_report", week=week_number), navigate)
-            color = _WEEK_KIND_COLORS.get(_WEEK_CALENDAR[offset].kind)
+            kind = _WEEK_CALENDAR[offset].kind
+            color = _BRIGHT_WEEK_COLORS.get(kind)
             if data.is_current and current_week > 0 and week_number == min(max(current_week, 1), TOTAL_WEEKS):
-                background = _CURRENT_COLOR
+                background = _BRIGHT_CURRENT_COLOR
             elif week_number in played:
-                background = _PLAYED_COLOR
+                background = _BRIGHT_PLAYED_COLOR
             else:
                 background = color or "transparent"
             link.setStyleSheet(
                 link.styleSheet()
-                + f"background: {background}; border-radius: 6px; padding: 2px 6px; font-weight: 700;"
+                + f"background: {background}; border: 1px solid rgba(255, 255, 255, 0.14);"
+                " border-radius: 6px; padding: 3px 8px; font-weight: 700;"
             )
             self._week_links[week_number] = link
             grid.addWidget(link, row, column)

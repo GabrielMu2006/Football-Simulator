@@ -577,14 +577,14 @@ class SeasonOverviewPageTests(unittest.TestCase):
         self.assertIn("（当前）", page._week_links[current_week].text())
         for week_number in played - {current_week}:
             self.assertIn(
-                "#18355a",
+                "#2e6db4",
                 page._week_links[week_number].styleSheet(),
                 f"已赛周 W{week_number} 应高亮",
             )
-        self.assertIn("#1d4f8f", page._week_links[current_week].styleSheet(), "当前周应有标记色")
-        self.assertIn("#26381f", page._week_links[25].styleSheet(), "冬窗周应着色")
-        self.assertIn("#342a1d", page._week_links[50].styleSheet(), "夏窗周应着色")
-        self.assertIn("#3a3217", page._week_links[46].styleSheet(), "附加赛周应着色")
+        self.assertIn("#1167d8", page._week_links[current_week].styleSheet(), "当前周应有标记色")
+        self.assertIn("#3a7d4e", page._week_links[25].styleSheet(), "冬窗周应着色")
+        self.assertIn("#a06a2c", page._week_links[50].styleSheet(), "夏窗周应着色")
+        self.assertIn("#b08a2e", page._week_links[46].styleSheet(), "附加赛周应着色")
 
     def test_status_text_in_progress(self) -> None:
         harness, page = _make_season(1)

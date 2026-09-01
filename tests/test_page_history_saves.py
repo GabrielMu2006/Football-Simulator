@@ -314,9 +314,11 @@ class HistorySelectorTests(unittest.TestCase):
         # 无参 → 最新已归档赛季（第 1 赛季；第 2 赛季进行中、无归档，不得出现）。
         self.assertEqual(page._season, 1)
         buttons = page._season_buttons
-        self.assertEqual(len(buttons), 1)
+        self.assertEqual(len(buttons), 2)  # 第 1 赛季已归档 + 第 2 赛季（进行中）
         self.assertIn("第 1 赛季", buttons[1].text())
+        self.assertIn("已归档", buttons[1].text())
         self.assertTrue(buttons[1].isChecked())
+        self.assertNotIn("已归档", buttons[2].text())
 
     def test_season_selector_navigates_to_new_route(self) -> None:
         harness, page = _make_history(SAVE_D, apply_to_pages=True)
