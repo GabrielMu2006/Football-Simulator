@@ -238,8 +238,8 @@ class EntityTable(QWidget):
         # 统一行高：让队徽（22–40px 图片）有足够行内空间完整显示。
         self._view.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
         self._view.verticalHeader().setDefaultSectionSize(50)
-        # 最小 32：允许转会/选秀等紧凑表覆盖为 32px 行高，不被钳制出内部滚动。
-        self._view.verticalHeader().setMinimumSectionSize(32)
+        # 最小 24：允许比赛详情等紧凑表覆盖为 24px 行高，不被钳制出内部滚动。
+        self._view.verticalHeader().setMinimumSectionSize(24)
         self._view.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
         self._view.setSelectionMode(QTableView.SelectionMode.SingleSelection)
         self._view.setEditTriggers(QTableView.EditTrigger.NoEditTriggers)

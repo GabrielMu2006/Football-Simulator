@@ -754,13 +754,14 @@ class MatchScrollAndScreenshotTests(_PageTestCase):
                         self.assertIsInstance(surfaces[0], QTableView)
                         self.assertEqual(surfaces[0], self.list_page._table.view)
                     elif key == "completed_detail":
-                        # 已赛详情：外层 QScrollArea 是唯一滚动面；球员表完整展开不滚动
+                        # 已赛详情：内容较矮时可无滚动面；有则只能是外层 QScrollArea
                         self.completed_page._match_tabs.setCurrentIndex(1)
                         QApplication.processEvents()
                         _show_page(page, (width, height))
                         surfaces = _scrollable_surfaces(page)
-                        self.assertEqual(len(surfaces), 1)
-                        self.assertIsInstance(surfaces[0], QScrollArea)
+                        self.assertLessEqual(len(surfaces), 1)
+                        if surfaces:
+                            self.assertIsInstance(surfaces[0], QScrollArea)
                         player_view = self.completed_page._player_table.view
                         self.assertEqual(player_view.verticalScrollBar().maximum(), 0)
                     else:  # scheduled_detail：内容较短时允许 0 个滚动面，但不得出现第二个

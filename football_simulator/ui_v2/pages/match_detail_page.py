@@ -64,20 +64,20 @@ from football_simulator.ui_v2.navigation import Route
 from football_simulator.ui_v2.pages.entity_page_base import EntityPageBase, PageContext
 from football_simulator.ui_v2.widgets import section_header
 
-_ROW_HEIGHT = 32
-_HEADER_HEIGHT = 36
+_ROW_HEIGHT = 24
+_HEADER_HEIGHT = 34
 _TABLE_BORDER = 2  # EntityTable 样式表上下各 1px 边框
 
 _PLAYER_COLUMNS = (
-    ColumnSpec("player_name", "球员", width=210),
-    ColumnSpec("team_name", "球队", width=180),
-    ColumnSpec("appeared", "出场", alignment=Qt.AlignmentFlag.AlignRight),
-    ColumnSpec("goals", "进球", alignment=Qt.AlignmentFlag.AlignRight),
-    ColumnSpec("assists", "助攻", alignment=Qt.AlignmentFlag.AlignRight),
-    ColumnSpec("chances_created", "创造机会", alignment=Qt.AlignmentFlag.AlignRight),
-    ColumnSpec("successful_defenses", "成功防守", alignment=Qt.AlignmentFlag.AlignRight),
-    ColumnSpec("successful_saves", "成功扑救", alignment=Qt.AlignmentFlag.AlignRight),
-    ColumnSpec("clean_sheets", "零封", alignment=Qt.AlignmentFlag.AlignRight),
+    ColumnSpec("player_name", "球员", width=150),
+    ColumnSpec("team_name", "球队", width=130, stretch=True),
+    ColumnSpec("appeared", "出场", width=48, alignment=Qt.AlignmentFlag.AlignRight),
+    ColumnSpec("goals", "进球", width=48, alignment=Qt.AlignmentFlag.AlignRight),
+    ColumnSpec("assists", "助攻", width=48, alignment=Qt.AlignmentFlag.AlignRight),
+    ColumnSpec("chances_created", "创造机会", width=82, alignment=Qt.AlignmentFlag.AlignRight),
+    ColumnSpec("successful_defenses", "成功防守", width=82, alignment=Qt.AlignmentFlag.AlignRight),
+    ColumnSpec("successful_saves", "成功扑救", width=82, alignment=Qt.AlignmentFlag.AlignRight),
+    ColumnSpec("clean_sheets", "零封", width=48, alignment=Qt.AlignmentFlag.AlignRight),
 )
 
 _MUTED_STYLE = f"color: {TEXT_COLOR_MUTED}; background: transparent;"
@@ -218,6 +218,7 @@ class MatchDetailPage(EntityPageBase):
         self._scroll.setObjectName("matchDetailScroll")
         self._scroll.setWidgetResizable(True)
         self._scroll.setFrameShape(QFrame.Shape.NoFrame)
+        self._scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self._page_stack.addWidget(self._scroll)
 
         self._error_state = EmptyState(
@@ -421,7 +422,7 @@ class MatchDetailPage(EntityPageBase):
         home_box.setContentsMargins(0, 0, 0, 0)
         home_box.setSpacing(2)
         home_box.addWidget(home_caption)
-        home_box.addWidget(TeamCrest(match.home.display_name, size=64))
+        home_box.addWidget(TeamCrest(match.home.display_name, size=48))
         home_box.addWidget(home_link)
         home_holder = QWidget()
         home_holder.setLayout(home_box)
@@ -466,7 +467,7 @@ class MatchDetailPage(EntityPageBase):
         away_box.setContentsMargins(0, 0, 0, 0)
         away_box.setSpacing(2)
         away_box.addWidget(away_caption)
-        away_box.addWidget(TeamCrest(match.away.display_name, size=64))
+        away_box.addWidget(TeamCrest(match.away.display_name, size=48))
         away_box.addWidget(away_link)
         away_holder = QWidget()
         away_holder.setLayout(away_box)
@@ -542,6 +543,7 @@ class MatchDetailPage(EntityPageBase):
         rows = [_to_player_row(line) for line in lines]
         table = EntityTable(_PLAYER_COLUMNS, navigator=self._context.navigate, parent=self)
         view = table.view
+        view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         view.verticalHeader().setDefaultSectionSize(_ROW_HEIGHT)
         view.horizontalHeader().setFixedHeight(_HEADER_HEIGHT)
         # 完整展开：固定高度 = 表头 + 全部行 + 边框；纵向滚动条策略关闭，
