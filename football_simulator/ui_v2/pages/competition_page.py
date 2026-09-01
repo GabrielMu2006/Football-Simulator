@@ -954,7 +954,7 @@ class CompetitionPage(EntityPageBase):
             layout.addLayout(grid)
 
         for round_block in profile.knockout_rounds:
-            layout.addWidget(section_header(round_block.stage, "淘汰赛对局（→ 晋级方）"))
+            layout.addWidget(section_header(round_block.stage, "淘汰赛对局（→ 晋级方；括号为两回合总比分，A=客场进球优势，P=点球大战）"))
             grid = QGridLayout()
             grid.setHorizontalSpacing(10)
             grid.setVerticalSpacing(4)
@@ -967,6 +967,10 @@ class CompetitionPage(EntityPageBase):
                 score = "—"
                 if pair.home_goals is not None and pair.away_goals is not None:
                     score = f"{pair.home_goals} - {pair.away_goals}"
+                    if pair.aggregate_goals is not None:
+                        score += f" ({pair.aggregate_goals[0]}-{pair.aggregate_goals[1]})"
+                    if pair.decision:
+                        score += f" {pair.decision}"
                 cells = (pair.home, score, pair.away, pair.advancing or "待定")
                 for column, text in enumerate(cells):
                     label = QLabel(text)

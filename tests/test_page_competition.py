@@ -449,7 +449,7 @@ class CupStageTests(unittest.TestCase):
         self.assertEqual(len(surfaces), 1)
         texts = _label_texts(page._stage_container)
         self.assertIn("A 组", texts)
-        self.assertIn("淘汰赛对局（→ 晋级方）", texts)
+        self.assertIn("淘汰赛对局（→ 晋级方；括号为两回合总比分，A=客场进球优势，P=点球大战）", texts)
 
         # 决赛晋级方 == 冠军，且冠军名出现在页签内容里。
         final_round = next(
@@ -507,13 +507,28 @@ class CupStageTests(unittest.TestCase):
         self.assertEqual(len(final.pairs), 1)
         self.assertEqual(final.pairs[0].advancing, profile.champion)
 
+        # 两回合展示规则：首回合不写晋级方；次回合显示晋级方 + 总比分（+ 判定 A/P）。
+        qf_leg1 = next(round_block for round_block in profile.knockout_rounds if round_block.stage == "四分之一决赛（首回合）")
+        qf_leg2 = next(round_block for round_block in profile.knockout_rounds if round_block.stage == "四分之一决赛（次回合）")
+        final_leg1 = next(round_block for round_block in profile.knockout_rounds if round_block.stage == "决赛（首回合）")
+        self.assertTrue(all(pair.advancing is None for pair in qf_leg1.pairs))
+        self.assertTrue(all(pair.advancing is None for pair in final_leg1.pairs))
+        self.assertEqual(len(qf_leg1.pairs), 4)
+        self.assertEqual(len(qf_leg2.pairs), 4)
+        self.assertTrue(all(pair.advancing for pair in qf_leg2.pairs))
+        self.assertTrue(all(pair.aggregate_goals is not None for pair in qf_leg2.pairs))
+        for pair in qf_leg2.pairs:
+            if pair.decision is not None:
+                self.assertIn(pair.decision, {"A", "P"})
+        self.assertIsNotNone(final.pairs[0].aggregate_goals)
+
         # 页签内容：小组表 + 淘汰树渲染在签表表格上方。
         page._tabs.setCurrentIndex(1)
         _show_page(page)
         texts = _label_texts(page._stage_container)
         self.assertIn("A 组", texts)
         self.assertIn("小组积分表（按积分、净胜球、进球排序）", texts)
-        self.assertIn("淘汰赛对局（→ 晋级方）", texts)
+        self.assertIn("淘汰赛对局（→ 晋级方；括号为两回合总比分，A=客场进球优势，P=点球大战）", texts)
         page.hide()
 
     def test_playoff_stage_tab_shows_matches_and_champion_bar(self) -> None:

@@ -144,6 +144,7 @@ class CupStageRow:
     """杯赛单场比赛行（含该淘汰赛段的晋级方）。"""
 
     round_number: int
+    ordinal: int
     match: base.MatchRef
     match_winner: Optional[base.TeamRef]  # 单场比分胜者；平局为 None
     advancing: Optional[base.TeamRef]  # 晋级/夺冠方；小组赛或未决出为 None
@@ -174,14 +175,16 @@ class CupGroupTable:
 
 @dataclass(frozen=True)
 class KnockoutPair:
-    """淘汰赛一轮中的一场对局（含晋级方）。"""
+    """淘汰赛一轮中的一场对局（含晋级方与两回合信息）。"""
 
     label: str
     home: str
     away: str
     home_goals: Optional[int]
     away_goals: Optional[int]
-    advancing: Optional[str]
+    aggregate_goals: Optional[Tuple[int, int]] = None  # 两回合次回合的总比分（按本行主/客队方向）
+    decision: Optional[str] = None  # "A"=客场进球优势；"P"=点球大战
+    advancing: Optional[str] = None
 
 
 @dataclass(frozen=True)
@@ -648,7 +651,7 @@ def _cup_stage_rows(
             match,
             refs_by_name,
         )
-        rows.append(CupStageRow(round_number=round_number, match=match, match_winner=match_winner, advancing=advancing))
+        rows.append(CupStageRow(round_number=round_number, ordinal=int(row["ordinal"]), match=match, match_winner=match_winner, advancing=advancing))
     # 契约要求：按 round_number + match_id 确定性排序。
     rows.sort(key=lambda item: (item.round_number, item.match.match_id))
     return tuple(rows)
@@ -672,6 +675,10 @@ _KNOCKOUT_STAGE_LABELS: Dict[str, Dict[int, str]] = {
     },
     base.COMPETITION_SUPER_CUP: {1: "半决赛", 2: "决赛"},
 }
+
+# 优胜者杯两回合淘汰赛：leg_1/leg_2 的轮次号（QF=7/8、SF=9/10、F=11/12）。
+_WINNERS_LEG1_ROUNDS = frozenset({7, 9, 11})
+_WINNERS_LEG2_ROUNDS = frozenset({8, 10, 12})
 
 
 def _cup_group_tables(
@@ -749,19 +756,64 @@ def _knockout_rounds(
     competition: str,
     stage_rows: Tuple[CupStageRow, ...],
 ) -> Tuple[KnockoutRound, ...]:
-    """淘汰赛轮次（按轮次标签分组，含晋级方）。"""
+    """淘汰赛轮次（按轮次标签分组，含晋级方）。
+
+    两回合规则：首回合不写晋级方（首回合后尚未决出）；次回合显示总比分
+    括号（按本行主/客队方向），并按引擎规则标注 "A"（客场进球优势）或
+    "P"（点球大战）。单场淘汰赛平局则由点球大战决出（标 "P"）。
+    """
     labels = _KNOCKOUT_STAGE_LABELS.get(competition, {})
     grouped: Dict[str, List[KnockoutPair]] = {}
+    leg1_by_round: Dict[int, Dict[int, CupStageRow]] = {}
+    if competition == base.COMPETITION_WINNERS_CUP:
+        for item in stage_rows:
+            if item.round_number in _WINNERS_LEG1_ROUNDS:
+                leg1_by_round.setdefault(item.round_number, {})[item.ordinal] = item
     for item in stage_rows:
         label = labels.get(item.round_number)
         if label is None:
             continue
+        aggregate_goals = None
+        decision = None
+        if (
+            competition == base.COMPETITION_WINNERS_CUP
+            and item.round_number in _WINNERS_LEG2_ROUNDS
+            and item.match.home_goals is not None
+            and item.match.away_goals is not None
+        ):
+            leg1_item = leg1_by_round.get(item.round_number - 1, {}).get(item.ordinal)
+            if leg1_item is not None and leg1_item.match.home_goals is not None and leg1_item.match.away_goals is not None:
+                h1 = int(leg1_item.match.home_goals)
+                a1 = int(leg1_item.match.away_goals)
+                h2 = int(item.match.home_goals)
+                a2 = int(item.match.away_goals)
+                # 次回合主队 = 首回合客队；次回合客队 = 首回合主队。
+                agg_home = a1 + h2
+                agg_away = h1 + a2
+                aggregate_goals = (agg_home, agg_away)
+                if agg_home == agg_away:
+                    # 客场进球：次回合主队在首回合客场的进球 a1；
+                    # 次回合客队在次回合客场的进球 a2。
+                    if a1 != a2:
+                        decision = "A"
+                    else:
+                        decision = "P"
+        elif (
+            item.match.home_goals is not None
+            and item.match.away_goals is not None
+            and int(item.match.home_goals) == int(item.match.away_goals)
+            and item.advancing is not None
+        ):
+            # 单场淘汰赛：常规时间平局 → 点球大战决出晋级方。
+            decision = "P"
         pair = KnockoutPair(
             label=label,
             home=item.match.home.display_name,
             away=item.match.away.display_name,
             home_goals=item.match.home_goals,
             away_goals=item.match.away_goals,
+            aggregate_goals=aggregate_goals,
+            decision=decision,
             advancing=item.advancing.display_name if item.advancing else None,
         )
         grouped.setdefault(label, []).append(pair)
@@ -799,6 +851,9 @@ def _advancing_team(
         return None
     if competition == base.COMPETITION_WINNERS_CUP:
         if event_key.startswith("winners_cup_group_"):
+            return None
+        # 首回合结束后尚不能判定晋级方：只在次回合展示。
+        if event_key.endswith("_leg_1"):
             return None
         leg1_key = event_key[:-len("_leg_2")] + "_leg_1" if event_key.endswith("_leg_2") else event_key
         pairs = knockout_pairs.get(leg1_key) or []
