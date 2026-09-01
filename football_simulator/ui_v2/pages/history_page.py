@@ -566,6 +566,8 @@ class HistoryPage(EntityPageBase):
                 "当前存档还没有完成过任何完整赛季。",
                 "完成一个完整赛季后，这里会显示该赛季的冠军、最终排名、奖项与球队荣誉。",
             )
+            all_seasons, archived, _ = self._season_strip_data()
+            self._render_season_strip(all_seasons, archived, None)
             return
         except _SeasonNotArchivedError as exc:
             self._show_empty(
@@ -573,6 +575,8 @@ class HistoryPage(EntityPageBase):
                 "该赛季尚未完成归档，历史与荣誉只展示已归档（已完成）赛季。",
                 "请使用赛季选择器切换到已归档的赛季。",
             )
+            all_seasons, archived, _ = self._season_strip_data()
+            self._render_season_strip(all_seasons, archived, exc.season_number)
             return
         except Exception as exc:  # 查询层异常统一进空状态
             self._show_empty("暂时无法加载历史数据", str(exc), None)
@@ -743,7 +747,36 @@ class HistoryPage(EntityPageBase):
         self._render_honors()
         self._render_settlement(self._filter_settlement_rows(self._current_filter_text()))
 
-    def _render_season_selector(self, data: "_HistoryData") -> None:
+    def _season_strip_data(self) -> Tuple[Tuple[int, ...], set, Optional[int]]:
+        all_seasons: Tuple[int, ...] = ()
+        archived: set = set()
+        try:
+            with base.open_read_connection(self.save_name()) as conn:
+                all_seasons = tuple(
+                    int(row[0])
+                    for row in conn.execute(
+                        "SELECT season_number FROM seasons ORDER BY season_number"
+                    )
+                )
+                archived = {
+                    int(row[0])
+                    for row in conn.execute(
+                        """
+                        SELECT s.season_number FROM season_archives AS sa
+                        JOIN seasons AS s ON s.season_id = sa.season_id
+                        """
+                    )
+                }
+        except Exception:
+            pass
+        return all_seasons, archived, self._season
+
+    def _render_season_strip(
+        self,
+        all_seasons: Tuple[int, ...],
+        archived_set: set,
+        selected: Optional[int],
+    ) -> None:
         layout = getattr(self, "_season_strip_layout", None)
         if layout is None:
             return
@@ -753,23 +786,25 @@ class HistoryPage(EntityPageBase):
             if widget is not None:
                 widget.deleteLater()
         self._season_buttons = {}
-        if not data.all_seasons:
+        if not all_seasons:
             empty_hint = QLabel("还没有任何赛季")
             empty_hint.setStyleSheet(_MUTED_STYLE)
             layout.addWidget(empty_hint)
-        archived_set = set(data.archived_seasons)
-        for season_number in data.all_seasons:
+        for season_number in all_seasons:
             suffix = "（已归档）" if season_number in archived_set else ""
             button = QPushButton(f"第 {season_number} 赛季{suffix}")
             button.setObjectName("historySeasonButton")
             button.setCheckable(True)
-            button.setChecked(season_number == data.season_number)
+            button.setChecked(season_number == selected)
             button.setCursor(Qt.CursorShape.PointingHandCursor)
             button.setStyleSheet(_SEASON_BUTTON_STYLE)
             button.clicked.connect(lambda _=False, s=season_number: self._navigate_season(s))
             layout.addWidget(button)
             self._season_buttons[season_number] = button
         layout.addStretch(1)
+
+    def _render_season_selector(self, data: "_HistoryData") -> None:
+        self._render_season_strip(data.all_seasons, set(data.archived_seasons), data.season_number)
 
     # -- 页签 0：赛季总览 ------------------------------------------------------
 

@@ -644,9 +644,9 @@ class SeasonOverviewPage(EntityPageBase):
             else:
                 background = color or "transparent"
             link.setStyleSheet(
-                link.styleSheet()
-                + f"background: {background}; border: 1px solid rgba(255, 255, 255, 0.14);"
-                " border-radius: 6px; padding: 3px 8px; font-weight: 700;"
+                f"QLabel#entityLink {{ color: #7dd3fc; background: {background};"
+                " border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 6px;"
+                " padding: 3px 8px; font-weight: 700; }"
             )
             self._week_links[week_number] = link
             grid.addWidget(link, row, column)
