@@ -3,10 +3,13 @@
 一个本地运行的足球联赛模拟游戏：创建存档、初始化球队与球员，按周推进赛季，
 在路由式数据工作台中查看联赛、杯赛、转会、选秀、荣誉和球员历史。
 
-**当前版本：v1.0.1**（修复 macOS Tahoe 全屏下存档操作触发 Space 滑动并退回桌面的问题）
+**当前版本：v1.0.2**（两回合淘汰赛展示规则：首回合不预写晋级方；次回合显示两回合总比分，客场进球优势标 A，点球大战标 P）
 
 版本历史：
 
+- v1.0.2 — 两回合淘汰赛（优胜者杯）展示优化：首回合不再预写晋级方；次回合比分追加
+  两回合总比分括号，并按引擎规则标注 A（客场进球优势）/ P（点球大战）；单场淘汰赛
+  点球大战同样标 P；发布 DMG 与 Windows zip。
 - v1.0.1 — 修复 macOS Tahoe（26.x）全屏下"新建/打开/初始化/移入回收站"存档操作时
   反复滑动并退回桌面；存档列表/回收站重建不再产生临时顶层窗口。
 - v1.0.0 — 首个正式版：40 队双级联赛、250 名真实球员池、V2 队标、首次启动教程、大图标侧栏与实心大箭头。
@@ -18,7 +21,7 @@
 从 GitHub Release 下载并安装：
 
 ```text
-https://github.com/GabrielMu2006/Football-Simulator/releases/tag/v1.0.1
+https://github.com/GabrielMu2006/Football-Simulator/releases/tag/v1.0.2
 ```
 
 1. 下载 `Football.Simulator.UI.v2.dmg`；
@@ -62,6 +65,8 @@ python3 -m venv .venv-ui-v2
 - 顶栏：实心大箭头 后退 / 前进、面包屑、全局搜索、存档切换、赛季与周次、处理待办、
   模拟下一周 / 推进 ▾（到下一待办 / 到赛季末）、本周战报、刷新、**教程**；
 - 球员 / 球队 / 比赛 / 赛事全站互联；列表页为全高主表，支持筛选与列排序；
+- 「赛事」杯赛页签：小组积分表 + 淘汰树；两回合淘汰赛首回合不写晋级方，次回合显示
+  两回合总比分并标注 A（客场进球优势）/ P（点球大战）；
 - 队徽：40 支球队使用 `team_badges_40_v2/PNG` 图片队标（V2：无外框、核心图案更大）。
 
 ### 快捷键
@@ -155,10 +160,10 @@ release/windows/                   Windows 发布产物与说明（本地）
 git add football_simulator tests assets scripts README.md \
     "Football Simulator UI v2.spec" "Football Simulator UI v2 Windows.spec" \
     build_macos_ui_v2_app.sh build_windows_ui_v2.bat release/README.md
-git commit -m "release: v1.0.1"
+git commit -m "release: v1.0.2"
 git push origin main
 
-gh release create v1.0.1 \
+gh release create v1.0.2 \
     "release/macos/Football Simulator UI v2.dmg" \
     "release/windows/Football-Simulator-UI-v2-Windows.zip"
 ```
