@@ -514,9 +514,15 @@ class CompetitionPage(EntityPageBase):
         self._matches_stack = self._make_tab_stack(self._matches_table, self._matches_empty_slot)
         self._tabs.addTab(self._matches_stack, _TAB_TITLES[_TAB_MATCHES])
 
-        self._leader_table = EntityTable(_LEADER_COLUMNS, navigator=self._context.navigate, parent=self)
+        self._leader_tabs = QTabWidget(self)
+        self._leader_scorers_table = EntityTable(_LEADER_COLUMNS, navigator=self._context.navigate, parent=self._leader_tabs)
+        self._leader_assisters_table = EntityTable(_LEADER_COLUMNS, navigator=self._context.navigate, parent=self._leader_tabs)
+        self._leader_rated_table = EntityTable(_LEADER_COLUMNS, navigator=self._context.navigate, parent=self._leader_tabs)
+        self._leader_tabs.addTab(self._leader_scorers_table, "射手榜")
+        self._leader_tabs.addTab(self._leader_assisters_table, "助攻榜")
+        self._leader_tabs.addTab(self._leader_rated_table, "评分榜")
         self._leader_empty_slot = self._make_empty_slot()
-        self._leader_stack = self._make_tab_stack(self._leader_table, self._leader_empty_slot)
+        self._leader_stack = self._make_tab_stack(self._leader_tabs, self._leader_empty_slot)
         # “只显示真实球员”复选框（切换 → refresh → 重新拉取榜单，过滤发生在
         # 截取前 N 名之前，排名不失真）。复选框行不是滚动面（§8.2 不受影响）。
         leader_panel = QWidget(self)
@@ -546,9 +552,14 @@ class CompetitionPage(EntityPageBase):
         self._install_table_delegates(
             self._matches_table, _MATCH_COLUMNS, self._match_team_routes()
         )
-        self._install_table_delegates(
-            self._leader_table, _LEADER_COLUMNS, (("player_name", self._leader_player_route),)
-        )
+        for leader_table in (
+            self._leader_scorers_table,
+            self._leader_assisters_table,
+            self._leader_rated_table,
+        ):
+            self._install_table_delegates(
+                leader_table, _LEADER_COLUMNS, (("player_name", self._leader_player_route),)
+            )
         self._install_table_delegates(
             self._awards_table, _AWARD_COLUMNS, (("player_name", self._award_player_route),)
         )
@@ -1075,8 +1086,14 @@ class CompetitionPage(EntityPageBase):
                 lambda e: e.goals + e.assists,
             ),
         )
-        rows: List[_LeaderRow] = []
-        for board_name, entries, stat_text, stat_value in boards:
+        tables = (
+            self._leader_scorers_table,
+            self._leader_assisters_table,
+            self._leader_rated_table,
+        )
+        total_rows = 0
+        for (board_name, entries, stat_text, stat_value), table in zip(boards, tables):
+            rows: List[_LeaderRow] = []
             for index, entry in enumerate(entries, start=1):
                 rows.append(
                     _LeaderRow(
@@ -1091,9 +1108,10 @@ class CompetitionPage(EntityPageBase):
                         rating=None if entry.rating is None else _FormattedNumber(entry.rating),
                     )
                 )
-        if rows:
-            self._leader_table.set_rows(rows, route_for_row=self._leader_player_route)
-            self._leader_stack.setCurrentWidget(self._leader_table)
+            table.set_rows(rows, route_for_row=self._leader_player_route)
+            total_rows += len(rows)
+        if total_rows:
+            self._leader_stack.setCurrentWidget(self._leader_tabs)
         else:
             self._show_tab_empty(
                 self._leader_stack,

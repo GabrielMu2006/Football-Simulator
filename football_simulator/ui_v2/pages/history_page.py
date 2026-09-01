@@ -381,7 +381,6 @@ class HistoryPage(EntityPageBase):
         root.setSpacing(12)
 
         self._stack = QStackedWidget(self)
-        root.addWidget(self._stack, 1)
 
         # 页头与赛季选择条放在 stack 之外：即使没有已归档赛季（空状态）也可见。
         self._page_header = PageHeader(
@@ -403,8 +402,12 @@ class HistoryPage(EntityPageBase):
         self._season_strip_layout = QHBoxLayout(strip_content)
         self._season_strip_layout.setContentsMargins(0, 4, 0, 4)
         self._season_strip_layout.setSpacing(8)
+        self._season_strip_placeholder = QLabel("暂无已归档赛季（赛季结束后归档到此页）")
+        self._season_strip_placeholder.setStyleSheet(_MUTED_STYLE)
+        self._season_strip_layout.addWidget(self._season_strip_placeholder)
         season_strip.setWidget(strip_content)
         root.addWidget(season_strip, 0)
+        root.addWidget(self._stack, 1)
 
         self._content = QWidget(self)
         content_layout = QVBoxLayout(self._content)

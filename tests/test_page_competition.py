@@ -45,6 +45,7 @@ try:
         QPlainTextEdit,
         QScrollArea,
         QTableView,
+        QTabWidget,
         QTableWidget,
         QTextEdit,
         QTreeView,
@@ -529,15 +530,15 @@ class LeaderboardTests(unittest.TestCase):
     def test_leaderboard_top_scorer_matches_player_queries(self) -> None:
         harness, page, route = _make_page(_LEAGUE, 1)
         page._tabs.setCurrentIndex(3)
-        table = page._leader_table
+        table = page._leader_scorers_table
         self.assertIsNotNone(table)
         assert table is not None
         rows = [table.model.row_at(i) for i in range(table.model.rowCount())]
         self.assertTrue(rows)
-        self.assertEqual({row.board for row in rows}, {"射手榜", "助攻榜", "评分榜"})
+        self.assertEqual({row.board for row in rows}, {"射手榜"})
         self.assertTrue(all(row.team_name for row in rows), "榜单行应显示球员所属球队")
 
-        scorers = [row for row in rows if row.board == "射手榜"]
+        scorers = rows
         self.assertEqual(scorers[0].rank, 1)
         top = scorers[0]
 
@@ -576,7 +577,18 @@ class LeaderboardTests(unittest.TestCase):
         checker = page._make_leader_real_check()
         checker.setChecked(True)
 
-        rows = [page._leader_table.model.row_at(i) for i in range(page._leader_table.model.rowCount())]
+        def _all_rows() -> list:
+            return [
+                row
+                for table in (
+                    page._leader_scorers_table,
+                    page._leader_assisters_table,
+                    page._leader_rated_table,
+                )
+                for row in (table.model.row_at(i) for i in range(table.model.rowCount()))
+            ]
+
+        rows = _all_rows()
         self.assertTrue(rows)
         with base.open_read_connection(SAVE_NAME) as conn:
             real_profile = competition_queries.get_competition_profile(
@@ -596,7 +608,7 @@ class LeaderboardTests(unittest.TestCase):
 
         # 取消勾选：榜单恢复为全部球员（含默认球员）的口径。
         checker.setChecked(False)
-        rows_all = [page._leader_table.model.row_at(i) for i in range(page._leader_table.model.rowCount())]
+        rows_all = _all_rows()
         with base.open_read_connection(SAVE_NAME) as conn:
             profile = competition_queries.get_competition_profile(conn, _LEAGUE, 1)
         self.assertEqual(
@@ -733,6 +745,20 @@ class ScrollRuleTests(unittest.TestCase):
         tabs = page._tabs
         for index in range(tabs.count()):
             tab_page = tabs.widget(index)
+            sub_tabs = tab_page.findChildren(QTabWidget)
+            if sub_tabs:
+                # 球员榜拆分为三个子页签：每个子页签恰有一个滚动面。
+                sub = sub_tabs[0]
+                for sub_index in range(sub.count()):
+                    sub.setCurrentIndex(sub_index)
+                    QApplication.processEvents()
+                    surfaces = _vertical_scroll_surfaces(sub.widget(sub_index))
+                    self.assertEqual(
+                        len(surfaces),
+                        1,
+                        f"子页签「{sub.tabText(sub_index)}」应恰有一个纵向滚动面，实际 {len(surfaces)}",
+                    )
+                continue
             surfaces = _vertical_scroll_surfaces(tab_page)
             self.assertEqual(
                 len(surfaces),
@@ -747,6 +773,19 @@ class ScrollRuleTests(unittest.TestCase):
         tabs = page._tabs
         for index in range(tabs.count()):
             tab_page = tabs.widget(index)
+            sub_tabs = tab_page.findChildren(QTabWidget)
+            if sub_tabs:
+                sub = sub_tabs[0]
+                for sub_index in range(sub.count()):
+                    sub.setCurrentIndex(sub_index)
+                    QApplication.processEvents()
+                    surfaces = _vertical_scroll_surfaces(sub.widget(sub_index))
+                    self.assertLessEqual(
+                        len(surfaces),
+                        1,
+                        f"子页签「{sub.tabText(sub_index)}」不得出现嵌套纵向滚动，实际 {len(surfaces)}",
+                    )
+                continue
             surfaces = _vertical_scroll_surfaces(tab_page)
             self.assertLessEqual(
                 len(surfaces),
