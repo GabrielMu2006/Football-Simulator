@@ -379,7 +379,8 @@ class MatchDetailPage(EntityPageBase):
             player_layout.addWidget(self._player_table)
             player_layout.addStretch(1)
             self._match_tabs.addTab(player_page, "球员数据")
-            layout.addWidget(self._match_tabs, 1)
+            # 不拉伸：让页签按内容高度展开（同历史 Top20），外层滚动查看。
+            layout.addWidget(self._match_tabs)
         else:
             layout.addWidget(
                 section_header(
