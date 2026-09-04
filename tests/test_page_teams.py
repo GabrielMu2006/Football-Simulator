@@ -436,6 +436,8 @@ class TeamProfilePageTests(unittest.TestCase):
     def test_squad_tab_shape_and_player_navigation(self) -> None:
         harness, page, route = _make_profile_page(self.champion.team.team_id, 1)
         page._tabs.setCurrentIndex(1)
+        # 本用例验证完整 11 人阵容形状（默认只显示真实球员的过滤见下一个用例）。
+        page._squad_real_only.setChecked(False)
         table = page._squad_table
         self.assertEqual(table.model.rowCount(), 11)
         counts: Dict[str, int] = {}
@@ -464,7 +466,8 @@ class TeamProfilePageTests(unittest.TestCase):
         real_count = sum(1 for line in profile.roster if line.player.is_real)
         self.assertLess(real_count, len(profile.roster), "阵容应同时含真实与默认球员")
 
-        page._squad_real_only.setChecked(True)
+        # 默认即只显示真实球员（创建时勾选，状态恢复默认值也为真实）。
+        self.assertTrue(page._squad_real_only.isChecked())
         rows = [
             page._squad_table.model.row_at(i)
             for i in range(page._squad_table.model.rowCount())

@@ -99,13 +99,13 @@ _STATUS_COLORS = {
 _STATUS_FALLBACK_COLOR = ("#31394a", "#a8b6cc")
 
 _TRANSFER_COLUMNS = (
-    ColumnSpec("week", "周", width=70, alignment=Qt.AlignmentFlag.AlignRight),
-    ColumnSpec("window", "窗口", width=80),
-    ColumnSpec("team_a", "甲队", width=180),
-    ColumnSpec("players", "球员", width=360),
-    ColumnSpec("team_b", "乙队", width=180),
-    ColumnSpec("status", "状态", width=140),
-    ColumnSpec("gap", "差值", width=90, alignment=Qt.AlignmentFlag.AlignRight),
+    ColumnSpec("week", "周", width=64, alignment=Qt.AlignmentFlag.AlignRight),
+    ColumnSpec("window", "窗口", width=76),
+    ColumnSpec("team_a", "甲队", width=150),
+    ColumnSpec("players", "球员", width=280, stretch=True),
+    ColumnSpec("team_b", "乙队", width=150),
+    ColumnSpec("status", "状态", width=118),
+    ColumnSpec("gap", "差值", width=80, alignment=Qt.AlignmentFlag.AlignRight),
 )
 
 
@@ -381,6 +381,7 @@ class TransfersPage(EntityPageBase):
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         scroll.setObjectName("transfersScroll")
         self._content = QWidget()
         content_layout = QVBoxLayout(self._content)
@@ -450,6 +451,7 @@ class TransfersPage(EntityPageBase):
         )
         view = self._history_table.view
         view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         view.verticalHeader().setDefaultSectionSize(_ROW_HEIGHT)
         view.horizontalHeader().setFixedHeight(_HEADER_HEIGHT)
 

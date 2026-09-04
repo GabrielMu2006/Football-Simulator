@@ -652,7 +652,7 @@ class TeamProfilePage(EntityPageBase):
         # 页签记忆：恢复上次勾选（放在数据就绪后，避免恢复时行集为空）。
         state = self.stored_state()
         self._squad_real_only.blockSignals(True)
-        self._squad_real_only.setChecked(str(state.get("squadRealOnly", "0")) == "1")
+        self._squad_real_only.setChecked(str(state.get("squadRealOnly", "1")) == "1")  # 默认只显示真实球员
         self._squad_real_only.blockSignals(False)
         self._refresh_squad()
 

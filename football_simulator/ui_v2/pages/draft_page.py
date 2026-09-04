@@ -251,6 +251,7 @@ class DraftPage(EntityPageBase):
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         scroll.setObjectName("draftScroll")
         self._content = QWidget()
         content_layout = QVBoxLayout(self._content)
@@ -320,6 +321,7 @@ class DraftPage(EntityPageBase):
         )
         view = self._results_table.view
         view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         view.verticalHeader().setDefaultSectionSize(_ROW_HEIGHT)
         view.horizontalHeader().setFixedHeight(_HEADER_HEIGHT)
 

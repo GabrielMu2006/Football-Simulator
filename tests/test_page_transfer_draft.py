@@ -283,9 +283,17 @@ def _assert_no_nested_scrolling(testcase: unittest.TestCase, page: QWidget, tabl
     第二个纵向滚动面（滚动条策略 AlwaysOff 且 maximum == 0）；无只读文本框。"""
     scroll_areas = page.findChildren(QScrollArea)
     testcase.assertEqual(len(scroll_areas), 1)
+    testcase.assertEqual(
+        scroll_areas[0].horizontalScrollBarPolicy(),
+        Qt.ScrollBarPolicy.ScrollBarAlwaysOff,
+    )
     for table in tables:
         testcase.assertEqual(
             table.view.verticalScrollBarPolicy(),
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff,
+        )
+        testcase.assertEqual(
+            table.view.horizontalScrollBarPolicy(),
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff,
         )
         testcase.assertEqual(
