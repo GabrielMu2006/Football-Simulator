@@ -899,6 +899,12 @@ class MainWindow(QMainWindow):
                 page.refresh()
             except Exception:
                 traceback.print_exc()
+            # 内容刷新后同步面包屑：比赛详情等路由标签来自页面 route_context，
+            # 刷新（模拟周次/初始化新赛季/切换存档）前可能残留旧赛季的标签
+            # （如“某队 5-2 某队”），必须与刷新后的页面数据保持一致。
+            current = self.router.current
+            if current is not None:
+                self._update_breadcrumbs(current)
 
     @staticmethod
     def _pending_count(snapshot: SaveSnapshot | None) -> int:
