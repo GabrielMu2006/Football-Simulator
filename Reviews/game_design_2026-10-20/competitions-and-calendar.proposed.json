@@ -1,0 +1,1202 @@
+{
+  "status": "sporting_rules_and_bilingual_names_confirmed",
+  "date": "2026-10-20",
+  "notes": [
+    "Design-only data, not loaded by the production game.",
+    "Confirmed names: Reign Cup 君临杯; Destiny Cup 命途杯; Apex Cup 极境杯; Resurgence Cup 不灭杯; Ascendance Cup 凌越杯; Aeon Cup 永世杯. Stable competition IDs are unchanged.",
+    "All group and Swiss stages finish before the winter window; detailed weeks arranged by the assistant under explicit user delegation.",
+    "Cup 1 retains a two-leg final. Five regular cups start in season 2; Cup 6 starts in season 3.",
+    "Sporting rules settled. Implementation targets new saves only; no migration or old-save compatibility. Names may be refined independently.",
+    "Naming complete: all six bilingual names are confirmed. Cup 2 is 命途杯 / Destiny Cup; Cup 4 is 不灭杯 / Resurgence Cup. There are no pending naming decisions."
+  ],
+  "competitions": [
+    {
+      "id": "aureole",
+      "name_zh": "君临杯",
+      "name_en": "Reign Cup",
+      "old_name": "优胜者杯",
+      "entrants": 16,
+      "qualification": "previous_division_order_top_16",
+      "start_season": 2,
+      "match_count_proposed": 62,
+      "cup_number": 1,
+      "label_zh": "杯赛1（君临杯）",
+      "naming_status": "confirmed_bilingual_name"
+    },
+    {
+      "id": "confluence",
+      "name_zh": "命途杯",
+      "name_en": "Destiny Cup",
+      "old_name": "挑战杯",
+      "entrants": 32,
+      "qualification": "previous_division_order_top_32",
+      "start_season": 2,
+      "match_count_proposed": 31,
+      "cup_number": 2,
+      "label_zh": "杯赛2（命途杯）",
+      "naming_status": "confirmed_bilingual_name"
+    },
+    {
+      "id": "starpath",
+      "name_zh": "极境杯",
+      "name_en": "Apex Cup",
+      "entrants": 16,
+      "qualification": "previous_division_order_top_16",
+      "start_season": 2,
+      "match_count_proposed": 46,
+      "cup_number": 3,
+      "label_zh": "杯赛3（极境杯）",
+      "naming_status": "confirmed_bilingual_name"
+    },
+    {
+      "id": "ember",
+      "name_zh": "不灭杯",
+      "name_en": "Resurgence Cup",
+      "entrants": 8,
+      "qualification": "previous_division_order_top_8",
+      "start_season": 2,
+      "match_count_proposed": 14,
+      "cup_number": 4,
+      "label_zh": "杯赛4（不灭杯）",
+      "naming_status": "confirmed_bilingual_name"
+    },
+    {
+      "id": "ascendant",
+      "name_zh": "凌越杯",
+      "name_en": "Ascendance Cup",
+      "entrants": 12,
+      "qualification": "previous_division_order_top_12",
+      "start_season": 2,
+      "match_count_proposed": 46,
+      "cup_number": 5,
+      "label_zh": "杯赛5（凌越杯）",
+      "naming_status": "confirmed_bilingual_name",
+      "groups": [
+        {
+          "code": "D",
+          "name_zh": "登峰组",
+          "previous_season_ranks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ]
+        },
+        {
+          "code": "N",
+          "name_zh": "涅槃组",
+          "previous_season_ranks": [
+            7,
+            8,
+            9,
+            10,
+            11,
+            12
+          ]
+        }
+      ]
+    },
+    {
+      "id": "zenith",
+      "name_zh": "永世杯",
+      "name_en": "Aeon Cup",
+      "old_name": "超级杯",
+      "entrants": 8,
+      "qualification": "five_regular_cup_champions_plus_two_league_champions_plus_defending_champion_dedupe_then_premier_order",
+      "start_season": 3,
+      "match_count_proposed": 7,
+      "cup_number": 6,
+      "label_zh": "杯赛6（永世杯）",
+      "naming_status": "confirmed_bilingual_name"
+    }
+  ],
+  "weeks": [
+    {
+      "week": 1,
+      "league_round": 1,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "zenith",
+        "stage": "quarterfinal",
+        "label": "杯赛6（永世杯）·八强",
+        "match_count": 4
+      }
+    },
+    {
+      "week": 2,
+      "league_round": 2,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "zenith",
+        "stage": "semifinal",
+        "label": "杯赛6（永世杯）·半决赛",
+        "match_count": 2
+      }
+    },
+    {
+      "week": 3,
+      "league_round": 3,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "zenith",
+        "stage": "final",
+        "label": "杯赛6（永世杯）·决赛",
+        "match_count": 1
+      }
+    },
+    {
+      "week": 4,
+      "league_round": 4,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "ascendant",
+        "stage": "cross_group_1",
+        "label": "杯赛5（凌越杯）·组外循环第1轮",
+        "match_count": 6
+      }
+    },
+    {
+      "week": 5,
+      "league_round": 5,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "aureole",
+        "stage": "group_1",
+        "label": "杯赛1（君临杯）·小组赛第1轮",
+        "match_count": 8
+      }
+    },
+    {
+      "week": 6,
+      "league_round": 6,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "confluence",
+        "stage": "round_32",
+        "label": "杯赛2（命途杯）·32强",
+        "match_count": 16
+      }
+    },
+    {
+      "week": 7,
+      "league_round": 7,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "ascendant",
+        "stage": "cross_group_2",
+        "label": "杯赛5（凌越杯）·组外循环第2轮",
+        "match_count": 6
+      }
+    },
+    {
+      "week": 8,
+      "league_round": 8,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "aureole",
+        "stage": "group_2",
+        "label": "杯赛1（君临杯）·小组赛第2轮",
+        "match_count": 8
+      }
+    },
+    {
+      "week": 9,
+      "league_round": 9,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "starpath",
+        "stage": "swiss_1",
+        "label": "杯赛3（极境杯）·瑞士轮第1轮",
+        "match_count": 8
+      }
+    },
+    {
+      "week": 10,
+      "league_round": 10,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "ascendant",
+        "stage": "cross_group_3",
+        "label": "杯赛5（凌越杯）·组外循环第3轮",
+        "match_count": 6
+      }
+    },
+    {
+      "week": 11,
+      "league_round": 11,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "confluence",
+        "stage": "round_16",
+        "label": "杯赛2（命途杯）·16强",
+        "match_count": 8
+      }
+    },
+    {
+      "week": 12,
+      "league_round": 12,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "aureole",
+        "stage": "group_3",
+        "label": "杯赛1（君临杯）·小组赛第3轮",
+        "match_count": 8
+      }
+    },
+    {
+      "week": 13,
+      "league_round": 13,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "ascendant",
+        "stage": "cross_group_4",
+        "label": "杯赛5（凌越杯）·组外循环第4轮",
+        "match_count": 6
+      }
+    },
+    {
+      "week": 14,
+      "league_round": 14,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "starpath",
+        "stage": "swiss_2",
+        "label": "杯赛3（极境杯）·瑞士轮第2轮",
+        "match_count": 8
+      }
+    },
+    {
+      "week": 15,
+      "league_round": 15,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "aureole",
+        "stage": "group_4",
+        "label": "杯赛1（君临杯）·小组赛第4轮",
+        "match_count": 8
+      }
+    },
+    {
+      "week": 16,
+      "league_round": 16,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "ascendant",
+        "stage": "cross_group_5",
+        "label": "杯赛5（凌越杯）·组外循环第5轮",
+        "match_count": 6
+      }
+    },
+    {
+      "week": 17,
+      "league_round": 17,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "confluence",
+        "stage": "quarterfinal",
+        "label": "杯赛2（命途杯）·八强",
+        "match_count": 4
+      }
+    },
+    {
+      "week": 18,
+      "league_round": 18,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "starpath",
+        "stage": "swiss_3",
+        "label": "杯赛3（极境杯）·瑞士轮第3轮",
+        "match_count": 8
+      }
+    },
+    {
+      "week": 19,
+      "league_round": 19,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "ascendant",
+        "stage": "cross_group_6",
+        "label": "杯赛5（凌越杯）·组外循环第6轮",
+        "match_count": 6
+      }
+    },
+    {
+      "week": 20,
+      "league_round": 20,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "aureole",
+        "stage": "group_5",
+        "label": "杯赛1（君临杯）·小组赛第5轮",
+        "match_count": 8
+      }
+    },
+    {
+      "week": 21,
+      "league_round": 21,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "starpath",
+        "stage": "swiss_4",
+        "label": "杯赛3（极境杯）·瑞士轮第4轮",
+        "match_count": 6
+      }
+    },
+    {
+      "week": 22,
+      "league_round": 22,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "ascendant",
+        "stage": "play_in",
+        "label": "杯赛5（凌越杯）·突围赛",
+        "match_count": 3
+      }
+    },
+    {
+      "week": 23,
+      "league_round": 23,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "aureole",
+        "stage": "group_6",
+        "label": "杯赛1（君临杯）·小组赛第6轮",
+        "match_count": 8
+      }
+    },
+    {
+      "week": 24,
+      "league_round": 24,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "starpath",
+        "stage": "swiss_5",
+        "label": "杯赛3（极境杯）·瑞士轮第5轮",
+        "match_count": 3
+      }
+    },
+    {
+      "week": 25,
+      "league_round": null,
+      "promotion_stage": null,
+      "break_type": "winter",
+      "cup": null
+    },
+    {
+      "week": 26,
+      "league_round": null,
+      "promotion_stage": null,
+      "break_type": "winter",
+      "cup": null
+    },
+    {
+      "week": 27,
+      "league_round": null,
+      "promotion_stage": null,
+      "break_type": "winter",
+      "cup": null
+    },
+    {
+      "week": 28,
+      "league_round": null,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "confluence",
+        "stage": "semifinal",
+        "label": "杯赛2（命途杯）·半决赛",
+        "match_count": 2
+      }
+    },
+    {
+      "week": 29,
+      "league_round": 25,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "ascendant",
+        "stage": "quarterfinal",
+        "label": "杯赛5（凌越杯）·八强",
+        "match_count": 4
+      }
+    },
+    {
+      "week": 30,
+      "league_round": 26,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "confluence",
+        "stage": "final",
+        "label": "杯赛2（命途杯）·决赛",
+        "match_count": 1
+      }
+    },
+    {
+      "week": 31,
+      "league_round": 27,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "aureole",
+        "stage": "quarterfinal_leg_1",
+        "label": "杯赛1（君临杯）·八强首回合",
+        "match_count": 4
+      }
+    },
+    {
+      "week": 32,
+      "league_round": 28,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "aureole",
+        "stage": "quarterfinal_leg_2",
+        "label": "杯赛1（君临杯）·八强次回合",
+        "match_count": 4
+      }
+    },
+    {
+      "week": 33,
+      "league_round": 29,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "starpath",
+        "stage": "quarterfinal_leg_1",
+        "label": "杯赛3（极境杯）·八强首回合",
+        "match_count": 4
+      }
+    },
+    {
+      "week": 34,
+      "league_round": 30,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "starpath",
+        "stage": "quarterfinal_leg_2",
+        "label": "杯赛3（极境杯）·八强次回合",
+        "match_count": 4
+      }
+    },
+    {
+      "week": 35,
+      "league_round": 31,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "ember",
+        "stage": "wb_quarterfinal",
+        "label": "杯赛4（不灭杯）·胜者组首轮",
+        "match_count": 4
+      }
+    },
+    {
+      "week": 36,
+      "league_round": 32,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "ascendant",
+        "stage": "semifinal",
+        "label": "杯赛5（凌越杯）·半决赛",
+        "match_count": 2
+      }
+    },
+    {
+      "week": 37,
+      "league_round": 33,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "ember",
+        "stage": "wb_semifinal+lb_round_1",
+        "label": "杯赛4（不灭杯）·胜者组次轮＋败者组首轮",
+        "match_count": 4
+      }
+    },
+    {
+      "week": 38,
+      "league_round": 34,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "aureole",
+        "stage": "semifinal_leg_1",
+        "label": "杯赛1（君临杯）·半决赛首回合",
+        "match_count": 2
+      }
+    },
+    {
+      "week": 39,
+      "league_round": 35,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "aureole",
+        "stage": "semifinal_leg_2",
+        "label": "杯赛1（君临杯）·半决赛次回合",
+        "match_count": 2
+      }
+    },
+    {
+      "week": 40,
+      "league_round": 36,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "ember",
+        "stage": "lb_round_2",
+        "label": "杯赛4（不灭杯）·败者组次轮",
+        "match_count": 2
+      }
+    },
+    {
+      "week": 41,
+      "league_round": 37,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "starpath",
+        "stage": "semifinal_leg_1",
+        "label": "杯赛3（极境杯）·半决赛首回合",
+        "match_count": 2
+      }
+    },
+    {
+      "week": 42,
+      "league_round": 38,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "starpath",
+        "stage": "semifinal_leg_2",
+        "label": "杯赛3（极境杯）·半决赛次回合",
+        "match_count": 2
+      }
+    },
+    {
+      "week": 43,
+      "league_round": null,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "ascendant",
+        "stage": "final",
+        "label": "杯赛5（凌越杯）·决赛",
+        "match_count": 1
+      }
+    },
+    {
+      "week": 44,
+      "league_round": null,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "ember",
+        "stage": "wb_final+lb_round_3",
+        "label": "杯赛4（不灭杯）·胜者组决赛＋败者组第三轮",
+        "match_count": 2
+      }
+    },
+    {
+      "week": 45,
+      "league_round": null,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup": {
+        "competition": "ember",
+        "stage": "lb_final",
+        "label": "杯赛4（不灭杯）·败者组决赛",
+        "match_count": 1
+      }
+    },
+    {
+      "week": 46,
+      "league_round": null,
+      "promotion_stage": "semifinal_leg_1",
+      "break_type": null,
+      "cup": {
+        "competition": "aureole",
+        "stage": "final_leg_1",
+        "label": "杯赛1（君临杯）·决赛首回合",
+        "match_count": 1
+      }
+    },
+    {
+      "week": 47,
+      "league_round": null,
+      "promotion_stage": "semifinal_leg_2",
+      "break_type": null,
+      "cup": {
+        "competition": "aureole",
+        "stage": "final_leg_2",
+        "label": "杯赛1（君临杯）·决赛次回合",
+        "match_count": 1
+      }
+    },
+    {
+      "week": 48,
+      "league_round": null,
+      "promotion_stage": "final_leg_1",
+      "break_type": null,
+      "cup": {
+        "competition": "ember",
+        "stage": "grand_final",
+        "label": "杯赛4（不灭杯）·总决赛",
+        "match_count": 1
+      }
+    },
+    {
+      "week": 49,
+      "league_round": null,
+      "promotion_stage": "final_leg_2",
+      "break_type": null,
+      "cup": {
+        "competition": "starpath",
+        "stage": "final",
+        "label": "杯赛3（极境杯）·决赛",
+        "match_count": 1
+      }
+    },
+    {
+      "week": 50,
+      "league_round": null,
+      "promotion_stage": null,
+      "break_type": "summer",
+      "cup": null
+    },
+    {
+      "week": 51,
+      "league_round": null,
+      "promotion_stage": null,
+      "break_type": "summer",
+      "cup": null
+    },
+    {
+      "week": 52,
+      "league_round": null,
+      "promotion_stage": null,
+      "break_type": "summer",
+      "cup": null
+    }
+  ],
+  "confirmed": {
+    "ranking": "Previous season premier 1..20, then second 1..20; each regular cup takes top N.",
+    "decision": "Extra time then penalties when a winner is required; no away-goals rule.",
+    "first_regular_cup_season": 2,
+    "first_zenith_season": 3,
+    "ember_final": "One match, no reset; winners bracket champion has home advantage.",
+    "venue_rules_status": "Confirmed by user; draws will only be performed by future game implementation at season initialization.",
+    "league_and_two_leg_venue": "Normal home-and-away; higher previous-season rank hosts the second leg in two-leg knockout ties.",
+    "swiss_venue": "Higher previous-season rank hosts each single match.",
+    "double_elimination_venue": "Unbeaten team first; otherwise later winners-bracket loss stage first; equivalent paths use previous-season rank, not aggregate win percentage.",
+    "ordinary_single_elimination_venue": "Higher previous-season rank hosts non-finals; finals use pre-drawn neutral venues.",
+    "cross_group_home_balance": "Six rounds; three home and three away matches per team.",
+    "neutral_draw": "Draw from all 40 club venues at season initialization; participating clubs and eventual finalists are eligible; no redraw based on finalists.",
+    "neutral_advantage": "Neither team receives home advantage, even when a finalist owns the selected stadium. Nominal scoreboard sides remain distinct.",
+    "neutral_final_competitions": [
+      "confluence",
+      "starpath",
+      "ascendant",
+      "zenith"
+    ],
+    "ascendant_play_in": "Public two-pot draw: D5, D6, N2 against N3, N4, N5 after group stage.",
+    "starpath_knockout": "Seed by Swiss record 3-0, 3-1, 3-2, then final Buchholz and previous-season rank; fixed pairings 1-8, 4-5, 2-7, 3-6, with fixed semifinal routes.",
+    "cup1_group_ranking": [
+      "points",
+      "overall_goal_difference",
+      "overall_goals_for",
+      "head_to_head_points",
+      "head_to_head_goal_difference",
+      "head_to_head_goals_for",
+      "previous_season_rank"
+    ],
+    "cup5_group_ranking": [
+      "points",
+      "goal_difference",
+      "goals_for",
+      "wins",
+      "previous_season_rank"
+    ],
+    "cup1_group_draw": "Four pots based on previous-season ranks 1..4, 5..8, 9..12, 13..16; draw one from each pot per group.",
+    "cup1_quarterfinal_draw": "Group winner versus runner-up, avoiding the same group.",
+    "cup2_draw": "Unseeded public redraw after each round.",
+    "cup1_head_to_head_recursion": "After partially separating a tied mini-table, recursively recalculate among the remaining tied subset; if no separation is possible, use previous-season rank.",
+    "cup1_knockout_bracket": "Quarterfinal draw assigns semifinal halves; routes remain fixed afterward; same-group rematches allowed after the quarterfinal.",
+    "cup3_buchholz": "Adopt CS-style Buchholz seeding and pairing; BU=sum of opponents current wins minus losses. Rank by current W-L record, BU descending, previous-season rank.",
+    "cup3_first_round": "Fixed previous-season seeds 1-9, 2-10, 3-11, 4-12, 5-13, 6-14, 7-15, 8-16.",
+    "cup3_final_seed": "After all five Swiss rounds finish, rank qualified teams by 3-0, 3-1, 3-2; final Buchholz; previous-season rank.",
+    "cup4_draw": "Randomly place all eight teams into a complete fixed double-elimination bracket at season initialization; cross-drop WB semifinal losers; later rematches allowed.",
+    "cup5_knockout_draw": "D1 and D2 are placed in opposite halves; draw the other six teams; quarterfinal draw fixes semifinal routes; no rematch avoidance.",
+    "cup5_group_allocation": "Previous-season ranks 1..6 in 登峰组 (D), ranks 7..12 in 涅槃组 (N).",
+    "cup6_draw": "Fixed high-low bracket; seeds based on previous-season total honor points, including champion and non-champion results; tied points use previous-season league rank.",
+    "competition_prestige_order": [
+      [
+        "premier"
+      ],
+      [
+        "aureole",
+        "starpath"
+      ],
+      [
+        "ascendant"
+      ],
+      [
+        "ember"
+      ],
+      [
+        "confluence"
+      ],
+      [
+        "zenith"
+      ],
+      [
+        "second"
+      ]
+    ],
+    "neutral_sampling": "Uniform draws without replacement within each season; the four neutral finals use four different stadiums.",
+    "third_place_matches": "None in Cups 1,2,3,5,6; semifinal losers share the semifinal tier. Cup 4 has an inherent third-place finisher.",
+    "honor_seed_basis": "Previous-season total honor points, across leagues and all cups, then previous-season league rank.",
+    "extra_time_and_penalties": "Two 15-minute extra-time halves, then five-round penalties and sudden death; penalty first-kicker is separately drawn. Two-leg ties use this only after a tied aggregate at the end of leg 2.",
+    "cup5_schedule_draw": "Randomly determine opponents order and venue assignment at season initialization under the hard constraint of three home and three away games per team; publish all six rounds.",
+    "calendar_constraint": "All non-knockout stages end by week 24, before the winter break at weeks 25..27. Remaining weeks delegated to the assistant.",
+    "second_division_honor_points": "No honor points for any second-division placing. Its champion still qualifies for Cup 6.",
+    "individual_awards": "All six cups award top scorer, assist leader and tournament MVP.",
+    "top_scorer_tiebreak": "Goals descending, assists descending, actual appearances ascending; share the award if still tied.",
+    "assist_leader_tiebreak": "Assists descending, goals descending, actual appearances ascending; share the award if still tied.",
+    "mvp_rule": "Tournament rating descending, actual appearances descending, then shared award. Eligibility: appearances >= max(2, ceil(0.5 * maximum actual team match count in this edition)).",
+    "winter_transfer_cup_eligibility": "Player may represent the new club in the same edition after transfer. Aggregate personal statistics by stable player ID and competition edition; preserve club at each match."
+  },
+  "unconfirmed_routine_recommendations": {},
+  "rule_confirmation": {
+    "phase": "sporting_rules_settled",
+    "assignment": "Resolve all meaningful cup format decisions before implementation.",
+    "confirmed_ids": [
+      "RANK-C1",
+      "RANK-C5",
+      "RANK-FINAL",
+      "DRAW-C1-GROUP",
+      "DRAW-C1-QF",
+      "DRAW-C2",
+      "C1-H2H-RECURSION",
+      "C1-KNOCKOUT-BRACKET",
+      "C3-CS-BUCHHOLZ",
+      "C4-BRACKET",
+      "C5-KNOCKOUT-DRAW",
+      "C5-GROUP-ALLOCATION",
+      "C6-PRESTIGE-SEED",
+      "NEUTRAL-NO-REPLACEMENT",
+      "PRESTIGE-ORDER",
+      "NO-THIRD-PLACE",
+      "C5-SCHEDULE-DRAW",
+      "EXTRA-TIME",
+      "CALENDAR-WINTER-CONSTRAINT",
+      "HONOR-TABLE",
+      "SECOND-NO-HONOR",
+      "AWARD-TYPES",
+      "SCORER-ASSIST-TIES",
+      "MVP-ELIGIBILITY",
+      "CUP-TRANSFER-ELIGIBILITY"
+    ],
+    "remaining_topics": [],
+    "pending_batch": null,
+    "deliberately_deferred": [],
+    "completion_note": "Sporting rules and all six bilingual competition names are confirmed. Implementation targets new saves only; stable IDs and sporting contracts are unchanged."
+  },
+  "research": {
+    "cs_buchholz": {
+      "source_url": "https://github.com/ValveSoftware/counter-strike_rules_and_regs/blob/main/major-supplemental-rulebook.md",
+      "accessed": "2026-10-20",
+      "basis": "Valve official supplemental rulebook; Swiss bracket, initial match-ups and seeding sections.",
+      "user_adoption": "Confirmed for Cup 3; football match lengths, two-leg knockout stages and venues retain prior user decisions."
+    }
+  },
+  "honor_points": {
+    "aggregation": "Only the final finish tier per competition; sum across competitions. Previous-season totals seed Cup 6. Equal totals use previous-season league rank.",
+    "premier": {
+      "1": 120,
+      "2": 88,
+      "3": 72,
+      "4": 60,
+      "5": 52,
+      "6": 46,
+      "7": 41,
+      "8": 37,
+      "9": 33,
+      "10": 30,
+      "11": 27,
+      "12": 24,
+      "13": 21,
+      "14": 18,
+      "15": 15,
+      "16": 12,
+      "17": 9,
+      "18": 6,
+      "19": 3,
+      "20": 1
+    },
+    "second": {
+      "enabled": false,
+      "all_places": 0,
+      "champion_still_qualifies_for_cup6": true
+    },
+    "aureole": {
+      "champion": 90,
+      "runner_up": 72,
+      "semifinal": 56,
+      "quarterfinal": 42,
+      "group_third": 24,
+      "group_fourth": 18
+    },
+    "confluence": {
+      "champion": 65,
+      "runner_up": 52,
+      "semifinal": 40,
+      "quarterfinal": 30,
+      "round_16": 20,
+      "round_32": 12
+    },
+    "starpath": {
+      "champion": 90,
+      "runner_up": 72,
+      "semifinal": 56,
+      "quarterfinal": 42,
+      "swiss_2_3": 32,
+      "swiss_1_3": 24,
+      "swiss_0_3": 18
+    },
+    "ember": {
+      "champion": 70,
+      "runner_up": 56,
+      "third": 44,
+      "fourth": 34,
+      "fifth_sixth": 24,
+      "seventh_eighth": 16
+    },
+    "ascendant": {
+      "champion": 80,
+      "runner_up": 64,
+      "semifinal": 50,
+      "quarterfinal": 38,
+      "play_in_exit": 26,
+      "nirvana_sixth": 18
+    },
+    "zenith": {
+      "champion": 45,
+      "runner_up": 28,
+      "semifinal": 16,
+      "quarterfinal": 8
+    }
+  },
+  "calendar_provenance": {
+    "user_constraint": "All non-knockout cup stages must finish before the winter window; assistant arranges remaining weeks.",
+    "group_stage_ends": {
+      "ascendant": 19,
+      "aureole": 23,
+      "starpath": 24
+    },
+    "final_weeks": {
+      "zenith": 3,
+      "confluence": 30,
+      "ascendant": 43,
+      "aureole": 47,
+      "ember": 48,
+      "starpath": 49
+    },
+    "arranged_by": "assistant_under_explicit_user_delegation"
+  },
+  "swiss_six_team_pairing_priority": [
+    [
+      [
+        1,
+        6
+      ],
+      [
+        2,
+        5
+      ],
+      [
+        3,
+        4
+      ]
+    ],
+    [
+      [
+        1,
+        6
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        3,
+        5
+      ]
+    ],
+    [
+      [
+        1,
+        5
+      ],
+      [
+        2,
+        6
+      ],
+      [
+        3,
+        4
+      ]
+    ],
+    [
+      [
+        1,
+        5
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        3,
+        6
+      ]
+    ],
+    [
+      [
+        1,
+        4
+      ],
+      [
+        2,
+        6
+      ],
+      [
+        3,
+        5
+      ]
+    ],
+    [
+      [
+        1,
+        4
+      ],
+      [
+        2,
+        5
+      ],
+      [
+        3,
+        6
+      ]
+    ],
+    [
+      [
+        1,
+        6
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        4,
+        5
+      ]
+    ],
+    [
+      [
+        1,
+        5
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        4,
+        6
+      ]
+    ],
+    [
+      [
+        1,
+        3
+      ],
+      [
+        2,
+        6
+      ],
+      [
+        4,
+        5
+      ]
+    ],
+    [
+      [
+        1,
+        3
+      ],
+      [
+        2,
+        5
+      ],
+      [
+        4,
+        6
+      ]
+    ],
+    [
+      [
+        1,
+        4
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        5,
+        6
+      ]
+    ],
+    [
+      [
+        1,
+        3
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        5,
+        6
+      ]
+    ],
+    [
+      [
+        1,
+        2
+      ],
+      [
+        3,
+        6
+      ],
+      [
+        4,
+        5
+      ]
+    ],
+    [
+      [
+        1,
+        2
+      ],
+      [
+        3,
+        5
+      ],
+      [
+        4,
+        6
+      ]
+    ],
+    [
+      [
+        1,
+        2
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        5,
+        6
+      ]
+    ]
+  ],
+  "draw_timing": {
+    "season_initialization": [
+      "Cup 1 four-pot groups",
+      "Cup 2 first-round draw",
+      "Cup 3 deterministic initial seeds and fixtures",
+      "Cup 4 complete random bracket",
+      "Cup 5 all six group rounds",
+      "Cup 6 seeded fixed bracket if active",
+      "Active neutral finals, sampling stadiums without replacement"
+    ],
+    "after_qualifiers": [
+      "Cup 1 quarterfinal and semifinal bracket after groups",
+      "Cup 2 public redraw after each completed round",
+      "Cup 3 recompute BU and deterministic pairings after each full round; final knockout seeds after all Swiss rounds",
+      "Cup 5 play-in draw after groups, quarterfinal bracket after play-in"
+    ]
+  },
+  "individual_awards": {
+    "eligibility": "Inherit existing real-player award scope; use actual appearances.",
+    "types": [
+      "top_scorer",
+      "assist_leader",
+      "tournament_mvp"
+    ],
+    "top_scorer_order": [
+      "goals_desc",
+      "assists_desc",
+      "appearances_asc",
+      "shared_award"
+    ],
+    "assist_leader_order": [
+      "assists_desc",
+      "goals_desc",
+      "appearances_asc",
+      "shared_award"
+    ],
+    "mvp_order": [
+      "tournament_rating_desc",
+      "appearances_desc",
+      "shared_award"
+    ],
+    "mvp_minimum": "max(2, ceil(maximum_actual_team_matches_in_edition / 2))",
+    "empty_awards": "No top scorer if highest goals is zero; no assist leader if highest assists is zero; no MVP if nobody meets eligibility.",
+    "transfer_aggregation": "Stable player ID and competition edition; preserve per-match club; sum both clubs contributions to one player award candidate.",
+    "extra_time": "Counts in match production; match still counts as one appearance.",
+    "shootout": "Separate from goals, assists and ordinary saves."
+  },
+  "implementation_scope": {
+    "save_policy": "new_saves_only",
+    "legacy_migration": false,
+    "legacy_rules_compatibility": false,
+    "existing_user_files": "preserve; not acceptance fixtures",
+    "name_policy": "All six bilingual display names are confirmed. Keep names separate from stable competition IDs; future user-requested renames change display mappings only."
+  }
+}

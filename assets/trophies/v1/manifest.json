@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "assets": {
+    "premier": {
+      "path": "premier.png",
+      "sha256": "b227abe348caefb9f663da66b0c7c8a96864cb1f3d0e811c3bcb189a3f31f44d",
+      "width": 1254,
+      "height": 1254,
+      "status": "ready"
+    },
+    "second": {
+      "path": "second.png",
+      "sha256": "fe8ae37ca5601c916dc8651a1303bb78bcebc1082b6be9013ba10d83f6b041a0",
+      "width": 1254,
+      "height": 1254,
+      "status": "ready"
+    },
+    "aureole": {
+      "path": "aureole.png",
+      "sha256": "17067f6ac7ae41b219c4321df64eae572cca051f2d8c6fca0d71e0debb7d6443",
+      "width": 1254,
+      "height": 1254,
+      "status": "ready"
+    },
+    "confluence": {
+      "path": "confluence.png",
+      "sha256": "cef7233f3571303440c7bada0a64d6fa3d69cd6dc5cad5c349e9d2ec28327abd",
+      "width": 1254,
+      "height": 1254,
+      "status": "ready"
+    },
+    "starpath": {
+      "path": "starpath.png",
+      "sha256": "28645474d0b85fb1f16563711d4424d14c5446df08cf8e9e3312f30ec6527050",
+      "width": 1254,
+      "height": 1254,
+      "status": "ready"
+    },
+    "ember": {
+      "path": "ember.png",
+      "sha256": "60e8989535f0558fe7b79b7090dedad33c9758424fe103936a66ce2197094b73",
+      "width": 1254,
+      "height": 1254,
+      "status": "ready"
+    },
+    "ascendant": {
+      "path": "ascendant.png",
+      "sha256": "b61a2c3d23b73f9e528eef1cbfc0aaf73f7360cc8ec12e9bc763041cdcc023f5",
+      "width": 1254,
+      "height": 1254,
+      "status": "ready"
+    },
+    "zenith": {
+      "path": "zenith.png",
+      "sha256": "f737bd64ba8cc43cffafb8f033cbc2d2de957ef54ae0d0d2f603364ab4c161b1",
+      "width": 1254,
+      "height": 1254,
+      "status": "ready"
+    }
+  }
+}

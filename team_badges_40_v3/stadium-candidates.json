@@ -1,0 +1,1253 @@
+{
+  "schema": "stadium-naming-candidates-v1",
+  "date": "2026-10-20",
+  "status": "candidates_await_user_choice",
+  "notes": [
+    "A retains the prior stadium design; B and C are newly proposed alternatives. There are 120 bilingual options for 40 clubs, including 80 new options.",
+    "No candidate has been selected on the user's behalf. Existing production stadium data is unchanged.",
+    "Venue identity stays bound to the club, regardless of promotion/relegation. Neutral-draw rules remain unchanged.",
+    "Names are fictional naming imagery, not factual claims about cities, capacity, roof type or architecture."
+  ],
+  "entries": [
+    {
+      "number": 1,
+      "stadium_id": "stadium-01",
+      "club_en": "Kingsmeadow Rovers",
+      "club_zh": "国王草地流浪者",
+      "theme": "王室草甸与远行气质",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "王庭草甸球场",
+          "name_en": "Kingsmeadow Park",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "王野球场",
+          "name_en": "Crownmead Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "长风原球场",
+          "name_en": "Windswept Meadow",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 2,
+      "stadium_id": "stadium-02",
+      "club_en": "Glazed Dreams",
+      "club_zh": "琉璃幻梦",
+      "theme": "折光、梦与流动的光",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "琉光穹顶球场",
+          "name_en": "Prismatic Dome",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "映梦球场",
+          "name_en": "Dreamglass Stadium",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "流光球场",
+          "name_en": "Shimmerfield",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 3,
+      "stadium_id": "stadium-03",
+      "club_en": "Thorned Reliquary",
+      "club_zh": "荆棘圣骸",
+      "theme": "荆棘、遗存与旧日誓言",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "荆冠圣所球场",
+          "name_en": "Thorncrown Sanctuary",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "静棘球场",
+          "name_en": "Stillthorn Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "旧誓球场",
+          "name_en": "Old Oath Stadium",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 4,
+      "stadium_id": "stadium-04",
+      "club_en": "Dark Side of the Moon",
+      "club_zh": "月之暗面",
+      "theme": "月背、长夜与幽暗",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "月背环形球场",
+          "name_en": "Far Side Arena",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "无昼球场",
+          "name_en": "Evernight Park",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "幽月球场",
+          "name_en": "Moonshade Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 5,
+      "stadium_id": "stadium-05",
+      "club_en": "Crownfield Athletic",
+      "club_zh": "王冠原竞技",
+      "theme": "王冠、广袤原野与荣誉",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "鎏金之原球场",
+          "name_en": "Gilded Fields",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "冠原球场",
+          "name_en": "Crownfield Park",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "荣野球场",
+          "name_en": "Regal Meadow",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 6,
+      "stadium_id": "stadium-06",
+      "club_en": "Crimson Moon",
+      "club_zh": "猩红之月",
+      "theme": "血月、绯夜与暮色",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "赤月湾球场",
+          "name_en": "Crimson Bay Stadium",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "绯夜球场",
+          "name_en": "Scarlet Night Stadium",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "暮红球场",
+          "name_en": "Red Dusk Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 7,
+      "stadium_id": "stadium-07",
+      "club_en": "Void Relics",
+      "club_zh": "虚空遗器",
+      "theme": "遗器、空无与边界之外",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "虚空之门球场",
+          "name_en": "Voidgate Stadium",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "无界球场",
+          "name_en": "Unbound Arena",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "遗境球场",
+          "name_en": "Relic Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 8,
+      "stadium_id": "stadium-08",
+      "club_en": "Midnight Tales",
+      "club_zh": "黯夜怪谈",
+      "theme": "未明、故事与夜间钟声",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "午夜钟楼球场",
+          "name_en": "Midnight Belfry Ground",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "未明球场",
+          "name_en": "Before Dawn Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "夜谭球场",
+          "name_en": "Nighttale Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 9,
+      "stadium_id": "stadium-09",
+      "club_en": "Yellowjackets FC",
+      "club_zh": "大黄蜂",
+      "theme": "蜂群、振翅与主场声浪",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "蜂巢球场",
+          "name_en": "The Hive",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "金翼球场",
+          "name_en": "Goldwing Park",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "鸣振球场",
+          "name_en": "The Buzz",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 10,
+      "stadium_id": "stadium-10",
+      "club_en": "Gaia's Revenge",
+      "club_zh": "盖亚的复仇",
+      "theme": "大地复苏与自然反扑",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "大地回响球场",
+          "name_en": "Earth's Echo Park",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "复苏原球场",
+          "name_en": "Rewilding Park",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "苍野球场",
+          "name_en": "Verdant Field",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 11,
+      "stadium_id": "stadium-11",
+      "club_en": "Ancient Dragonfire",
+      "club_zh": "上古龙炎",
+      "theme": "古老龙息与未熄的火",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "龙息火山球场",
+          "name_en": "Dragonbreath Caldera",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "古焰球场",
+          "name_en": "Elderflame Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "余烬之庭球场",
+          "name_en": "Embercourt Stadium",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 12,
+      "stadium_id": "stadium-12",
+      "club_en": "Icefire Ballad",
+      "club_zh": "冰与火之歌",
+      "theme": "冰火交融与终霜",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "霜焰球场",
+          "name_en": "Frostfire Arena",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "两仪球场",
+          "name_en": "Equinox Stadium",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "终霜球场",
+          "name_en": "Last Frost Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 13,
+      "stadium_id": "stadium-13",
+      "club_en": "Northern Lords",
+      "club_zh": "北境之主",
+      "theme": "北境、寒冬与守誓",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "凛冬王座球场",
+          "name_en": "Winter Throne Stadium",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "北誓球场",
+          "name_en": "Northern Oath Stadium",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "长冬球场",
+          "name_en": "Longwinter Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 14,
+      "stadium_id": "stadium-14",
+      "club_en": "Star Guardians",
+      "club_zh": "星之守护者",
+      "theme": "星幕与恒久守望",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "星穹守望球场",
+          "name_en": "Starwatch Stadium",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "恒星球场",
+          "name_en": "Constant Star Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "星幕球场",
+          "name_en": "Starveil Stadium",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 15,
+      "stadium_id": "stadium-15",
+      "club_en": "Brookgate Wanderers",
+      "club_zh": "溪门流浪者",
+      "theme": "河溪、桥梁与旅途",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "溪门桥球场",
+          "name_en": "Brookgate Bridge Ground",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "回溪球场",
+          "name_en": "Brookbend Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "远渡球场",
+          "name_en": "Far Crossing Park",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 16,
+      "stadium_id": "stadium-16",
+      "club_en": "Solford Town",
+      "club_zh": "索尔福德镇",
+      "theme": "城镇传统与渡口",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "旧磨坊球场",
+          "name_en": "Old Mill Ground",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "镇心球场",
+          "name_en": "Townheart Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "日渡球场",
+          "name_en": "Sunford Park",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 17,
+      "stadium_id": "stadium-17",
+      "club_en": "Shadow Eaters",
+      "club_zh": "噬影者",
+      "theme": "影蚀、幽谷与寂静",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "暮影深渊球场",
+          "name_en": "Dusk Hollow Stadium",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "蚀影球场",
+          "name_en": "Shadefall Stadium",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "无声谷球场",
+          "name_en": "Silent Hollow",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 18,
+      "stadium_id": "stadium-18",
+      "club_en": "Xeno Hunters",
+      "club_zh": "异形猎人",
+      "theme": "远域猎场与前哨",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "异星猎场",
+          "name_en": "Xenohunt Arena",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "远域前哨球场",
+          "name_en": "Outer Reach Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "猎界球场",
+          "name_en": "The Hunting Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 19,
+      "stadium_id": "stadium-19",
+      "club_en": "Blazing Shadows",
+      "club_zh": "炽焰之影",
+      "theme": "暗焰与余火",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "烬影球场",
+          "name_en": "Emberveil Stadium",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "暗焰球场",
+          "name_en": "Shadowflame Park",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "未熄球场",
+          "name_en": "Undying Ember Stadium",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 20,
+      "stadium_id": "stadium-20",
+      "club_en": "Ironvale FC",
+      "club_zh": "铁谷 FC",
+      "theme": "锻造、山谷与坚硬脊梁",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "钢铁熔炉球场",
+          "name_en": "The Iron Forge",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "砺石球场",
+          "name_en": "Whetstone Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "铁脊球场",
+          "name_en": "Ironridge Park",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 21,
+      "stadium_id": "stadium-21",
+      "club_en": "Nightingales",
+      "club_zh": "夜莺",
+      "theme": "晚歌、枝头与夜间声息",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "夜莺林球场",
+          "name_en": "Nightingale Grove",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "晚歌球场",
+          "name_en": "Evensong Park",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "静枝球场",
+          "name_en": "Stillbough Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 22,
+      "stadium_id": "stadium-22",
+      "club_en": "Pain FC",
+      "club_zh": "痛苦FC",
+      "theme": "苦难、逆境与不屈",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "苦难之门球场",
+          "name_en": "The Gates of Agony",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "不屈球场",
+          "name_en": "Unbowed Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "逆境球场",
+          "name_en": "Adversity Park",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 23,
+      "stadium_id": "stadium-23",
+      "club_en": "Hands of Fate",
+      "club_zh": "命运之手",
+      "theme": "选择、岔路与尚未书写的命运",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "命运十字路球场",
+          "name_en": "Fatecross Stadium",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "歧路球场",
+          "name_en": "The Crossroads",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "未定之庭球场",
+          "name_en": "Unwritten Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 24,
+      "stadium_id": "stadium-24",
+      "club_en": "Ocean Stars",
+      "club_zh": "海洋之星",
+      "theme": "海潮、星光与海角",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "潮汐灯塔球场",
+          "name_en": "Tidelight Stadium",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "星潮球场",
+          "name_en": "Startide Park",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "海隅球场",
+          "name_en": "Seaward Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 25,
+      "stadium_id": "stadium-25",
+      "club_en": "Celestial Vanguard",
+      "club_zh": "天界神兵",
+      "theme": "天穹、要塞与黎明誓言",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "天界要塞球场",
+          "name_en": "Celestial Citadel",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "苍穹前庭球场",
+          "name_en": "Skyward Court",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "曙誓球场",
+          "name_en": "Dawn Oath Stadium",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 26,
+      "stadium_id": "stadium-26",
+      "club_en": "Supersonic Knights",
+      "club_zh": "超音速骑士",
+      "theme": "气流、速度与破空",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "音爆峡谷球场",
+          "name_en": "Sonic Rift Stadium",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "疾风球场",
+          "name_en": "Slipstream Park",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "破空球场",
+          "name_en": "Soundbreak Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 27,
+      "stadium_id": "stadium-27",
+      "club_en": "Polaris FC",
+      "club_zh": "北极星",
+      "theme": "北方指引与恒久眺望",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "北辰球场",
+          "name_en": "Northstar Stadium",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "定极球场",
+          "name_en": "True North Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "恒望球场",
+          "name_en": "Everwatch Park",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 28,
+      "stadium_id": "stadium-28",
+      "club_en": "Hannya Masks",
+      "club_zh": "般若假面",
+      "theme": "面具、戏剧与多重面相",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "般若剧场",
+          "name_en": "Hannya Theatre",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "幽面球场",
+          "name_en": "Veiled Visage Arena",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "百相球场",
+          "name_en": "Thousand Faces Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 29,
+      "stadium_id": "stadium-29",
+      "club_en": "Zero Returners",
+      "club_zh": "归零者",
+      "theme": "起点、循环与重新开始",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "零点球场",
+          "name_en": "Zero Hour Stadium",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "原点球场",
+          "name_en": "Origin Park",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "复始球场",
+          "name_en": "Begin Again Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 30,
+      "stadium_id": "stadium-30",
+      "club_en": "Fallen Heirlooms",
+      "club_zh": "堕天遗武",
+      "theme": "坠落、旧誓与残存荣光",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "失落王庭球场",
+          "name_en": "Fallen Court Ground",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "遗誓球场",
+          "name_en": "Fallen Oath Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "余荣球场",
+          "name_en": "Last Glory Stadium",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 31,
+      "stadium_id": "stadium-31",
+      "club_en": "Ravenhill",
+      "club_zh": "渡鸦山",
+      "theme": "黑羽、暮色与山岭",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "鸦羽岭球场",
+          "name_en": "Ravenfeather Ridge",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "暮岭球场",
+          "name_en": "Duskridge Park",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "黑羽球场",
+          "name_en": "Blackfeather Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 32,
+      "stadium_id": "stadium-32",
+      "club_en": "Doom Knights",
+      "club_zh": "毁灭骑士",
+      "theme": "终焉、堡垒与余烬",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "末日堡垒球场",
+          "name_en": "Doomkeep Stadium",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "终焉球场",
+          "name_en": "Armageddon Stadium",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "灰烬之门球场",
+          "name_en": "Ashgate Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 33,
+      "stadium_id": "stadium-33",
+      "club_en": "Ruined Legion",
+      "club_zh": "破败军团",
+      "theme": "残阵、断旗与旧垒",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "断旗城球场",
+          "name_en": "Broken Banner Stadium",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "余阵球场",
+          "name_en": "Last Legion Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "残垒球场",
+          "name_en": "Fallen Rampart Park",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 34,
+      "stadium_id": "stadium-34",
+      "club_en": "Thunder Rangers",
+      "club_zh": "雷霆巡游者",
+      "theme": "雷暴、旷野与巡行",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "雷鸣旷野球场",
+          "name_en": "Thunderfield Park",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "逐雷球场",
+          "name_en": "Stormchase Park",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "长巡球场",
+          "name_en": "Long Patrol Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 35,
+      "stadium_id": "stadium-35",
+      "club_en": "Crystal Roses",
+      "club_zh": "水晶玫瑰",
+      "theme": "晶莹花园、露水与绽放",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "水晶花园球场",
+          "name_en": "Crystal Garden Stadium",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "澄露球场",
+          "name_en": "Cleardew Park",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "绽光球场",
+          "name_en": "Bloomlight Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 36,
+      "stadium_id": "stadium-36",
+      "club_en": "Sentinels of Light",
+      "club_zh": "光明哨兵",
+      "theme": "晨曦、守望与长明",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "晨光烽台球场",
+          "name_en": "Dawnwatch Stadium",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "初曦球场",
+          "name_en": "First Dawn Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "长明球场",
+          "name_en": "Everlight Park",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 37,
+      "stadium_id": "stadium-37",
+      "club_en": "Glorious Vision",
+      "club_zh": "光荣异象",
+      "theme": "明见、远望与荣光",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "荣光之境球场",
+          "name_en": "Field of Glory",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "明境球场",
+          "name_en": "Lucent Field",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "远瞩球场",
+          "name_en": "Farseeing Park",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 38,
+      "stadium_id": "stadium-38",
+      "club_en": "Miracle Makers",
+      "club_zh": "奇迹之师",
+      "theme": "奇迹、希望与重新盼望",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "奇迹之门球场",
+          "name_en": "Miracle Gate Stadium",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "不凡球场",
+          "name_en": "Wonderfield",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "再望球场",
+          "name_en": "Hope Anew Park",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 39,
+      "stadium_id": "stadium-39",
+      "club_en": "Chaos Overture",
+      "club_zh": "混沌序曲",
+      "theme": "序曲、回响与无序",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "混沌交响球场",
+          "name_en": "Chaos Symphony Arena",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "初响球场",
+          "name_en": "First Resonance Arena",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "无序之庭球场",
+          "name_en": "Discord Park",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    },
+    {
+      "number": 40,
+      "stadium_id": "stadium-40",
+      "club_en": "Royal Junction",
+      "club_zh": "皇家枢纽",
+      "theme": "皇家道路与交汇枢纽",
+      "candidates": [
+        {
+          "choice": "A",
+          "name_zh": "皇家交汇球场",
+          "name_en": "Royal Crossroads Stadium",
+          "provenance": "previous_design",
+          "status": "candidate"
+        },
+        {
+          "choice": "B",
+          "name_zh": "经纬球场",
+          "name_en": "Meridian Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        },
+        {
+          "choice": "C",
+          "name_zh": "王道球场",
+          "name_en": "Kingsway Ground",
+          "provenance": "new_candidate",
+          "status": "candidate"
+        }
+      ],
+      "selected": null
+    }
+  ]
+}

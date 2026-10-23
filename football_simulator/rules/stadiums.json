@@ -1,0 +1,289 @@
+{
+ "schema": "stadium-runtime-v2",
+ "date": "2026-10-20",
+ "status": "user_selected_synced_to_production",
+ "source_file": "Reviews/identity_redesign_2026-10-20/stadiums.selected.json",
+ "source_sha256": "75e0409ab6d733d2fd4b9c8b348a92ea598faa67ef91c13953bc1b0021dae90b",
+ "stadiums": [
+  {
+   "stadium_id": "stadium-01",
+   "club_en": "Kingsmeadow Rovers",
+   "club_zh": "国王草地流浪者",
+   "name_zh": "王庭草甸球场",
+   "name_en": "Kingsmeadow Park"
+  },
+  {
+   "stadium_id": "stadium-02",
+   "club_en": "Glazed Dreams",
+   "club_zh": "琉璃幻梦",
+   "name_zh": "琉光穹顶球场",
+   "name_en": "Prismatic Dome"
+  },
+  {
+   "stadium_id": "stadium-03",
+   "club_en": "Thorned Reliquary",
+   "club_zh": "荆棘圣骸",
+   "name_zh": "荆冠圣所球场",
+   "name_en": "Thorncrown Sanctuary"
+  },
+  {
+   "stadium_id": "stadium-04",
+   "club_en": "Dark Side of the Moon",
+   "club_zh": "月之暗面",
+   "name_zh": "幽月球场",
+   "name_en": "Moonshade Ground"
+  },
+  {
+   "stadium_id": "stadium-05",
+   "club_en": "Crownfield Athletic",
+   "club_zh": "王冠原竞技",
+   "name_zh": "鎏金之原球场",
+   "name_en": "Gilded Fields"
+  },
+  {
+   "stadium_id": "stadium-06",
+   "club_en": "Crimson Moon",
+   "club_zh": "猩红之月",
+   "name_zh": "暮红球场",
+   "name_en": "Red Dusk Ground"
+  },
+  {
+   "stadium_id": "stadium-07",
+   "club_en": "Void Relics",
+   "club_zh": "虚空遗器",
+   "name_zh": "虚空之门球场",
+   "name_en": "Voidgate Stadium"
+  },
+  {
+   "stadium_id": "stadium-08",
+   "club_en": "Midnight Tales",
+   "club_zh": "黯夜怪谈",
+   "name_zh": "午夜钟楼球场",
+   "name_en": "Midnight Belfry Ground"
+  },
+  {
+   "stadium_id": "stadium-09",
+   "club_en": "Yellowjackets FC",
+   "club_zh": "大黄蜂",
+   "name_zh": "蜂巢球场",
+   "name_en": "The Hive"
+  },
+  {
+   "stadium_id": "stadium-10",
+   "club_en": "Gaia's Revenge",
+   "club_zh": "盖亚的复仇",
+   "name_zh": "苍野球场",
+   "name_en": "Verdant Field"
+  },
+  {
+   "stadium_id": "stadium-11",
+   "club_en": "Ancient Dragonfire",
+   "club_zh": "上古龙炎",
+   "name_zh": "龙息火山球场",
+   "name_en": "Dragonbreath Caldera"
+  },
+  {
+   "stadium_id": "stadium-12",
+   "club_en": "Icefire Ballad",
+   "club_zh": "冰与火之歌",
+   "name_zh": "霜焰球场",
+   "name_en": "Frostfire Arena"
+  },
+  {
+   "stadium_id": "stadium-13",
+   "club_en": "Northern Lords",
+   "club_zh": "北境之主",
+   "name_zh": "凛冬王座球场",
+   "name_en": "Winter Throne Stadium"
+  },
+  {
+   "stadium_id": "stadium-14",
+   "club_en": "Star Guardians",
+   "club_zh": "星之守护者",
+   "name_zh": "星穹守望球场",
+   "name_en": "Starwatch Stadium"
+  },
+  {
+   "stadium_id": "stadium-15",
+   "club_en": "Brookgate Wanderers",
+   "club_zh": "溪门流浪者",
+   "name_zh": "溪门桥球场",
+   "name_en": "Brookgate Bridge Ground"
+  },
+  {
+   "stadium_id": "stadium-16",
+   "club_en": "Solford Town",
+   "club_zh": "索尔福德镇",
+   "name_zh": "镇心球场",
+   "name_en": "Townheart Ground"
+  },
+  {
+   "stadium_id": "stadium-17",
+   "club_en": "Shadow Eaters",
+   "club_zh": "噬影者",
+   "name_zh": "暮影深渊球场",
+   "name_en": "Dusk Hollow Stadium"
+  },
+  {
+   "stadium_id": "stadium-18",
+   "club_en": "Xeno Hunters",
+   "club_zh": "异形猎人",
+   "name_zh": "猎界球场",
+   "name_en": "The Hunting Ground"
+  },
+  {
+   "stadium_id": "stadium-19",
+   "club_en": "Blazing Shadows",
+   "club_zh": "炽焰之影",
+   "name_zh": "暗焰球场",
+   "name_en": "Shadowflame Park"
+  },
+  {
+   "stadium_id": "stadium-20",
+   "club_en": "Ironvale FC",
+   "club_zh": "铁谷 FC",
+   "name_zh": "钢铁熔炉球场",
+   "name_en": "The Iron Forge"
+  },
+  {
+   "stadium_id": "stadium-21",
+   "club_en": "Nightingales",
+   "club_zh": "夜莺",
+   "name_zh": "夜莺林球场",
+   "name_en": "Nightingale Grove"
+  },
+  {
+   "stadium_id": "stadium-22",
+   "club_en": "Pain FC",
+   "club_zh": "痛苦FC",
+   "name_zh": "苦难之门球场",
+   "name_en": "The Gates of Agony"
+  },
+  {
+   "stadium_id": "stadium-23",
+   "club_en": "Hands of Fate",
+   "club_zh": "命运之手",
+   "name_zh": "命运十字路球场",
+   "name_en": "Fatecross Stadium"
+  },
+  {
+   "stadium_id": "stadium-24",
+   "club_en": "Ocean Stars",
+   "club_zh": "海洋之星",
+   "name_zh": "潮汐灯塔球场",
+   "name_en": "Tidelight Stadium"
+  },
+  {
+   "stadium_id": "stadium-25",
+   "club_en": "Celestial Vanguard",
+   "club_zh": "天界神兵",
+   "name_zh": "天界要塞球场",
+   "name_en": "Celestial Citadel"
+  },
+  {
+   "stadium_id": "stadium-26",
+   "club_en": "Supersonic Knights",
+   "club_zh": "超音速骑士",
+   "name_zh": "破空球场",
+   "name_en": "Soundbreak Ground"
+  },
+  {
+   "stadium_id": "stadium-27",
+   "club_en": "Polaris FC",
+   "club_zh": "北极星",
+   "name_zh": "北辰球场",
+   "name_en": "Northstar Stadium"
+  },
+  {
+   "stadium_id": "stadium-28",
+   "club_en": "Hannya Masks",
+   "club_zh": "般若假面",
+   "name_zh": "般若剧场",
+   "name_en": "Hannya Theatre"
+  },
+  {
+   "stadium_id": "stadium-29",
+   "club_en": "Zero Returners",
+   "club_zh": "归零者",
+   "name_zh": "原点球场",
+   "name_en": "Origin Park"
+  },
+  {
+   "stadium_id": "stadium-30",
+   "club_en": "Fallen Heirlooms",
+   "club_zh": "堕天遗武",
+   "name_zh": "余荣球场",
+   "name_en": "Last Glory Stadium"
+  },
+  {
+   "stadium_id": "stadium-31",
+   "club_en": "Ravenhill",
+   "club_zh": "渡鸦山",
+   "name_zh": "鸦羽岭球场",
+   "name_en": "Ravenfeather Ridge"
+  },
+  {
+   "stadium_id": "stadium-32",
+   "club_en": "Doom Knights",
+   "club_zh": "毁灭骑士",
+   "name_zh": "灰烬之门球场",
+   "name_en": "Ashgate Ground"
+  },
+  {
+   "stadium_id": "stadium-33",
+   "club_en": "Ruined Legion",
+   "club_zh": "破败军团",
+   "name_zh": "断旗城球场",
+   "name_en": "Broken Banner Stadium"
+  },
+  {
+   "stadium_id": "stadium-34",
+   "club_en": "Thunder Rangers",
+   "club_zh": "雷霆巡游者",
+   "name_zh": "雷鸣旷野球场",
+   "name_en": "Thunderfield Park"
+  },
+  {
+   "stadium_id": "stadium-35",
+   "club_en": "Crystal Roses",
+   "club_zh": "水晶玫瑰",
+   "name_zh": "水晶花园球场",
+   "name_en": "Crystal Garden Stadium"
+  },
+  {
+   "stadium_id": "stadium-36",
+   "club_en": "Sentinels of Light",
+   "club_zh": "光明哨兵",
+   "name_zh": "长明球场",
+   "name_en": "Everlight Park"
+  },
+  {
+   "stadium_id": "stadium-37",
+   "club_en": "Glorious Vision",
+   "club_zh": "光荣异象",
+   "name_zh": "荣光之境球场",
+   "name_en": "Field of Glory"
+  },
+  {
+   "stadium_id": "stadium-38",
+   "club_en": "Miracle Makers",
+   "club_zh": "奇迹之师",
+   "name_zh": "奇迹之门球场",
+   "name_en": "Miracle Gate Stadium"
+  },
+  {
+   "stadium_id": "stadium-39",
+   "club_en": "Chaos Overture",
+   "club_zh": "混沌序曲",
+   "name_zh": "混沌交响球场",
+   "name_en": "Chaos Symphony Arena"
+  },
+  {
+   "stadium_id": "stadium-40",
+   "club_en": "Royal Junction",
+   "club_zh": "皇家枢纽",
+   "name_zh": "王道球场",
+   "name_en": "Kingsway Ground"
+  }
+ ]
+}

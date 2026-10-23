@@ -45,6 +45,8 @@ def user_data_root() -> Path:
 
 
 def shared_config_path() -> Path:
+    if _CONFIG_PATH_OVERRIDE is not None:
+        return _CONFIG_PATH_OVERRIDE
     if getattr(sys, "frozen", False):
         external_path = sibling_shared_config_path()
         if external_path is not None and external_path.exists():
@@ -93,18 +95,50 @@ def sibling_shared_config_path() -> Optional[Path]:
     return app_bundle.parent / SHARED_CONFIG_FILE_NAME
 
 
-# 测试专用：重定向存档根目录（传 None 恢复默认位置）。生产代码不得调用。
-_SAVE_ROOT_OVERRIDE: Optional[Path] = None
+# 测试专用：重定向“数据根目录”（其下为 saves/、backups/、trash/ 与
+# current_save.txt）。传 None 恢复生产位置；生产代码不得调用。
+#
+# 隔离必须覆盖同一份数据根的**全部**可写路径。历史缺陷正是清理函数在
+# override 撤销后重新解析 current_save_path()，从而指向项目根并可能删除
+# 真实指针；因此这里把指针、备份、回收站与存档放在同一个可重定向根下，
+# 并由调用方保存该根的绝对临时路径。
+_DATA_ROOT_OVERRIDE: Optional[Path] = None
+
+# 只读资源（总配置 JSON）允许测试替换来源，避免任何测试写入项目配置文件。
+_CONFIG_PATH_OVERRIDE: Optional[Path] = None
+
+_RESERVED_DATA_DIR_NAMES = frozenset({"saves", "backups", "trash"})
 
 
-def set_save_root_override(path: Optional[Path]) -> None:
-    global _SAVE_ROOT_OVERRIDE
-    _SAVE_ROOT_OVERRIDE = Path(path).resolve() if path is not None else None
+def set_data_root_override(path: Optional[Path]) -> None:
+    global _DATA_ROOT_OVERRIDE
+    _DATA_ROOT_OVERRIDE = Path(path).resolve() if path is not None else None
+
+
+def data_root() -> Path:
+    if _DATA_ROOT_OVERRIDE is not None:
+        return _DATA_ROOT_OVERRIDE
+    if getattr(sys, "frozen", False):
+        return user_data_root()
+    return resource_root()
+
+
+# 兼容旧夹具命名：语义等同“数据根”，不再是单独的存档目录。
+set_save_root_override = set_data_root_override
+
+
+def data_root_is_overridden() -> bool:
+    return _DATA_ROOT_OVERRIDE is not None
+
+
+def set_config_path_override(path: Optional[Path]) -> None:
+    global _CONFIG_PATH_OVERRIDE
+    _CONFIG_PATH_OVERRIDE = Path(path).resolve() if path is not None else None
 
 
 def save_root() -> Path:
-    if _SAVE_ROOT_OVERRIDE is not None:
-        root = _SAVE_ROOT_OVERRIDE
+    if _DATA_ROOT_OVERRIDE is not None:
+        root = _DATA_ROOT_OVERRIDE / "saves"
         root.mkdir(parents=True, exist_ok=True)
         return root
     if getattr(sys, "frozen", False):
@@ -117,9 +151,25 @@ def save_root() -> Path:
     return root
 
 
+def backups_root() -> Path:
+    root = data_root() / "backups"
+    root.mkdir(parents=True, exist_ok=True)
+    return root
+
+
+def trash_root() -> Path:
+    root = data_root() / "trash"
+    root.mkdir(parents=True, exist_ok=True)
+    return root
+
+
 def list_save_names() -> list[str]:
     root = save_root()
-    return sorted(entry.name for entry in root.iterdir() if entry.is_dir())
+    return sorted(
+        entry.name
+        for entry in root.iterdir()
+        if entry.is_dir() and not entry.is_symlink() and entry.name not in _RESERVED_DATA_DIR_NAMES
+    )
 
 
 def create_save_directory(save_name: str) -> Path:
@@ -179,7 +229,7 @@ def backup_save(save_name: str) -> Path:
     db_path = _safe_save_dir(normalized_name) / SAVE_DATABASE_FILE_NAME
     if not db_path.exists():
         raise ValueError(f"存档 '{normalized_name}' 还没有数据库（未初始化）。")
-    backup_dir = save_root().parent / "backups" / normalized_name
+    backup_dir = backups_root() / normalized_name
     backup_dir.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     target = backup_dir / f"{timestamp}.sqlite3"
@@ -196,7 +246,7 @@ def backup_save(save_name: str) -> Path:
 
 def list_backups(save_name: str) -> list[Path]:
     normalized_name = normalize_save_name(save_name)
-    backup_dir = save_root().parent / "backups" / normalized_name
+    backup_dir = backups_root() / normalized_name
     if not backup_dir.exists():
         return []
     return sorted(backup_dir.glob("*.sqlite3"), key=lambda p: p.name, reverse=True)
@@ -248,8 +298,7 @@ def move_save_to_trash(save_name: str) -> Path:
     path = root / normalized_name
     if not path.exists() or path.is_symlink():
         raise FileNotFoundError(f"未找到存档 '{normalized_name}'。")
-    trash_dir = save_root().parent / "trash"
-    trash_dir.mkdir(parents=True, exist_ok=True)
+    trash_dir = trash_root()
     target = trash_dir / normalized_name
     if target.exists():
         timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -259,7 +308,7 @@ def move_save_to_trash(save_name: str) -> Path:
 
 
 def list_trash_saves() -> list[Path]:
-    trash_dir = save_root().parent / "trash"
+    trash_dir = trash_root()
     if not trash_dir.exists():
         return []
     return sorted(trash_dir.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True)
@@ -278,7 +327,7 @@ def restore_trash_save(trash_path: Path, save_name: Optional[str] = None) -> Pat
 
 
 def empty_trash() -> list[Path]:
-    trash_dir = save_root().parent / "trash"
+    trash_dir = trash_root()
     if not trash_dir.exists():
         return []
     removed: list[Path] = []
@@ -321,10 +370,9 @@ def store_current_save_name(save_name: str) -> None:
 
 
 def current_save_path() -> Path:
-    if getattr(sys, "frozen", False):
-        root = user_data_root()
-    else:
-        root = resource_root()
+    # 必须与 save_root()/backups_root()/trash_root() 使用同一数据根：测试覆盖
+    # 生效时绝不回落到项目根，避免退出清理删掉真实指针。
+    root = data_root()
     root.mkdir(parents=True, exist_ok=True)
     return root / CURRENT_SAVE_FILE_NAME
 

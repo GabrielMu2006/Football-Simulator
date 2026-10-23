@@ -1,0 +1,77 @@
+{
+  "profile": "champion-first-2026-10-23",
+  "premier": {
+    "1": 240,
+    "2": 120,
+    "3": 85,
+    "4": 75,
+    "5": 55,
+    "6": 45,
+    "7": 38,
+    "8": 32,
+    "9": 27,
+    "10": 23,
+    "11": 19,
+    "12": 16,
+    "13": 13,
+    "14": 10,
+    "15": 8,
+    "16": 6,
+    "17": 4,
+    "18": 3,
+    "19": 2,
+    "20": 1
+  },
+  "second": {
+    "enabled": false,
+    "all_places": 0,
+    "champion_still_qualifies_for_cup6": true
+  },
+  "aureole": {
+    "champion": 180,
+    "runner_up": 90,
+    "semifinal": 60,
+    "quarterfinal": 30,
+    "group_third": 10,
+    "group_fourth": 4
+  },
+  "confluence": {
+    "champion": 130,
+    "runner_up": 65,
+    "semifinal": 45,
+    "quarterfinal": 22,
+    "round_16": 8,
+    "round_32": 2
+  },
+  "starpath": {
+    "champion": 180,
+    "runner_up": 90,
+    "semifinal": 60,
+    "quarterfinal": 30,
+    "swiss_2_3": 16,
+    "swiss_1_3": 8,
+    "swiss_0_3": 4
+  },
+  "ember": {
+    "champion": 140,
+    "runner_up": 70,
+    "third": 50,
+    "fourth": 42,
+    "fifth_sixth": 20,
+    "seventh_eighth": 8
+  },
+  "ascendant": {
+    "champion": 160,
+    "runner_up": 80,
+    "semifinal": 55,
+    "quarterfinal": 27,
+    "play_in_exit": 10,
+    "nirvana_sixth": 4
+  },
+  "zenith": {
+    "champion": 90,
+    "runner_up": 45,
+    "semifinal": 30,
+    "quarterfinal": 15
+  }
+}

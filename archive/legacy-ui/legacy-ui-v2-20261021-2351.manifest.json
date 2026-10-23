@@ -1,0 +1,465 @@
+{
+  "batch": "20261021-2351",
+  "created_at": "2026-10-21T23:51:16+0800",
+  "archive": "archive/legacy-ui/legacy-ui-v2-20261021-2351.zip",
+  "archive_sha256": "e73701e2f934836b4c175d60518c08f395243dd0682794ba7ff5b6cc41ff5dad",
+  "archive_bytes": 265551,
+  "verification": {
+    "zip_testzip": "ok",
+    "member_count": 45,
+    "per_file_sha256": "ok",
+    "per_file_bytes": "ok",
+    "crc": "ok"
+  },
+  "source_file_count": 35,
+  "legacy_test_module_count": 10,
+  "legacy_test_case_count": 248,
+  "entries": [
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/__init__.py",
+      "archive_path": "football_simulator/ui_v2/__init__.py",
+      "sha256": "19924bddf7e183aeb82dc2347c5d4863d8061d33547c831be7c55a4f5276fc52",
+      "bytes": 29,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/app.py",
+      "archive_path": "football_simulator/ui_v2/app.py",
+      "sha256": "526d9daa1b76749da1c7a44d38769fa6d172c6bd87d6e166a593940b27b5f630",
+      "bytes": 502,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/components/__init__.py",
+      "archive_path": "football_simulator/ui_v2/components/__init__.py",
+      "sha256": "c2de9d33e1116d7a394a9691f9746dcbbab2da4f94cb1b7b775103bb7a1e559d",
+      "bytes": 1940,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/components/crest_delegate.py",
+      "archive_path": "football_simulator/ui_v2/components/crest_delegate.py",
+      "sha256": "214a272055f4d96a082f1d28b253bf15065d1faa115b4b5cb4dd1ccbd566e1ab",
+      "bytes": 2500,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/components/debug_log.py",
+      "archive_path": "football_simulator/ui_v2/components/debug_log.py",
+      "sha256": "890944132e142bc952c0181789610e86f90e1792b46e9139601d571d1a05311a",
+      "bytes": 1873,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/components/empty_state.py",
+      "archive_path": "football_simulator/ui_v2/components/empty_state.py",
+      "sha256": "ab4dd30c85e96f9222e2f95f6bde47aee1f9649c78d93fa3f2961db81957be71",
+      "bytes": 3925,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/components/entity_link.py",
+      "archive_path": "football_simulator/ui_v2/components/entity_link.py",
+      "sha256": "f1f5ab60e08d779b5f35c0a14e033e752234480fff2c9cec039cb9ace2d926ba",
+      "bytes": 4580,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/components/entity_table.py",
+      "archive_path": "football_simulator/ui_v2/components/entity_table.py",
+      "sha256": "791ecd2dc9d40ff325626ab64c283a500c9e591aae3a9d1a970cf18dbf9d8693",
+      "bytes": 12782,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/components/filter_bar.py",
+      "archive_path": "football_simulator/ui_v2/components/filter_bar.py",
+      "sha256": "bd2bae628f52c4efbac78eca52e24fb201701a946d9b77fe90de96aa9a85436f",
+      "bytes": 6957,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/components/global_search.py",
+      "archive_path": "football_simulator/ui_v2/components/global_search.py",
+      "sha256": "229242d80fc4caf95cc1f886a8ac84d2bfab4519178fad372fada13639fc6208",
+      "bytes": 10714,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/components/page_header.py",
+      "archive_path": "football_simulator/ui_v2/components/page_header.py",
+      "sha256": "17a2a30f2e94629d2e733f63786a556432662b72a29575977289588ec39da7a2",
+      "bytes": 4256,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/components/team_crest.py",
+      "archive_path": "football_simulator/ui_v2/components/team_crest.py",
+      "sha256": "1fb72afcb6f69a44a6d17968fda2fc13f0c88e342fb9ec363eadb5e91924cffd",
+      "bytes": 7543,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/components/tutorial.py",
+      "archive_path": "football_simulator/ui_v2/components/tutorial.py",
+      "sha256": "24c02dd8aecefe6f0a95817025ed291752f48419d7d46842b33fd1389e457d88",
+      "bytes": 5429,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/design_tokens.py",
+      "archive_path": "football_simulator/ui_v2/design_tokens.py",
+      "sha256": "2559b2d24039264dca0c34dbbe698efc653a42dcf4036e4b3a5e0100f5f67bb3",
+      "bytes": 3032,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/main_window.py",
+      "archive_path": "football_simulator/ui_v2/main_window.py",
+      "sha256": "fcefbff8a843d8f62ecc9efca3f5ac36237e7ef18f0ce5f0a15e42af1d91b285",
+      "bytes": 43738,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/navigation.py",
+      "archive_path": "football_simulator/ui_v2/navigation.py",
+      "sha256": "d9adc4c57b00d76f244c6051a2ef817d61ed71a993d07933e0474ebbfc907df1",
+      "bytes": 16326,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/pages/__init__.py",
+      "archive_path": "football_simulator/ui_v2/pages/__init__.py",
+      "sha256": "8120f6ca5e23106114ab70e133e9dafab81129288049f4e8b5473d9f4757a0d6",
+      "bytes": 33,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/pages/competition_page.py",
+      "archive_path": "football_simulator/ui_v2/pages/competition_page.py",
+      "sha256": "80833fc0ceda6ded1261f18aa07bcb9ef01c7f4808902045c4b5b1984817e48e",
+      "bytes": 66204,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/pages/dashboard_page.py",
+      "archive_path": "football_simulator/ui_v2/pages/dashboard_page.py",
+      "sha256": "fb856c84383650e66c1f2bac59874114ec1108c489bfb8acdbe728f1a714993f",
+      "bytes": 30457,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/pages/draft_page.py",
+      "archive_path": "football_simulator/ui_v2/pages/draft_page.py",
+      "sha256": "15f65e5c3af0e0db130c3a97da20bc47c7703d907d6fafd120be23b8488dd2e1",
+      "bytes": 35430,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/pages/entity_page_base.py",
+      "archive_path": "football_simulator/ui_v2/pages/entity_page_base.py",
+      "sha256": "a9f9d82309b2dd098ccedc2efee3cb60e7a226f062d25c92c3e239015c22e342",
+      "bytes": 3749,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/pages/history_page.py",
+      "archive_path": "football_simulator/ui_v2/pages/history_page.py",
+      "sha256": "c9354f9e58cd7c96feb801b9ea592fee8f1d80734910707c7f62d79ab610caea",
+      "bytes": 57122,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/pages/match_detail_page.py",
+      "archive_path": "football_simulator/ui_v2/pages/match_detail_page.py",
+      "sha256": "2d208da145f8fb37bc19e66449a7c10abfef07d2cd0d53930733af44d8c78b53",
+      "bytes": 27599,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/pages/matches_page.py",
+      "archive_path": "football_simulator/ui_v2/pages/matches_page.py",
+      "sha256": "e3e0a3e86add9c5619e3b439e66491273a7f7eb8dd4732f2f9c2d41a0d93e6a4",
+      "bytes": 16478,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/pages/player_profile_page.py",
+      "archive_path": "football_simulator/ui_v2/pages/player_profile_page.py",
+      "sha256": "d1188d903b575a9f29ebee8919ab81d704c0ffe282483746b56ef711990a2e06",
+      "bytes": 51181,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/pages/players_page.py",
+      "archive_path": "football_simulator/ui_v2/pages/players_page.py",
+      "sha256": "4ea7a32259f69de6611100b69f551b2ae53371678503cd5fcf2ca30d18669cc6",
+      "bytes": 13832,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/pages/saves_page.py",
+      "archive_path": "football_simulator/ui_v2/pages/saves_page.py",
+      "sha256": "1c23b2427b8f1a31f16457b8a143d90d9d83e12773f8ab48d6cddaf3069de82d",
+      "bytes": 27523,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/pages/season_overview_page.py",
+      "archive_path": "football_simulator/ui_v2/pages/season_overview_page.py",
+      "sha256": "2c3231d419f98cc78713aed2442ad4ae370b8d1368e42326a67b3040ea1b1d7e",
+      "bytes": 34629,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/pages/team_profile_page.py",
+      "archive_path": "football_simulator/ui_v2/pages/team_profile_page.py",
+      "sha256": "dace668e822c77dbe87acabd8fd9a2fe1722607c63976a3787fecff751067f84",
+      "bytes": 48289,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/pages/teams_page.py",
+      "archive_path": "football_simulator/ui_v2/pages/teams_page.py",
+      "sha256": "d8d4fa688168900de3c8515feebe4be7a0368a6ab51cc286d27f6c8bbef69135",
+      "bytes": 12708,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/pages/transfers_page.py",
+      "archive_path": "football_simulator/ui_v2/pages/transfers_page.py",
+      "sha256": "74eeea2d2b49da2451ae054b7a67ed065d7ffcd28d31071f5a1e63ed7206b546",
+      "bytes": 46187,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/pages/weekly_report_page.py",
+      "archive_path": "football_simulator/ui_v2/pages/weekly_report_page.py",
+      "sha256": "8917578e1d6587d72249bbccd09d067ce411b414f831ec65c85b516fb2bb4904",
+      "bytes": 15601,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/services.py",
+      "archive_path": "football_simulator/ui_v2/services.py",
+      "sha256": "2eef81b1204bfb6dbcd1dd9efd782af3d0b243228e67801c82741b7e81cf4383",
+      "bytes": 5089,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/theme.py",
+      "archive_path": "football_simulator/ui_v2/theme.py",
+      "sha256": "dc60bfc0d504b7f848c6561a35bf6914aa15ef1960d89170aed02901132459d1",
+      "bytes": 4583,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "source",
+      "original_path": "football_simulator/ui_v2/widgets.py",
+      "archive_path": "football_simulator/ui_v2/widgets.py",
+      "sha256": "569b8fae06ca4a22bfdcb5a5bc5e6edbcf71be2baaa0e577a5ee5635b33b9bea",
+      "bytes": 9149,
+      "destination": "archive-only; removed from working tree"
+    },
+    {
+      "kind": "legacy-test",
+      "original_path": "tests/test_main_window_shell.py",
+      "archive_path": "tests/test_main_window_shell.py",
+      "sha256": "18ccd675f43ac904c469b818f248c11f763c6553afc450466b213ab2dcc5e81f",
+      "bytes": 21836,
+      "cases": 12,
+      "destination": {
+        "action": "archive",
+        "reason": "旧 MainWindow/侧栏/路由壳层专用；现行壳层由 test_current_ui_only 与现代导航测试覆盖。",
+        "retained_coverage": [
+          "test_current_ui_only",
+          "test_macos_detail_navigation"
+        ]
+      }
+    },
+    {
+      "kind": "legacy-test",
+      "original_path": "tests/test_navigation_shell.py",
+      "archive_path": "tests/test_navigation_shell.py",
+      "sha256": "1167cb3952cd35444a9d731b7caae200ad4181a79a82d7b47712066eb406123b",
+      "bytes": 35627,
+      "cases": 54,
+      "destination": {
+        "action": "archive",
+        "reason": "只测旧 ui_v2 Route/Router/EntityLink/EntityTable；现行路由由 test_macos_detail_navigation 覆盖。",
+        "retained_coverage": [
+          "test_macos_detail_navigation",
+          "test_macos_competition_refinement"
+        ]
+      }
+    },
+    {
+      "kind": "legacy-test",
+      "original_path": "tests/test_page_competition.py",
+      "archive_path": "tests/test_page_competition.py",
+      "sha256": "a1b18857d8d2176eb5c8fdd79656b0c5f0e9e8159056f8bee10362d40a694057",
+      "bytes": 39131,
+      "cases": 21,
+      "destination": {
+        "action": "archive",
+        "reason": "旧赛事页组件与页签专用；现行赛事页由 test_macos_competition_refinement / test_macos_live_competitions 覆盖。",
+        "retained_coverage": [
+          "test_macos_competition_refinement",
+          "test_macos_live_competitions"
+        ]
+      }
+    },
+    {
+      "kind": "legacy-test",
+      "original_path": "tests/test_page_dashboard_weekly_season.py",
+      "archive_path": "tests/test_page_dashboard_weekly_season.py",
+      "sha256": "947a068ffbf45f00d7ba855d7cccdc5ee2f1d7e9a17bd1df344afaa3d647b549",
+      "bytes": 35147,
+      "cases": 27,
+      "destination": {
+        "action": "archive",
+        "reason": "旧首页/周报/赛季总览页专用；现行页面由 test_v2_uiv_p1 / test_macos_observer_views 覆盖。",
+        "retained_coverage": [
+          "test_v2_uiv_p1",
+          "test_macos_observer_views"
+        ]
+      }
+    },
+    {
+      "kind": "legacy-test",
+      "original_path": "tests/test_page_history_saves.py",
+      "archive_path": "tests/test_page_history_saves.py",
+      "sha256": "774e88aa472c3a2d0017b05e2ead25b3215babb07d4e68d8189321749de3253b",
+      "bytes": 35091,
+      "cases": 26,
+      "destination": {
+        "action": "archive",
+        "reason": "旧历史/存档页专用；其归档事实断言迁入 test_macos_identity_p2 的查询级用例，页面行为由 test_macos_observer_views / test_vnext_records_honors 覆盖。",
+        "retained_coverage": [
+          "test_macos_identity_p2",
+          "test_macos_observer_views",
+          "test_vnext_records_honors"
+        ],
+        "migrated_cases": [
+          "test_archived_top20_rows_keep_saved_rank_and_team_identity",
+          "test_cup_champions_and_placement_keep_saved_team_ids"
+        ]
+      }
+    },
+    {
+      "kind": "legacy-test",
+      "original_path": "tests/test_page_matches.py",
+      "archive_path": "tests/test_page_matches.py",
+      "sha256": "e61e48a1e07030135e68fbe365edec639a2f7777d4aded1fd80c39b8a772e962",
+      "bytes": 35784,
+      "cases": 28,
+      "destination": {
+        "action": "archive",
+        "reason": "旧比赛中心/详情页专用；比赛查询由 test_query_match 覆盖，现行详情由 test_v2_match_detail_layout 覆盖。",
+        "retained_coverage": [
+          "test_query_match",
+          "test_v2_match_detail_layout"
+        ]
+      }
+    },
+    {
+      "kind": "legacy-test",
+      "original_path": "tests/test_page_players.py",
+      "archive_path": "tests/test_page_players.py",
+      "sha256": "2140f5c2a827b41d82fdaebef7094ed3a1f62b36e1836001c8acc78831181b6f",
+      "bytes": 37659,
+      "cases": 34,
+      "destination": {
+        "action": "archive",
+        "reason": "旧球员目录/详情页专用；球员查询由 test_query_player 覆盖，现行页面由 test_macos_identity_bracket_polish / test_macos_detail_navigation 覆盖。",
+        "retained_coverage": [
+          "test_query_player",
+          "test_macos_identity_bracket_polish",
+          "test_macos_detail_navigation"
+        ]
+      }
+    },
+    {
+      "kind": "legacy-test",
+      "original_path": "tests/test_page_teams.py",
+      "archive_path": "tests/test_page_teams.py",
+      "sha256": "dd77f91a34a210182d8daff9c897df927ed0415a6329e1430642a20095ddafc9",
+      "bytes": 35877,
+      "cases": 25,
+      "destination": {
+        "action": "archive",
+        "reason": "旧球队目录/详情页专用；球队查询由 test_query_team 覆盖。",
+        "retained_coverage": [
+          "test_query_team"
+        ]
+      }
+    },
+    {
+      "kind": "legacy-test",
+      "original_path": "tests/test_page_transfer_draft.py",
+      "archive_path": "tests/test_page_transfer_draft.py",
+      "sha256": "51c86d701181f75d197d4f8aa894be98da7e985711285bec0b3c7fbc2d52283c",
+      "bytes": 37652,
+      "cases": 17,
+      "destination": {
+        "action": "archive",
+        "reason": "旧转会/选秀页专用；冻结规则由 test_transfer_draft_freeze 覆盖。",
+        "retained_coverage": [
+          "test_transfer_draft_freeze"
+        ]
+      }
+    },
+    {
+      "kind": "legacy-test",
+      "original_path": "tests/test_tutorial.py",
+      "archive_path": "tests/test_tutorial.py",
+      "sha256": "a55d2d4d215062ca897603005d70674511f2ce18201bacb93ae91e54a81cf1ad",
+      "bytes": 1897,
+      "cases": 4,
+      "destination": {
+        "action": "archive",
+        "reason": "旧 ui_v2 教程对话框专用，现行 UI 无该组件。",
+        "retained_coverage": []
+      }
+    }
+  ],
+  "notes": [
+    "ZIP is passive data: not on PYTHONPATH, not discovered by unittest, not copied into any app bundle.",
+    "Contains the current working-tree bytes, including uncommitted ui_v2/team_crest.py changes, not just Git HEAD.",
+    "v3 badges, v2 fallback images, build scripts and shared backend are not part of this archive."
+  ]
+}

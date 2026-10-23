@@ -1,10 +1,13 @@
 """阶段 0 规则冻结测试共用工具。
 
-只使用标准库。通过阶段 0 加入的最小注入接口：
-- ``runtime.set_save_root_override`` 把存档根目录重定向到独立临时目录；
+只使用标准库。测试隔离通过两个注入接口完成：
+- ``runtime.set_data_root_override`` 把**整个数据根**（saves/、backups/、
+  trash/、current_save.txt 与存档配置）重定向到独立临时目录；
 - ``state.set_rng_provider`` 把随机源替换为固定种子的 ``random.Random``。
 
-生产默认行为不受影响；测试不触碰项目 ``saves/`` 目录。
+清理只使用夹具开始时保存下来的绝对临时路径，绝不在 override 撤销后重新
+解析生产路径。生产默认行为不受影响；测试不触碰项目 ``saves/``、
+``backups/``、``trash/``、``current_save.txt`` 与总配置。
 """
 
 from __future__ import annotations
@@ -56,6 +59,129 @@ def seeded_provider(seed: int = TEST_SEED):
     return lambda: random.Random(seed)
 
 
+# -- 隔离路径安全阀 ---------------------------------------------------------
+
+_TEMP_PARENT = Path(tempfile.gettempdir()).resolve()
+
+
+def _is_within(path: Path, parent: Path) -> bool:
+    try:
+        path.resolve().relative_to(parent.resolve())
+    except ValueError:
+        return False
+    return True
+
+
+def assert_cleanup_path_is_temporary(path: Path) -> Path:
+    """清理目标必须是项目外、位于系统临时目录内的绝对路径。
+
+    这是 T-000 的事故防护：任何删除操作只允许作用于夹具保留的绝对临时
+    路径，防止再次出现“清理阶段重新解析生产路径”的误删。
+    """
+    resolved = Path(path).resolve()
+    if _is_within(resolved, PROJECT_ROOT):
+        raise RuntimeError(f"拒绝清理项目目录内的路径：{resolved}")
+    if not _is_within(resolved, _TEMP_PARENT):
+        raise RuntimeError(f"拒绝清理系统临时目录之外的路径：{resolved}")
+    if resolved == _TEMP_PARENT:
+        raise RuntimeError("拒绝清理系统临时目录本身。")
+    return resolved
+
+
+def assert_no_production_writes() -> None:
+    """测试主动调用：确认当前数据根不是生产位置。"""
+    if sim_runtime.data_root().resolve() == PROJECT_ROOT.resolve():
+        raise RuntimeError("数据根未重定向，拒绝运行：测试可能写入项目目录。")
+
+
+def install_test_data_root(tmp_dir: str) -> Path:
+    """把数据根与总配置来源同时指向临时目录，并返回该绝对路径。"""
+    root = Path(tmp_dir).resolve()
+    assert_cleanup_path_is_temporary(root)
+    sim_runtime.set_data_root_override(root)
+    config_target = root / sim_runtime.SHARED_CONFIG_FILE_NAME
+    config_target.parent.mkdir(parents=True, exist_ok=True)
+    if not config_target.exists():
+        shutil.copy2(PROJECT_ROOT / sim_runtime.SHARED_CONFIG_FILE_NAME, config_target)
+    sim_runtime.set_config_path_override(config_target)
+    assert_no_production_writes()
+    return root
+
+
+def reset_test_data_root() -> None:
+    """撤销注入。调用方随后只应使用自己保存的临时路径做清理。"""
+    sim_runtime.set_data_root_override(None)
+    sim_runtime.set_config_path_override(None)
+    sim_state.set_rng_provider(None)
+
+
+# -- QApplication 生命周期 --------------------------------------------------
+
+_QT_APP = None
+
+
+def ensure_qapp():
+    """进程内唯一的 QApplication（offscreen）。
+
+    统一在测试进程全程持有同一个实例：反复构造/销毁 QApplication 会让
+    已缓存的 Qt 对象指向失效的 application，是此前整套串跑 exit139 的
+    高危来源之一。返回 None 表示当前 Python 没有 PySide6。
+    """
+    global _QT_APP
+    try:
+        from PySide6.QtWidgets import QApplication
+    except ImportError:
+        return None
+    if _QT_APP is None:
+        _QT_APP = QApplication.instance() or QApplication([])
+        _QT_APP.setQuitOnLastWindowClosed(False)
+    return _QT_APP
+
+
+# 所有测试模块共享同一个 QApplication。历史 exit139 发生在后续测试模块再次
+# 构造 QApplication 时：前一实例已被回收，但模块级页面/控件仍然存活。
+# 在 support 导入时创建并永久持有唯一实例，避免“应用换了、Qt 对象没换”。
+_QT_APP = ensure_qapp()
+
+
+def cleanup_qt_widgets() -> int:
+    """关闭并删除本模块创建的全部顶层 Qt 控件。
+
+    旧页面测试长期持有数十个页面（累计 2 万+ widget），Qt 的全局 widget
+    列表在后续模块分配时可能失效并崩溃。每个测试模块结束时调用本函数，
+    让控件在自己的模块内完成 close/deferred delete，而不是泄漏到整套串跑。
+    """
+    try:
+        from PySide6.QtCore import QEvent
+        from PySide6.QtWidgets import QApplication
+    except ImportError:
+        return 0
+    app = QApplication.instance()
+    if app is None:
+        return 0
+    app.processEvents()
+    removed = 0
+    for _ in range(3):
+        widgets = [widget for widget in QApplication.topLevelWidgets()]
+        if not widgets:
+            break
+        for widget in widgets:
+            try:
+                widget.close()
+                widget.deleteLater()
+                removed += 1
+            except RuntimeError:
+                continue
+        app.sendPostedEvents(None, int(QEvent.DeferredDelete))
+        app.processEvents()
+        import gc
+
+        gc.collect()
+    app.sendPostedEvents(None, int(QEvent.DeferredDelete))
+    app.processEvents()
+    return removed
+
+
 def make_teams(names: List[str], division: str = "一级联赛") -> List[Team]:
     return [
         Team(name=name, division=division, roster=tuple(_build_default_roster(name, DEFAULT_ABILITY)))
@@ -69,15 +195,15 @@ class FreezeTestCase(unittest.TestCase):
     def setUp(self) -> None:
         self._tmp_dir = tempfile.mkdtemp(prefix="fs_freeze_")
         # macOS 上 /var 是 /private/var 的符号链接，resolve 与注入钩子保持一致。
-        self._tmp_path = Path(self._tmp_dir).resolve()
-        sim_runtime.set_save_root_override(self._tmp_path)
+        self._tmp_path = install_test_data_root(self._tmp_dir)
         sim_state.set_rng_provider(seeded_provider())
         self.addCleanup(self._cleanup)
 
     def _cleanup(self) -> None:
-        sim_state.set_rng_provider(None)
-        sim_runtime.set_save_root_override(None)
-        shutil.rmtree(self._tmp_dir, ignore_errors=True)
+        # 先撤销注入，再只用 setUp 时保存的绝对临时路径清理。
+        reset_test_data_root()
+        target = assert_cleanup_path_is_temporary(self._tmp_path)
+        shutil.rmtree(target, ignore_errors=True)
 
     # -- 常用断言辅助 ---------------------------------------------------
 
@@ -107,9 +233,9 @@ def assert_save_root_isolated() -> None:
     """防呆闸：指纹等批量写流程必须在重定向后的临时目录中运行。"""
     current = sim_runtime.save_root().resolve()
     project_saves = (PROJECT_ROOT / "saves").resolve()
-    if current == project_saves:
+    if current == project_saves or sim_runtime.data_root().resolve() == PROJECT_ROOT.resolve():
         raise RuntimeError(
-            "存档根目录未被重定向，拒绝运行（防止写入项目 saves/）。"
+            "数据根未被重定向，拒绝运行（防止写入项目 saves/ 与 current_save.txt）。"
             "请使用 FreezeTestCase 或 isolate_save_root 上下文。"
         )
 
@@ -123,17 +249,16 @@ class isolate_save_root:
 
     def __enter__(self) -> Path:
         self._tmp_dir = tempfile.mkdtemp(prefix="fs_iso_")
-        self._tmp_path = Path(self._tmp_dir).resolve()
-        sim_runtime.set_save_root_override(self._tmp_path)
+        self._tmp_path = install_test_data_root(self._tmp_dir)
         sim_state.set_rng_provider(seeded_provider(self._seed))
         assert_save_root_isolated()
         return self._tmp_path
 
     def __exit__(self, exc_type, exc, tb) -> None:
-        sim_state.set_rng_provider(None)
-        sim_runtime.set_save_root_override(None)
+        reset_test_data_root()
         if self._tmp_dir:
-            shutil.rmtree(self._tmp_dir, ignore_errors=True)
+            target = assert_cleanup_path_is_temporary(Path(self._tmp_dir))
+            shutil.rmtree(target, ignore_errors=True)
 
 
 def create_save(save_name: str = DEFAULT_SAVE_NAME):
@@ -287,3 +412,22 @@ def load_baseline() -> Optional[dict]:
     if not path.exists():
         return None
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def transfer_approval_controls(page):
+    """The visible approval control; modern macOS uses explicit choice buttons."""
+    from PySide6.QtWidgets import QCheckBox, QPushButton
+    return page.findChildren(QPushButton, "TransferAccept") or page.findChildren(QCheckBox)
+
+
+def choose_transfer(page, index, approved):
+    from PySide6.QtCore import Qt
+    from PySide6.QtTest import QTest
+    from PySide6.QtWidgets import QPushButton
+    buttons = page.findChildren(QPushButton, "TransferAccept" if approved else "TransferReject")
+    if buttons:
+        QTest.mouseClick(buttons[index], Qt.LeftButton)
+    else:
+        check = transfer_approval_controls(page)[index]
+        if check.isChecked() != approved:
+            QTest.mouseClick(check, Qt.LeftButton)

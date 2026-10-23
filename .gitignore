@@ -36,3 +36,6 @@ backup-v0.2.0/
 backups/
 trash/
 .local/
+
+# 可重新生成的测试截图与日志
+/artifacts/

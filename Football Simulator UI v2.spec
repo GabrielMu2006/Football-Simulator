@@ -1,12 +1,35 @@
 # -*- mode: python ; coding: utf-8 -*-
+# 资源路径全部从 spec 所在项目根推导，不写开发机绝对路径。
+from pathlib import Path
 
+ROOT = Path(SPECPATH)
 
 a = Analysis(
     ['ui_v2_main.py'],
-    pathex=['/Users/gabrielmu/Documents/Football Simulator'],
+    pathex=[str(ROOT)],
     binaries=[],
-    datas=[('足球模拟器总配置.json', '.'), ('team_badges_40_v2/PNG', 'team_badges_40_v2/PNG')],
-    hiddenimports=['football_simulator.ui_v2.pages.competition_page', 'football_simulator.ui_v2.pages.dashboard_page', 'football_simulator.ui_v2.pages.draft_page', 'football_simulator.ui_v2.pages.history_page', 'football_simulator.ui_v2.pages.match_detail_page', 'football_simulator.ui_v2.pages.matches_page', 'football_simulator.ui_v2.pages.player_profile_page', 'football_simulator.ui_v2.pages.players_page', 'football_simulator.ui_v2.pages.saves_page', 'football_simulator.ui_v2.pages.season_overview_page', 'football_simulator.ui_v2.pages.team_profile_page', 'football_simulator.ui_v2.pages.teams_page', 'football_simulator.ui_v2.pages.transfers_page', 'football_simulator.ui_v2.pages.weekly_report_page', 'football_simulator.ui_v2.components.team_crest', 'football_simulator.ui_v2.design_tokens'],
+    datas=[
+        ('足球模拟器总配置.json', '.'),
+        ('team_badges_40_v3/PNG', 'team_badges_40_v3/PNG'),
+        ('team_badges_40_v3/manifest.json', 'team_badges_40_v3'),
+        ('team_badges_40_v2/PNG', 'team_badges_40_v2/PNG'),
+        ('football_simulator/rules', 'football_simulator/rules'),
+        ('assets/atmosphere', 'assets/atmosphere'),
+        ('assets/app_icon_256.png', 'assets'),
+    ] + ([('assets/trophies/v1', 'assets/trophies/v1')] if (ROOT / 'assets/trophies/v1').is_dir() else []),
+    hiddenimports=[
+        'football_simulator.ui.main_window',
+        'football_simulator.ui.pages.core',
+        'football_simulator.ui.pages.competitions',
+        'football_simulator.ui.pages.entities',
+        'football_simulator.ui.pages.tools',
+        'football_simulator.ui.pages.honors',
+        'football_simulator.ui.trophies',
+        'football_simulator.persistence_v2.store',
+        'football_simulator.app.service',
+        'football_simulator.app.queries',
+        'football_simulator.ui.team_crest',
+    ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -32,7 +55,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['/Users/gabrielmu/Documents/Football Simulator/assets/app.icns'],
+    icon=[str(ROOT / 'assets' / 'app.icns')],
 )
 coll = COLLECT(
     exe,
@@ -46,6 +69,6 @@ coll = COLLECT(
 app = BUNDLE(
     coll,
     name='Football Simulator UI v2.app',
-    icon='/Users/gabrielmu/Documents/Football Simulator/assets/app.icns',
+    icon=str(ROOT / 'assets' / 'app.icns'),
     bundle_identifier='com.gabrielmu.footballsimulator.uiv2',
 )

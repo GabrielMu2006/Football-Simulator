@@ -1,0 +1,685 @@
+{
+  "status": "implementation_proposal_not_installed",
+  "source_sha256": "cd78fe54a42c1513145dab8fff079719de7d593165eb10b0cfeccd26f2b774cf",
+  "proposed_rules_version": "2026-10-20.2",
+  "user_constraints": [
+    "All eight championships are decided strictly after winter weeks 25-27.",
+    "All non-knockout cup stages finish before winter.",
+    "At most two matches per team per week; 52 weeks; no games in winter or summer breaks."
+  ],
+  "league_title_decision_week": 42,
+  "final_weeks": {
+    "confluence": 30,
+    "ascendant": 43,
+    "zenith": 45,
+    "aureole": 47,
+    "ember": 48,
+    "starpath": 49
+  },
+  "unchanged": [
+    "league rounds",
+    "promotion playoffs",
+    "other five cup dates",
+    "cup activation seasons",
+    "qualification and seeding",
+    "home advantage and neutral venue rules",
+    "honor points"
+  ],
+  "weeks": [
+    {
+      "week": 1,
+      "league_round": 1,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": []
+    },
+    {
+      "week": 2,
+      "league_round": 2,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": []
+    },
+    {
+      "week": 3,
+      "league_round": 3,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": []
+    },
+    {
+      "week": 4,
+      "league_round": 4,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "ascendant",
+          "stage": "cross_group_1",
+          "match_count": 6
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "league_round": 5,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "aureole",
+          "stage": "group_1",
+          "match_count": 8
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "league_round": 6,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "confluence",
+          "stage": "round_32",
+          "match_count": 16
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "league_round": 7,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "ascendant",
+          "stage": "cross_group_2",
+          "match_count": 6
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "league_round": 8,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "aureole",
+          "stage": "group_2",
+          "match_count": 8
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "league_round": 9,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "starpath",
+          "stage": "swiss_1",
+          "match_count": 8
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "league_round": 10,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "ascendant",
+          "stage": "cross_group_3",
+          "match_count": 6
+        }
+      ]
+    },
+    {
+      "week": 11,
+      "league_round": 11,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "confluence",
+          "stage": "round_16",
+          "match_count": 8
+        }
+      ]
+    },
+    {
+      "week": 12,
+      "league_round": 12,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "aureole",
+          "stage": "group_3",
+          "match_count": 8
+        }
+      ]
+    },
+    {
+      "week": 13,
+      "league_round": 13,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "ascendant",
+          "stage": "cross_group_4",
+          "match_count": 6
+        }
+      ]
+    },
+    {
+      "week": 14,
+      "league_round": 14,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "starpath",
+          "stage": "swiss_2",
+          "match_count": 8
+        }
+      ]
+    },
+    {
+      "week": 15,
+      "league_round": 15,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "aureole",
+          "stage": "group_4",
+          "match_count": 8
+        }
+      ]
+    },
+    {
+      "week": 16,
+      "league_round": 16,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "ascendant",
+          "stage": "cross_group_5",
+          "match_count": 6
+        }
+      ]
+    },
+    {
+      "week": 17,
+      "league_round": 17,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "confluence",
+          "stage": "quarterfinal",
+          "match_count": 4
+        }
+      ]
+    },
+    {
+      "week": 18,
+      "league_round": 18,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "starpath",
+          "stage": "swiss_3",
+          "match_count": 8
+        }
+      ]
+    },
+    {
+      "week": 19,
+      "league_round": 19,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "ascendant",
+          "stage": "cross_group_6",
+          "match_count": 6
+        }
+      ]
+    },
+    {
+      "week": 20,
+      "league_round": 20,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "aureole",
+          "stage": "group_5",
+          "match_count": 8
+        }
+      ]
+    },
+    {
+      "week": 21,
+      "league_round": 21,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "starpath",
+          "stage": "swiss_4",
+          "match_count": 6
+        }
+      ]
+    },
+    {
+      "week": 22,
+      "league_round": 22,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "ascendant",
+          "stage": "play_in",
+          "match_count": 3
+        }
+      ]
+    },
+    {
+      "week": 23,
+      "league_round": 23,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "aureole",
+          "stage": "group_6",
+          "match_count": 8
+        }
+      ]
+    },
+    {
+      "week": 24,
+      "league_round": 24,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "starpath",
+          "stage": "swiss_5",
+          "match_count": 3
+        }
+      ]
+    },
+    {
+      "week": 25,
+      "league_round": null,
+      "promotion_stage": null,
+      "break_type": "winter",
+      "cup_slots": []
+    },
+    {
+      "week": 26,
+      "league_round": null,
+      "promotion_stage": null,
+      "break_type": "winter",
+      "cup_slots": []
+    },
+    {
+      "week": 27,
+      "league_round": null,
+      "promotion_stage": null,
+      "break_type": "winter",
+      "cup_slots": []
+    },
+    {
+      "week": 28,
+      "league_round": null,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "confluence",
+          "stage": "semifinal",
+          "match_count": 2
+        }
+      ]
+    },
+    {
+      "week": 29,
+      "league_round": 25,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "ascendant",
+          "stage": "quarterfinal",
+          "match_count": 4
+        }
+      ]
+    },
+    {
+      "week": 30,
+      "league_round": 26,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "confluence",
+          "stage": "final",
+          "match_count": 1
+        }
+      ]
+    },
+    {
+      "week": 31,
+      "league_round": 27,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "aureole",
+          "stage": "quarterfinal_leg_1",
+          "match_count": 4
+        }
+      ]
+    },
+    {
+      "week": 32,
+      "league_round": 28,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "aureole",
+          "stage": "quarterfinal_leg_2",
+          "match_count": 4
+        }
+      ]
+    },
+    {
+      "week": 33,
+      "league_round": 29,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "starpath",
+          "stage": "quarterfinal_leg_1",
+          "match_count": 4
+        }
+      ]
+    },
+    {
+      "week": 34,
+      "league_round": 30,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "starpath",
+          "stage": "quarterfinal_leg_2",
+          "match_count": 4
+        }
+      ]
+    },
+    {
+      "week": 35,
+      "league_round": 31,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "ember",
+          "stage": "wb_quarterfinal",
+          "match_count": 4
+        }
+      ]
+    },
+    {
+      "week": 36,
+      "league_round": 32,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "ascendant",
+          "stage": "semifinal",
+          "match_count": 2
+        }
+      ]
+    },
+    {
+      "week": 37,
+      "league_round": 33,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "ember",
+          "stage": "wb_semifinal",
+          "match_count": 2
+        },
+        {
+          "competition": "ember",
+          "stage": "lb_round_1",
+          "match_count": 2
+        }
+      ]
+    },
+    {
+      "week": 38,
+      "league_round": 34,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "aureole",
+          "stage": "semifinal_leg_1",
+          "match_count": 2
+        }
+      ]
+    },
+    {
+      "week": 39,
+      "league_round": 35,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "aureole",
+          "stage": "semifinal_leg_2",
+          "match_count": 2
+        }
+      ]
+    },
+    {
+      "week": 40,
+      "league_round": 36,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "ember",
+          "stage": "lb_round_2",
+          "match_count": 2
+        }
+      ]
+    },
+    {
+      "week": 41,
+      "league_round": 37,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "starpath",
+          "stage": "semifinal_leg_1",
+          "match_count": 2
+        }
+      ]
+    },
+    {
+      "week": 42,
+      "league_round": 38,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "starpath",
+          "stage": "semifinal_leg_2",
+          "match_count": 2
+        }
+      ]
+    },
+    {
+      "week": 43,
+      "league_round": null,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "ascendant",
+          "stage": "final",
+          "match_count": 1
+        },
+        {
+          "competition": "zenith",
+          "stage": "quarterfinal",
+          "match_count": 4
+        }
+      ]
+    },
+    {
+      "week": 44,
+      "league_round": null,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "ember",
+          "stage": "wb_final",
+          "match_count": 1
+        },
+        {
+          "competition": "ember",
+          "stage": "lb_round_3",
+          "match_count": 1
+        },
+        {
+          "competition": "zenith",
+          "stage": "semifinal",
+          "match_count": 2
+        }
+      ]
+    },
+    {
+      "week": 45,
+      "league_round": null,
+      "promotion_stage": null,
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "ember",
+          "stage": "lb_final",
+          "match_count": 1
+        },
+        {
+          "competition": "zenith",
+          "stage": "final",
+          "match_count": 1
+        }
+      ]
+    },
+    {
+      "week": 46,
+      "league_round": null,
+      "promotion_stage": "semifinal_leg_1",
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "aureole",
+          "stage": "final_leg_1",
+          "match_count": 1
+        }
+      ]
+    },
+    {
+      "week": 47,
+      "league_round": null,
+      "promotion_stage": "semifinal_leg_2",
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "aureole",
+          "stage": "final_leg_2",
+          "match_count": 1
+        }
+      ]
+    },
+    {
+      "week": 48,
+      "league_round": null,
+      "promotion_stage": "final_leg_1",
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "ember",
+          "stage": "grand_final",
+          "match_count": 1
+        }
+      ]
+    },
+    {
+      "week": 49,
+      "league_round": null,
+      "promotion_stage": "final_leg_2",
+      "break_type": null,
+      "cup_slots": [
+        {
+          "competition": "starpath",
+          "stage": "final",
+          "match_count": 1
+        }
+      ]
+    },
+    {
+      "week": 50,
+      "league_round": null,
+      "promotion_stage": null,
+      "break_type": "summer",
+      "cup_slots": []
+    },
+    {
+      "week": 51,
+      "league_round": null,
+      "promotion_stage": null,
+      "break_type": "summer",
+      "cup_slots": []
+    },
+    {
+      "week": 52,
+      "league_round": null,
+      "promotion_stage": null,
+      "break_type": "summer",
+      "cup_slots": []
+    }
+  ],
+  "capacity_proof": {
+    "weeks_1_to_42": "No more than one league fixture and one cup fixture per team per week. Resurgence WB and LB matches in week 37 involve disjoint teams.",
+    "week_43": "Ascendance final plus Aeon quarterfinal: at most one match in each competition.",
+    "week_44": "Resurgence WB final and LB round 3 have disjoint teams, plus Aeon semifinal: at most two per team.",
+    "week_45": "Resurgence LB final plus Aeon final: at most two per team.",
+    "weeks_46_to_49": "At most one promotion playoff fixture and one cup fixture per team.",
+    "dynamic_validation_required": true
+  }
+}

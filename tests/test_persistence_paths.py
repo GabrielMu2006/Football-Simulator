@@ -15,6 +15,7 @@ import unittest
 from pathlib import Path
 
 from football_simulator.persistence.connection import SaveDatabaseError
+from football_simulator import runtime as sim_runtime
 from football_simulator.runtime import (
     create_save_directory,
     delete_save_directory,
@@ -24,6 +25,7 @@ from football_simulator.runtime import (
 from football_simulator.state import load_save_snapshot
 
 from tests.support import (
+    PROJECT_ROOT,
     FreezeTestCase,
     create_save,
     load_snapshot,
@@ -36,7 +38,9 @@ from tests.support import (
 class SavePathBoundaryTests(FreezeTestCase):
     def test_save_root_redirect_active(self) -> None:
         # 所有测试写入都被重定向到临时目录，绝不触碰项目 saves/。
-        self.assertEqual(save_root(), self._tmp_path)
+        self.assertEqual(sim_runtime.data_root(), self._tmp_path)
+        self.assertEqual(save_root(), self._tmp_path / "saves")
+        self.assertNotEqual(save_root(), PROJECT_ROOT / "saves")
 
     def test_normalize_save_name_accepts_valid_names(self) -> None:
         for name in ("default", "我的存档", "save-01", "My Save 2", "联赛2026"):
