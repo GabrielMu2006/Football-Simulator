@@ -118,7 +118,7 @@ def _encode_meta(key: str, value) -> Tuple[str, str]:
     return key, json.dumps(value, ensure_ascii=False)
 
 
-def write_world(save_name: str, world: dict) -> int:
+def write_world(save_name: str, world: dict, *, completed_week: Optional[int] = None) -> int:
     """在一个事务里写权威世界与全部规范化投影。"""
     world = dict(world)
     world.pop("_fixture_index", None)
@@ -311,6 +311,14 @@ def write_world(save_name: str, world: dict) -> int:
                         event.get("text", ""),
                     ),
                 )
+            # Explicit weekly command boundary, opt-in tables only. Frozen
+            # material shares this transaction; ordinary writes never backfill.
+            if completed_week is not None:
+                from football_simulator.press.repository import capture
+                capture(conn, world, completed_week)
+            if conn.execute("SELECT 1 FROM sqlite_master WHERE name='press_feature_activation'").fetchone():
+                from football_simulator.press.feature_queue import capture as capture_features
+                capture_features(conn, world)
     finally:
         conn.close()
     return version
@@ -495,6 +503,9 @@ def export_package(save_name: str, dest_path: Path) -> Path:
         try:
             with dst:
                 src.backup(dst)
+            # The archive contains one self-contained database, no WAL/SHM.
+            # Change only the owned export snapshot, never the live save.
+            dst.execute('PRAGMA journal_mode=DELETE')
         finally:
             src.close()
             dst.close()
@@ -588,6 +599,15 @@ def import_package(package_path: Path, target_name: str, *, overwrite: bool = Fa
             archive.extract(DB_FILE_NAME, staging)
             config_data = archive.read(runtime.SAVE_CONFIG_FILE_NAME).decode("utf-8") if runtime.SAVE_CONFIG_FILE_NAME in archive.namelist() else "{}"
         (staging / runtime.SAVE_CONFIG_FILE_NAME).write_text(config_data, encoding="utf-8")
+        # An imported copy gets its own future reporting instance. Historical
+        # frozen packages retain the original source identity and hashes.
+        staged_conn = _connect(staging / DB_FILE_NAME)
+        try:
+            if staged_conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='press_activation'").fetchone():
+                with staged_conn:
+                    staged_conn.execute("UPDATE press_activation SET instance_id=? WHERE singleton=1", (str(uuid.uuid4()),))
+        finally:
+            staged_conn.close()
         # 再次确认目标未在验证后被创建。
         if target_dir.exists():
             raise FileExistsError(f"存档 '{target_name}' 已存在；默认拒绝重名导入。")

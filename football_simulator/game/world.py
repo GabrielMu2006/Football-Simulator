@@ -262,7 +262,7 @@ def advance_week(save_name: str, *, rng: Optional[random.Random] = None) -> dict
     season["week"] = min(TOTAL_WEEKS, week + 1) if week < TOTAL_WEEKS else TOTAL_WEEKS
     world["story_events"] = _generate_week_events(world, completed_ids, week)
     season["events"] = [event for event in world["story_events"] if event["season"] == world["season_number"]]
-    store.write_world(save_name, world)
+    store.write_world(save_name, world, completed_week=week)
     return {"week": week, "matches": completed_ids, "world": world}
 
 

@@ -2,6 +2,15 @@
 
 适用于本项目的实施、测试、截图和打包。用户明确要求：先将旧UI完整归档退出工作源码，再修复当前UI的三项P2；正式应用只保留最新版。仅做只读审查时，核对归档状态并报告，不自行执行代码迁移。
 
+## 2026-10-26 双版本正式发布约定（优先于下文旧路径约定）
+
+- 用户授权将报刊版定名 V0.2.0、发布 GitHub Release，并在本机同时保留 V0.1.0 与 V0.2.0；仅清理其他旧应用/测试候选安装包，不删除被动旧UI源码归档、用户存档、配置或证据文档。
+- 正式应用分别位于 `release/macos/V0.1.0/Football Simulator V0.1.0.app`、`release/macos/V0.2.0/Football Simulator V0.2.0.app`；下文单一 `Football Simulator UI v2.app` 发布路径为历史位置。
+- V0.1.0 改外层文件名后保留包内全部字节和旧图标；V0.2.0 使用蓝鲸足球图标及独立 bundle identifier。后续开发不得自动替换任一正式版本。
+- V0.2.0 打包默认数据目录为 `~/Library/Application Support/Football Simulator V0.2.0/`，V0.1.0 保留原目录；独立验收仍必须设置 `FS_DATA_ROOT`。需要继续旧进度时，导出并导入存档副本，不自动共享写入。
+- 现有 API 密钥仅保存在本机钥匙串，沿用原有服务条目；禁止写入源文件、包、Release、日志或存档。新应用首次读取可能需要本人通过系统授权，不要求重新填写 API 密钥。
+- 本轮发布仅 macOS Apple Silicon。Windows 不连接、不构建、不实测、不发布。
+
 ## 唯一现行UI与入口
 
 - 正式源码入口：项目根目录`ui_v2_main.py`，使用项目`.venv-ui-v2/bin/python`或经确认的测试解释器。

@@ -1,137 +1,84 @@
-# Football Simulator（联赛观察型）
+# Football Simulator · V0.2.0
 
-一个本地运行的足球联赛观察模拟器：创建新存档、推进 52 周赛季，在暖浅色杂志式
-界面里追踪球队、球员、比赛、六项杯赛、数据与赛季故事。
+本地运行的足球联赛观察模拟器。推进一个52周赛季，追踪40支球队、两级联赛、六项杯赛、球员数据与赛季故事。V0.2.0加入由DeepSeek API生成的报刊中心。
 
-**当前代码版本以`football_simulator/version.py`为准；同一版本号可能包含多次构建。** 启动和验收前先读[AGENTS.md](AGENTS.md)，核对实际入口、模块、构建指纹及运行进程。
+<p align="center">
+  <img src="assets/app_icon_256.png" width="128" alt="V0.1.0 绿金足球图标">
+  <img src="assets/press-v0.2.0/app_icon_256.png" width="128" alt="V0.2.0 蓝鲸足球图标">
+</p>
 
-当前发布：**V0.1.0**（重构后重新编号，macOS Apple Silicon）。下载见 [GitHub Releases](https://github.com/GabrielMu2006/Football-Simulator/releases/tag/V0.1.0)。
-日常开发测试使用[隔离开发流程](docs/isolated-development.md)，不覆盖正式应用、不挂载游玩存档。
+| 版本 | 内容 | 下载 |
+|---|---|---|
+| **V0.2.0** | 蓝鲸足球图标；含报刊中心 | [macOS Apple Silicon ZIP](https://github.com/GabrielMu2006/Football-Simulator/releases/download/V0.2.0/Football-Simulator-V0.2.0-macOS-arm64.zip) · [Release](https://github.com/GabrielMu2006/Football-Simulator/releases/tag/V0.2.0) |
+| **V0.1.0** | 绿金足球图标；原联赛观察版 | [macOS Apple Silicon ZIP](https://github.com/GabrielMu2006/Football-Simulator/releases/download/V0.1.0/Football-Simulator-V0.1.0-macOS-arm64.zip) · [Release](https://github.com/GabrielMu2006/Football-Simulator/releases/tag/V0.1.0) |
 
-> 本轮只支持**新存档**。旧存档不迁移、不作为验收输入，原文件保留；旧裸 SQLite/JSON
-> 存档会被明确拒绝并提示新建。正式入口仍是 `ui_v2_main.py`。
+下载后解压，将应用放到任意可访问目录运行，无需安装Python。当前发布仅覆盖macOS Apple Silicon；Windows移植和实测继续延期。应用采用本机临时签名，尚未进行Apple Developer ID公证。
 
-现行窗口为`football_simulator.ui.main_window.MainWindow`。旧`football_simulator/ui_v2/`已整体归档到`archive/legacy-ui/legacy-ui-v2-20261021-2351.zip`并移出工作源码；共用队徽现位于`football_simulator/ui/team_crest.py`。`ui_v2_main.py`、应用名称和虚拟环境名称不属于旧UI退役范围。归档ZIP是只读证据，不加入PYTHONPATH、测试发现或应用包。
+## V0.2.0 报刊中心
 
-## 2026-10 本轮改造
+每篇报道是一篇带小标题的完整长文，以球队故事、走势、冷门和人物表现为主。
 
-- 新赛事引擎：S1 无杯；S2 五杯 199 场；S3 起六杯 206 场。
-  - 君临杯（aureole）62 场：四档四组双循环 + 两回合八强/半决赛/决赛；
-  - 命途杯（confluence）31 场：32 队单场淘汰、逐轮无种子重抽；
-  - 极境杯（starpath）46 场：CS 式 BU 瑞士轮 + 两回合八强/半决赛 + 中立决赛；
-  - 不灭杯（ember）14 场：8 队双败、固定交叉落位、总决赛无重置；
-  - 凌越杯（ascendant）46 场：登峰/涅槃组外循环、突围、八强单败；
-  - 永世杯（zenith / Aeon Cup）7 场：冠军资格去重补位、荣誉种子固定签表。
-- 加时 2×15 分钟、逐脚点球 0.75 与突然死亡；两回合取消客场进球；中立场无主场加成。
-- 40 个俱乐部主场稳定绑定；S2 抽 3 个、S3 起抽 4 个中立决赛场地且同季不放回。
-- 52 周赛历：冬窗 25–27、夏窗 50–52、升级附加赛 46–49，第 24/49 周结算。
-- 逐场稳定球员/球队事实、零产出出场、赛季能力/评分/身价/奖项冻结；六杯个人奖与
-  Top20 贡献解释。
-- 观察三模式：自动、关键事项暂停（默认）、全部手动；同一命令与事务。
-- 完整存档包 `.fsarchive`：数据库 + 配置 + manifest；导入先校验后原子安装。
-- 新 UI：暖浅色主体 + 深色焦点比赛 + 转播式大比分；14 类页面在
-  1280×800 / 1440×900 / 1680×980 实际渲染验收。
+- **周报**：手动选择已完成周次生成。
+- **阶段报**：两级联赛半程、Reign Cup小组赛、Apex Cup瑞士轮、Ascendance Cup组外循环和突围赛结束后自动生成。
+- **赛事总报、转会窗报、选秀报、Top20专题**：在相应结算或决定完成后自动进入后台队列，不阻塞推进。
+- 赛事、转会、选秀与年度Top20页面提供对应报道入口；筛选、返回和F5保留上下文。
+- 每个存档单独启用，不补过去的报道；此前的历史事实仍可用于新文章的背景。
+- 成功文章只生成一次。阅读、刷新、重开不再次调用API；正常关闭会保存当前请求，随后暂停，重开复用已完成部分。
+- 失败时允许手动重试缺失部分；未知请求结果不会自动重新付费。Top20按概览与20位球员点评分段生成，本地合成。
+
+使用说明见[报刊与恢复](docs/press/newspaper.md)。文章基于游戏冻结事实，媒体评论由模型撰写；比分、榜单和正式荣誉以游戏记录为准。
+
+### API密钥
+
+在“报刊 → API设置”中使用自己的DeepSeek API密钥，可选择仅本次使用或保存在macOS钥匙串。已经保存的密钥继续沿用；新应用首次读取时，macOS可能要求本人授权，无需重新填写密钥。
+
+**源码、GitHub Release和安装包不含开发者密钥、游玩存档或个人配置。** 密钥不写入文章、存档或日志。API调用费用由密钥所属账户承担。本项目不是DeepSeek官方应用。
+
+## 两个版本同时保留
+
+两个应用使用不同名称、图标和应用标识，数据目录分开：
+
+| 应用 | 默认数据目录 |
+|---|---|
+| Football Simulator V0.1.0 | `~/Library/Application Support/Football Simulator/` |
+| Football Simulator V0.2.0 | `~/Library/Application Support/Football Simulator V0.2.0/` |
+
+V0.2.0不会自动改写V0.1.0的存档。需要继续原有进度时，先在V0.1.0导出`.fsarchive`，再在V0.2.0导入副本；两个版本之后分别推进。完整导出包包含数据库、配置和manifest，旧裸SQLite/JSON格式仍不迁移。
+
+本项目本机发布位置：`release/macos/V0.1.0/`和`release/macos/V0.2.0/`。源码修改不会更新这两个正式包；后续开发使用[隔离开发流程](docs/isolated-development.md)。
+
+## 游戏内容
+
+- 40支球队、两级联赛各20队、38轮主客场循环。
+- 六项杯赛：Reign Cup、Destiny Cup、Apex Cup、Resurgence Cup、Ascendance Cup、Aeon Cup；包含分组、瑞士轮、双败、突围和两回合淘汰。
+- S1无杯；S2开放五杯；S3起六杯均开放。所有冠军均在冬窗后产生。
+- 八座赛事奖杯、40队队徽和双语球场；中立比赛不获得主场加成。
+- 真实球员目录、历届冠军、历史数据、跨赛季荣誉分总榜、奖杯数和年度Top20。
+- 不同位置、每方最多三人的球员交换；总身价差上限20，交换后位置不超限，同一球员同窗仅转会一次。
+- 自动处理、关键事项暂停、全部手动三种观察模式；转会审核、选秀、升降级和升级附加赛。
 
 ## 从源码运行
 
 ```bash
 python3 -m venv .venv-ui-v2
 .venv-ui-v2/bin/pip install -r requirements-ui-v2.txt
-.venv-ui-v2/bin/python ui_v2_main.py
+FS_DATA_ROOT="$PWD/.local/source-development" .venv-ui-v2/bin/python ui_v2_main.py
 ```
 
-测试/截图可设置 `FS_DATA_ROOT=/path/to/temp`，把 saves/backups/trash/current_save
-与配置整体重定向到独立目录。
+唯一现行入口是`ui_v2_main.py`，窗口为`football_simulator.ui.main_window.MainWindow`。旧`football_simulator/ui_v2/`已退役并被动归档，不属于运行入口。开始工作前请阅读[AGENTS.md](AGENTS.md)。
 
-## 核心内容
+快捷键：Ctrl/Cmd+K搜索；Alt+左右箭头前进/后退；F5刷新当前页面。
 
-- 40 支球队、每队 11 人：1 门将 + 4 后卫 + 3 中场 + 3 前锋；球队/球员/比赛/赛事全部
-  使用稳定 ID，默认球员与真实球员身份分离。
-- 250 名真实球员：50 名初始进入一级联赛，其余进入后续选秀池。
-- 一级/次级联赛各 20 队 38 轮；次级联赛球队荣誉分 0，但冠军保留永世杯（Aeon Cup）资格；
-  球员次级联赛 0.35 是 Top20 权重，不是球队荣誉分。
-- 转会允许不同位置、每方最多三人的交换包；双方总身价差不超过 20，交换后位置人数不超限，同一球员同窗只转会一次。另有能力审核、选秀、升降级、升级附加赛和历史归档。
-- 存档：新建 / 初始化 / 打开 / 移入回收站 / 恢复 / 清空 / 备份 / 完整导出导入。
-
-## 界面导航
-
-- 侧栏六个观察入口：总览 / 比赛 / 赛事 / 球队 / 球员 / 历史；工具区：转会 / 选秀 / 存档。
-- 顶栏：前进/后退、面包屑、存档切换、赛季周次、全局搜索、唯一主动作、取消/完成本周后停止。
-- 深色焦点比赛区使用转播式大比分；表格页使用主表滚动，内容页最多一个主纵向滚动面。
-- 队徽使用 `team_badges_40_v3/PNG` 正式资源（v2 保留为历史回退）；比分、队名、年份全部原生文字叠加。
-
-### 快捷键
-
-| 快捷键 | 功能 |
-|---|---|
-| Ctrl/Cmd+K | 全局搜索 |
-| Alt+← / Alt+→ | 后退 / 前进 |
-| F5 | 刷新当前页（保留路由、筛选、滚动） |
-
-## 最新版应用
-
-当前正式macOS发布位置（含八座奖杯）：
-
-- 应用：`release/macos/Football Simulator UI v2.app`
-- 压缩包：`release/macos/Football-Simulator-UI-v2-macOS.zip`
-- 验证记录：对应本轮任务的`Reviews/latest/`报告及与包指纹对应的构建/运行身份记录。
-
-源码改动不会自动更新此应用。修复后的包必须重新构建并核对实际启动路径/PID，不能只凭同名应用或2.0.0版本号判断是当前代码。
-
-旧应用、旧DMG和旧Windows压缩包已清理。Windows构建与实测继续延期，构建脚本仍保留。
-
-## 测试
-
-现行测试、基线和必要夹具在`tests/`，运行说明见`tests/README.md`。本轮先归档旧UI专属测试；实际测试数量及归档用例去向分别记录，旧报告数字不作为当前全量结果。
+## 开发与构建
 
 ```bash
-QT_QPA_PLATFORM=offscreen PYTHONFAULTHANDLER=1 .venv-ui-v2/bin/python -m unittest discover -s tests
-QT_QPA_PLATFORM=offscreen PYTHONFAULTHANDLER=1 .venv-ui-v2/bin/python tests/run_suite.py --json artifacts/tests/results.json --log-dir artifacts/tests/logs
-```
-
-后续测试截图和日志统一写入`artifacts/tests/`，该目录不进入git。`Reviews/latest/`只保留最近验证摘要、必要日志与少量代表截图。
-
-## 构建
-
-```bash
+python3 scripts/test_in_docker.py --suite core
+python3 scripts/test_in_docker.py --suite ui
 ./build_macos_ui_v2_app.sh
 ```
 
-macOS脚本包含规则、40队徽、球场氛围图与八奖杯资源。默认临时构建产物仍在`build-ui-v2/`与`dist-ui-v2/`；保留发布产物位于`release/macos/`。不自动发布、推送或合并。
+Docker只挂载白名单源码快照，不挂载用户存档、正式应用、主目录或Docker socket。Linux离屏Qt测试不作为macOS Cocoa验收。构建输出使用独立临时目录；验证候选后才晋升正式包。源码和发布清单需经过密钥检查，应用ZIP通过GitHub Release分发，不提交到Git。
 
-## 存档位置
+项目主体：`football_simulator/game/`（核心）、`persistence_v2/`（存档）、`app/`（服务查询）、`ui/`（界面）、`press/`（报刊材料、队列与生成）。规则位于`football_simulator/rules/`，测试位于`tests/`。
 
-- 数据根：源码运行默认项目根，打包后为 `~/Library/Application Support/Football Simulator/`
-  （Windows 为 `%APPDATA%\Football Simulator\`）。
-- 每个存档目录包含 `save.sqlite3`（schema v2）与 `config.json`；
-  `current_save.txt`、`backups/`、`trash/` 位于数据根。
-- 完整导出包 `.fsarchive` = 数据库一致性副本 + `config.json` + `manifest.json`。
-- 旧版 `state.json` / 旧 schema 不迁移、不读取；原文件保留。
-
-## 项目结构
-
-```text
-ui_v2_main.py                      唯一入口（新 UI + 新存档）
-football_simulator/game/           稳定身份、52 周日历、六杯、引擎、结算/奖项/故事
-football_simulator/persistence_v2/ schema v2、world + 规范化投影、完整导入导出
-football_simulator/app/            应用服务与只读 DTO 查询
-football_simulator/ui/             暖浅色外壳与 14 类页面
-football_simulator/ui/team_crest.py 共用队徽（v3优先，v2备用，Retina缓存）
-archive/legacy-ui/                已退役旧UI源码/专属测试的被动ZIP及指纹清单
-football_simulator/rules/          已确认规则与球场 JSON（SHA-256）
-assets/                            应用图标（app.icns / app.ico / PNG）
-team_badges_40_v3/                 40 支球队队标 V3（PNG，正式）
-team_badges_40_v2/                 40 支球队队标 V2（历史回退）
-real_player_star_pool_200.md       真实球员池文档（200 基础）
-real_player_additions_50.md        真实球员池新增 50 人文档（已合并进配置）
-scripts/                           图标生成、DMG 打包、Windows 构建脚本
-tests/                             冻结测试 / 页面验收测试 / 基线
-build_macos_ui_v2_app.sh           macOS PyInstaller 构建
-build_windows_ui_v2.bat            Windows 构建快捷入口（调用 scripts/build_windows.ps1）
-"Football Simulator UI v2.spec"            macOS PyInstaller 配置
-"Football Simulator UI v2 Windows.spec"    Windows PyInstaller 配置
-release/macos/                     macOS 发布产物（本地）
-release/windows/                   Windows 构建说明（实测延期，旧二进制已清理）
-```
-
-大型应用与ZIP不进入git；如需发布，另行执行发布流程。
+[完整更新记录](CHANGELOG.md)

@@ -1,0 +1,28 @@
+{
+  "id": "2815a129-c1cc-4c80-9d40-0e6e6a3ad4d3",
+  "object": "chat.completion",
+  "created": 1792900643,
+  "model": "deepseek-flash",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\"title\":\"Apex Cup 瑞士轮第四轮：卫冕冠军出局，Crystal Roses 大胜晋级\",\"deck\":\"Thunder Rangers 不敌 Supersonic Knights，卫冕之路在瑞士轮告终；Crystal Roses 五人破门闯入八强。\",\"sections\":[{\"heading\":\"卫冕冠军倒在瑞士轮\",\"story_ids\":[\"S1\"],\"paragraphs\":[\"Apex Cup 瑞士轮第四轮，Thunder Rangers 在雷鸣旷野球场（Thunderfield Park）以 0比1 不敌 Supersonic Knights，卫冕冠军就此出局。此前瑞士轮战绩已把两队分开：Supersonic Knights 2胜2负，Thunder Rangers 1胜3负，前者的晋级希望系于这一战，后者却已无路可退。\",\"唯一进球出现在第67分钟。Supersonic Knights 带着联赛第15位的处境而来，却在杯赛拿到关键一胜，留在竞争队列中；此前四场正式比赛连败的颓势也就此终止。反观 Thunder Rangers，输球使各项正式赛事连败扩大到三场，卫冕冠军的身份让这场失败格外刺眼：联赛第七不是致命伤，但杯赛出局没有补救空间。\",\"同一轮瑞士轮结束后，Crystal Roses、Hands of Fate、Hannya Masks、Sentinels of Light、Star Guardians 已锁定晋级，Crimson Moon、Fallen Heirlooms、Icefire Ballad、Thunder Rangers、Zero Returners 被淘汰。Apex Cup 的八强席位还剩三席，Brookgate Wanderers、Glazed Dreams、Glorious Vision、Ruined Legion、Supersonic Knights、Thorned Reliquary 要继续争夺。\"},{\"heading\":\"Crystal Roses 的进球盛宴\",\"story_ids\":[\"S2\"],\"paragraphs\":[\"Crystal Roses 在水晶花园球场（Crystal Garden Stadium）以 5比0 击败 Thorned Reliquary，瑞士轮 3胜1负过关，晋级八强。Ademola Lookman 全场打进4球，Christopher Nkunku 送出2次助攻，Jamal Musiala 创造5次机会，主队的优势从结果到个人数据都很直接。\",\"这场胜利对 Crystal Roses 还有一层分量：俱乐部由此追平此前八强的最佳战绩，同时延续各项正式赛事六场不败，并把这一纪录扩大到七场。Thorned Reliquary 此前九场正式比赛不败，本轮被终结，瑞士轮停留在2胜2负，仍需在剩余轮次争取出线。\",\"联赛积分榜上 Crystal Roses 以57分领跑、Thorned Reliquary 第六，差距赛前就已明显；杯赛给出的是更干脆的答案。Crystal Roses 的胜势由核心球员的个人发挥兑现，Thorned Reliquary 的长不败一旦终止，留给它重整的余量也更紧张。\"}]}"
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1799,
+    "completion_tokens": 623,
+    "total_tokens": 2422,
+    "prompt_tokens_details": {
+      "cached_tokens": 256
+    },
+    "prompt_cache_hit_tokens": 256,
+    "prompt_cache_miss_tokens": 1543
+  },
+  "system_fingerprint": "e72d3c7f663d3e1383b00b3884cb4501"
+}

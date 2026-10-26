@@ -16,6 +16,9 @@ a = Analysis(
         ('football_simulator/rules', 'football_simulator/rules'),
         ('assets/atmosphere', 'assets/atmosphere'),
         ('assets/app_icon_256.png', 'assets'),
+        ('assets/press-v0.2.0/app_icon_256.png', 'assets/press-v0.2.0'),
+        ('docs/press/prompts', 'docs/press/prompts'),
+        ('football_simulator/press/contracts', 'football_simulator/press/contracts'),
     ] + ([('assets/trophies/v1', 'assets/trophies/v1')] if (ROOT / 'assets/trophies/v1').is_dir() else []),
     hiddenimports=[
         'football_simulator.ui.main_window',
@@ -29,6 +32,8 @@ a = Analysis(
         'football_simulator.app.service',
         'football_simulator.app.queries',
         'football_simulator.ui.team_crest',
+        'football_simulator.ui.pages.press',
+        'football_simulator.ui.press_controller',
     ],
     hookspath=[],
     hooksconfig={},
@@ -44,7 +49,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='Football Simulator UI v2',
+    name='Football Simulator V0.2.0',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -55,7 +60,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=[str(ROOT / 'assets' / 'app.icns')],
+    icon=[str(ROOT / 'assets' / 'press-v0.2.0' / 'app.icns')],
 )
 coll = COLLECT(
     exe,
@@ -64,11 +69,11 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='Football Simulator UI v2',
+    name='Football Simulator V0.2.0',
 )
 app = BUNDLE(
     coll,
-    name='Football Simulator UI v2.app',
-    icon=str(ROOT / 'assets' / 'app.icns'),
-    bundle_identifier='com.gabrielmu.footballsimulator.uiv2',
+    name='Football Simulator V0.2.0.app',
+    icon=str(ROOT / 'assets' / 'press-v0.2.0' / 'app.icns'),
+    bundle_identifier='com.gabrielmu.footballsimulator.press',
 )

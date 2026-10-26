@@ -1,0 +1,28 @@
+{
+  "id": "155f890d-ef37-4112-861f-33756638419e",
+  "object": "chat.completion",
+  "created": 1792901839,
+  "model": "deepseek-flash",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\"title\":\"冷门三连击：Thorned Reliquary 止血，Royal Junction 逆转，Ruined Legion 抬头\",\"deck\":\"Ascendance Cup 八强落位；联赛低排名球队集体发难，积分榜尾部与上半区同时生变。\",\"body\":\"## Ascendance Cup 八强全部落位\\n\\n本周 Ascendance Cup 完成突围赛，三场较量结束后，八强名单全部确定：Pain FC、Void Relics、Blazing Shadows、Zero Returners、Dark Side of the Moon、Star Guardians、Chaos Overture、Midnight Tales。突围赛阶段至此收官，接下来的四分之一决赛将由这八支球队捉对展开。名单之中既有 Void Relics、Blazing Shadows 这样在联赛排名靠前的队伍，也有联赛处境各异的面孔——杯赛路径与联赛走势并不重合，这正是本阶段最值得记下的一点。\\n\\n## Thorned Reliquary 终结十四场不胜\\n\\n赛前排在 Premier Division 第18位的 Thorned Reliquary，主场迎来第9位、积35分的 Void Relics。第59分钟 Ousmane Dembele 打破僵局，第75分钟 Julian Alvarez 为客队扳平，第83分钟主队再度超出，最终 2-1 拿下。这场胜利终结了 Thorned Reliquary 联赛14场不胜的走势，也让球队从第18位升到第16位，积分来到17分。Void Relics 名次停在9位，积分原地不动。对一支长期困在降级区边缘的球队来说，这三分是货真价实的转折点——但一场止跌离安全上岸还有距离。\\n\\n## Royal Junction 反超第二名\\n\\n另一场冷门出现在王道球场（Kingsway Ground）：赛前第14位的 Royal Junction 主场面对排名第2、积46分的 Blazing Shadows。客队第10分钟先入一球，半场1-0领先。下半场 Royal Junction 连进两球完成反超，2-1 取胜，全场是主队唯一一次落后、也是唯一一次逆转。Denzel Dumfries 送出一次助攻。Royal Junction 由第14位升到第13位，积分26分；Blazing Shadows 仍居第2，46分不变。积分榜上半区未受撼动，但这场比赛提醒人们，排名靠后的球队在主场并非没有杀伤力。\\n\\n## Ruined Legion 用一场零封止住三连败\\n\\nSecond Division 方面，第16位的 Ruined Legion 客场挑战第9位的 Ironvale FC。第16分钟客队打入全场唯一进球，并将1-0保持到终场，结束联赛三连败。Ruined Legion 从第16位升至第15位，积分26分；Ironvale FC 仍在第9位，积分30分，两队在升级区前六之外的位置均未改变。次级联赛没有降级区，Ruined Legion 这场胜利的意义因此更偏向于稳住脚下、为后续赛程积累空间。\",\"}"
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 2446,
+    "completion_tokens": 656,
+    "total_tokens": 3102,
+    "prompt_tokens_details": {
+      "cached_tokens": 384
+    },
+    "prompt_cache_hit_tokens": 384,
+    "prompt_cache_miss_tokens": 2062
+  },
+  "system_fingerprint": "e72d3c7f663d3e1383b00b3884cb4501"
+}

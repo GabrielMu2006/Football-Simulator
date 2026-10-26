@@ -1,0 +1,28 @@
+{
+  "id": "e4e1ae9f-6214-4b40-a9dc-4c204853400c",
+  "object": "chat.completion",
+  "created": 1792909079,
+  "model": "deepseek-flash",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\"title\":\"末路与登顶：Icefire Ballad 的逆袭决赛与 Dark Side of the Moon 的附加赛奇迹\",\"deck\":\"联赛第一的 Gaia's Revenge 倒在决赛， Icefire Ballad 捧起队史首冠；附加赛 Dark Side of the Moon 客场三球完成翻盘，抢走最后一张升级门票。\",\"body\":\"## 从联赛第14到杯赛冠军：Icefire Ballad 的冷静反杀\\n\\n决赛前后的最大变化写在排名里：Gaia's Revenge 以 Premier Division 头名（38轮89分）进入 Apex Cup 决赛，Icefire Ballad 只排第14（45分）。但决赛的走势没有按排名展开。第10分钟，Ademola Lookman 接 Eduardo Camavinga 助攻首开纪录；第29分钟，Angel Di Maria 把比分扩大为2比0。Icefire Ballad 在半场前由 Granit Xhaka 扳回一球，随后在第67分钟和第83分钟连入两球，以3比2完成反超。 Gaia's Revenge 是卫冕冠军，这场失利意味着其冠军身份终结，而 Icefire Ballad 首次赢得 Apex Cup，超过此前亚军的最佳成绩。以联赛第14的身份击败榜首，是本届决赛最清楚的注脚：单场决胜里，排名只是背景，耐心与效率才是主叙事。\\n\\n## 附加赛半场之后：Dark Side of the Moon 连入三球翻盘\\n\\n另一条线上的变化同样剧烈。Promotion Playoffs 决赛次回合，Ravenhill 主场对阵 Dark Side of the Moon。首回合 Dark Side of the Moon 主场1比3落败，次回合半场时仍以0比1落后，总比分落后。下半场 Dark Side of the Moon 连入三球，以3比0赢下次回合，把两回合总比分改写为4比3，完成翻盘并取得升级资格。Ravenhill 带着六场不败进入本场，这一纪录在本场终结，球队止步附加赛。对 Dark Side of the Moon 而言，这是从总比分落后到晋级的完整反转；对 Ravenhill 而言，六场不败的积累没有换来最后一步。附加赛的残酷正在于此：两回合的账，往往由最后45分钟结清。\\n\\n\"}</br>"
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 2006,
+    "completion_tokens": 513,
+    "total_tokens": 2519,
+    "prompt_tokens_details": {
+      "cached_tokens": 384
+    },
+    "prompt_cache_hit_tokens": 384,
+    "prompt_cache_miss_tokens": 1622
+  },
+  "system_fingerprint": "e72d3c7f663d3e1383b00b3884cb4501"
+}

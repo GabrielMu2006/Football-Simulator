@@ -84,13 +84,15 @@ class DashboardPage(BasePage):
         header_layout.addWidget(header, 1)
         report_week = data["week"] if macos.enabled() and data["season_complete"] else data["last_week"]
         self.weekly_button = QPushButton(
-            f"查看第 {report_week} 周周报" if report_week >= 1 else "尚无周报"
+            (f"查看第 {report_week} 周赛况" if getattr(self.app, 'press', None) else f"查看第 {report_week} 周周报") if report_week >= 1 else "尚无周报"
         )
         self.weekly_button.setObjectName("Secondary")
         self.weekly_button.setEnabled(report_week >= 1)
         self.weekly_button.clicked.connect(lambda: self.open_route("weekly", week=max(1, report_week)))
         header_layout.addWidget(self.weekly_button, 0, Qt.AlignTop)
         self.scroll.layout.addWidget(header_row)
+        if getattr(self.app, 'press', None):
+            self.scroll.layout.addWidget(self._press_card())
         if data["pending"]:
             self.scroll.layout.addWidget(self._pending_card(data["pending"]))
         if data["season_complete"] or data["finalized"]:
@@ -199,6 +201,26 @@ class DashboardPage(BasePage):
         self.scroll.verticalScrollBar().setValue(scroll_value)
 
     # -- 卡片 ------------------------------------------------------------
+
+    def _press_card(self):
+        frame = card()
+        layout = QVBoxLayout(frame)
+        layout.setContentsMargins(t.S20, t.S16, t.S20, t.S16)
+        layout.setSpacing(t.S10)
+        layout.addWidget(label('最新刊物', 'SectionTitle'))
+        latest = self.app.press.library().latest()
+        if latest:
+            from football_simulator.ui.pages.press import plain
+            layout.addWidget(label(f"第 {latest['season']} 赛季 · 第 {latest['week']} 周", 'PressIssue'))
+            layout.addWidget(plain(latest['title'], 'CardTitle'))
+            layout.addWidget(plain(latest['summary']))
+        link = QPushButton('阅读最新报道 →' if latest else '进入报刊 →')
+        link.setObjectName('Secondary')
+        link.setMinimumHeight(44)
+        link.clicked.connect(lambda:self.open_route('press_article',report_id=latest['report_id']) if latest and latest.get('kind','weekly')!='weekly'
+                             else self.open_route('press_article',season=latest['season'],week=latest['week']) if latest else self.open_route('press'))
+        layout.addWidget(link, 0, Qt.AlignLeft)
+        return frame
 
     @staticmethod
     def _result_meaning(dto: dict) -> str:

@@ -34,6 +34,10 @@ def main() -> int:
         from football_simulator import runtime
 
         runtime.set_data_root_override(Path(data_root))
+    elif sys.platform == 'darwin' and getattr(sys, 'frozen', False):
+        from football_simulator import runtime
+        # Keep the V0.1.0 game and its live saves independent of the press edition.
+        runtime.set_data_root_override(runtime.user_data_root().with_name('Football Simulator V0.2.0'))
     else:
         # 源码运行时把总配置作为只读来源；不复制、不改写用户文件。
         from football_simulator import runtime
@@ -51,10 +55,26 @@ def main() -> int:
     from football_simulator.ui.theme import apply_theme
 
     app = QApplication.instance() or QApplication(sys.argv)
+    # Reporting recovery assumes one application owns this data root. Keep the
+    # lock alive for the entire event loop, including in a frozen macOS bundle.
+    instance_lock = None
+    if sys.platform == 'darwin' and os.environ.get('FS_PRESS_DEV') != '0':
+        import fcntl
+        from PySide6.QtWidgets import QMessageBox
+        root = runtime.data_root()
+        root.mkdir(parents=True, exist_ok=True)
+        instance_lock = (root / '.application.lock').open('a')
+        try:
+            fcntl.flock(instance_lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            instance_lock.close()
+            QMessageBox.information(None, 'Football Simulator', '这个数据目录已有运行中的应用，请使用已打开的窗口。')
+            return 0
     app.setApplicationName("Football Simulator")
     from football_simulator.version import APP_VERSION
     app.setApplicationVersion(APP_VERSION)
-    app.setWindowIcon(QIcon(str(runtime.resource_root() / "assets" / "app_icon_256.png")))
+    press_icon = runtime.resource_root() / 'assets' / 'press-v0.2.0' / 'app_icon_256.png'
+    app.setWindowIcon(QIcon(str(press_icon if press_icon.exists() and sys.platform == 'darwin' else runtime.resource_root() / "assets" / "app_icon_256.png")))
     apply_theme(app)
     from football_simulator.game import rules
     window = MainWindow(GameService(honor_profile=rules.HONOR_PROFILE if sys.platform == "darwin" else None, edition_archives=sys.platform == "darwin"))
@@ -157,6 +177,8 @@ def main() -> int:
                 "pid": os.getpid(),
                 "executable": sys.executable,
                 "frozen": bool(getattr(sys, "frozen", False)),
+                "press_available": window.press is not None,
+                "bundle_default_data_root": str(_runtime.user_data_root().with_name('Football Simulator V0.2.0')) if sys.platform == 'darwin' and getattr(sys,'frozen',False) else None,
                 "main_window_module": main_module,
                 "main_window_file": getattr(sys.modules.get(main_module), "__file__", ""),
                 "page": type(page).__name__,
@@ -223,6 +245,19 @@ def main() -> int:
                 Path(smoke_result).write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
             except OSError:
                 pass
+            if os.environ.get('FS_SMOKE_KEYCHAIN_CHECK') == '1' and data_root and window.press:
+                # Optional isolated acceptance only: no secret, API call or
+                # saved-credential mutation crosses this receipt boundary.
+                import threading
+                def _check_keychain():
+                    from football_simulator.press.credentials import Credentials
+                    result={'pid':os.getpid(),'available':False,'error':None}
+                    try:
+                        key=Credentials().get();result['available']=bool(key);key=None
+                    except Exception:
+                        result['error']='keychain_unavailable'
+                    Path(smoke_result+'.keychain.json').write_text(json.dumps(result),encoding='utf-8')
+                threading.Thread(target=_check_keychain,daemon=True).start()
         QTimer.singleShot(900, _write_result)
     smoke_shot = os.environ.get("FS_SMOKE_SCREENSHOT")
     if smoke_shot:
@@ -235,7 +270,10 @@ def main() -> int:
     smoke_ms = os.environ.get("FS_SMOKE_EXIT_MS")
     if smoke_ms:
         QTimer.singleShot(int(smoke_ms), app.quit)
-    return app.exec()
+    try:
+        return app.exec()
+    finally:
+        if instance_lock:instance_lock.close()
 
 
 if __name__ == "__main__":

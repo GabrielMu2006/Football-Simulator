@@ -4,7 +4,8 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$ROOT_DIR"
 
-APP_NAME="Football Simulator UI v2"
+APP_NAME="${APP_NAME:-Football Simulator V0.2.0}"
+BUNDLE_ID="${BUNDLE_ID:-com.gabrielmu.footballsimulator.press}"
 DIST_DIR="${DIST_DIR:-dist-ui-v2}"
 BUILD_DIR="${BUILD_DIR:-build-ui-v2}"
 APP_BUNDLE="${DIST_DIR}/${APP_NAME}.app"
@@ -32,17 +33,21 @@ arch -arm64 "$VENV_DIR/bin/pyinstaller" \
   --clean \
   --windowed \
   --name "$APP_NAME" \
-  --icon "$ROOT_DIR/assets/app.icns" \
-  --osx-bundle-identifier "com.gabrielmu.footballsimulator.uiv2" \
+  --icon "$ROOT_DIR/assets/press-v0.2.0/app.icns" \
+  --osx-bundle-identifier "$BUNDLE_ID" \
   --distpath "$DIST_DIR" \
   --workpath "$BUILD_DIR" \
-  --add-data "${SHARED_CONFIG_NAME}:." \
-  --add-data "team_badges_40_v3/PNG:team_badges_40_v3/PNG" \
-  --add-data "team_badges_40_v3/manifest.json:team_badges_40_v3" \
-  --add-data "team_badges_40_v2/PNG:team_badges_40_v2/PNG" \
-  --add-data "football_simulator/rules:football_simulator/rules" \
-  --add-data "assets/atmosphere:assets/atmosphere" \
-  --add-data "assets/app_icon_256.png:assets" \
+  --specpath "$BUILD_DIR/spec" \
+  --add-data "$ROOT_DIR/${SHARED_CONFIG_NAME}:." \
+  --add-data "$ROOT_DIR/team_badges_40_v3/PNG:team_badges_40_v3/PNG" \
+  --add-data "$ROOT_DIR/team_badges_40_v3/manifest.json:team_badges_40_v3" \
+  --add-data "$ROOT_DIR/team_badges_40_v2/PNG:team_badges_40_v2/PNG" \
+  --add-data "$ROOT_DIR/football_simulator/rules:football_simulator/rules" \
+  --add-data "$ROOT_DIR/assets/atmosphere:assets/atmosphere" \
+  --add-data "$ROOT_DIR/assets/app_icon_256.png:assets" \
+  --add-data "$ROOT_DIR/assets/press-v0.2.0/app_icon_256.png:assets/press-v0.2.0" \
+  --add-data "$ROOT_DIR/docs/press/prompts:docs/press/prompts" \
+  --add-data "$ROOT_DIR/football_simulator/press/contracts:football_simulator/press/contracts" \
   "${TROPHY_DATA_ARGS[@]}" \
   --paths "$ROOT_DIR" \
   --hidden-import football_simulator.ui.main_window \
@@ -56,7 +61,9 @@ arch -arm64 "$VENV_DIR/bin/pyinstaller" \
   --hidden-import football_simulator.app.service \
   --hidden-import football_simulator.app.queries \
   --hidden-import football_simulator.ui.team_crest \
-  ui_v2_main.py
+  --hidden-import football_simulator.ui.pages.press \
+  --hidden-import football_simulator.ui.press_controller \
+  "$ROOT_DIR/ui_v2_main.py"
 
 cp "$SHARED_CONFIG_NAME" "${DIST_DIR}/${SHARED_CONFIG_NAME}"
 cp "$SHARED_CONFIG_NAME" "${DIST_DIR}/football_simulator_config.json"

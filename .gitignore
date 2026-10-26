@@ -39,3 +39,13 @@ trash/
 
 # 可重新生成的测试截图与日志
 /artifacts/
+
+# Credentials and local exports never belong in a release source tree.
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.fsarchive
+.qoder/
+.video_agent/

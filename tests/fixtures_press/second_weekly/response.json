@@ -1,0 +1,178 @@
+{
+  "report_id": "weekly:5b572587-57ba-47e0-8b4e-1407b3e3bbfd:1:9",
+  "schema_version": "press.article/0.1-draft",
+  "sections": [
+    {
+      "blocks": [
+        {
+          "fact_ids": [
+            "match:m01-00084",
+            "before:m01-00084:team-celestial-vanguard",
+            "before:m01-00084:team-polaris-fc",
+            "streak:m01-00084:team-celestial-vanguard:league_all_levels:wins",
+            "streak:m01-00084:team-celestial-vanguard:league_all_levels:unbeaten"
+          ],
+          "kind": "body",
+          "label": null,
+          "text": "Premier Division 第 9 周过后，榜首换了名字。Celestial Vanguard 赛前以 19 分领跑，但主场面对排名第 9 的 Polaris FC，客队在第 4 分钟和第 75 分钟两度破门，Michael Olise 第 51 分钟的进球未能挽回局面，比分定格在 1-2。这是 Celestial Vanguard 本赛季联赛首场失利，联赛三连胜与联赛七场不败同时终结，积分停在 19 分。"
+        },
+        {
+          "fact_ids": [
+            "match:m01-00089",
+            "table:premier:team-pain-fc",
+            "table:premier:team-celestial-vanguard",
+            "performance:m01-00089:real::pierre-emerick-aubameyang"
+          ],
+          "kind": "body",
+          "label": null,
+          "text": "Pain FC 抓住了机会。主场对 Xeno Hunters，Pierre-Emerick Aubameyang 贡献一球两助攻，Matheus Cunha 和 Gavi 各入一球，另有两粒进球未记名，最终 5-1 取胜。赛前 Pain FC 以 16 分排在第 2，落后 Celestial Vanguard 3 分；周末战罢，两队同积 19 分，Pain FC 凭净胜球优势升至第 1，Celestial Vanguard 退居第 2。这是 Pain FC 本赛季首次登上榜首。"
+        },
+        {
+          "fact_ids": [
+            "match:m01-00084",
+            "match:m01-00089",
+            "table:premier:team-pain-fc"
+          ],
+          "kind": "media_comment",
+          "label": "媒体评论（虚构）",
+          "text": "同一轮里，领跑者输球、追赶者五球大胜，积分榜顶端从三分差距压缩成净胜球排序。Premier Division 的争冠剧本刚写完序章，就被 Polaris FC 撕掉一页。"
+        }
+      ],
+      "heading": "Premier Division：榜首两分之差易主，Vanguard 的不败周戛然而止",
+      "heading_fact_ids": [
+        "table:premier:team-pain-fc",
+        "match:m01-00084"
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "fact_ids": [
+            "match:m01-00086",
+            "performance:m01-00086:real::anthony-gordon",
+            "table:premier:team-crownfield-athletic",
+            "match:m01-00087",
+            "performance:m01-00087:real::lamine-yamal",
+            "table:premier:team-ironvale-fc"
+          ],
+          "kind": "body",
+          "label": null,
+          "text": "Crownfield Athletic 客场 5-0 击败 Sentinels of Light，Anthony Gordon 在第 10、43、75 分钟三度破门，Harry Maguire 第 29 分钟建功，另有一球未记名。Crownfield Athletic 赛前 16 分排第 4，赛后仍居第 4，与榜首差距从 3 分缩小到 0 分——同积 19 分，因净胜球排在 Pain FC、Celestial Vanguard 和 Ironvale FC 之后。Ironvale FC 客场 3-1 击败 Nightingales，Lamine Yamal 梅开二度，Hakan Calhanoglu 也有一球入账，与 Crownfield Athletic 同分。"
+        }
+      ],
+      "heading": "Crownfield Athletic 五球客场，Anthony Gordon 戴帽",
+      "heading_fact_ids": [
+        "match:m01-00086",
+        "performance:m01-00086:real::anthony-gordon"
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "fact_ids": [
+            "match:m01-00466",
+            "table:second:team-chaos-overture",
+            "match:m01-00462",
+            "before:m01-00462:team-void-relics",
+            "before:m01-00462:team-yellowjackets-fc",
+            "streak:m01-00462:team-yellowjackets-fc:league_all_levels:unbeaten",
+            "match:m01-00465",
+            "table:second:team-supersonic-knights"
+          ],
+          "kind": "body",
+          "label": null,
+          "text": "Second Division 的领头羊同样易主。Chaos Overture 客场 1-1 战平 Thorned Reliquary，第 75 分钟扳平比分，拿到 1 分后以 16 分升至第 1。赛前领跑的 Yellowjackets FC 主场 1-2 不敌排名第 20 的 Void Relics，联赛五场不败就此终结，积分停在 16 分，退至第 3。Supersonic Knights 客场 1-0 击败 Glorious Vision，同样积 16 分，凭净胜球排在第 2。三队同分，Second Division 榜首竞争进入净胜球阶段。"
+        },
+        {
+          "fact_ids": [
+            "match:m01-00462",
+            "streak:m01-00462:team-yellowjackets-fc:league_all_levels:unbeaten",
+            "match:m01-00466",
+            "match:m01-00465",
+            "table:second:team-chaos-overture"
+          ],
+          "kind": "fan_voice",
+          "label": "看台声音（虚构）",
+          "text": "Yellowjackets FC 的看台大概没想到，五场不败会以主场输给垫底队的方式结束。更难受的是，同一天 Chaos Overture 和 Supersonic Knights 都拿到了分，榜首从手里滑到第三。"
+        }
+      ],
+      "heading": "Second Division：Chaos Overture 登上榜首，Yellowjackets FC 不败终结",
+      "heading_fact_ids": [
+        "table:second:team-chaos-overture",
+        "match:m01-00462"
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "fact_ids": [
+            "match:m01-00085",
+            "streak:m01-00085:team-ocean-stars:league_all_levels:winless",
+            "streak:m01-00085:team-star-guardians:league_all_levels:winless",
+            "table:premier:team-ocean-stars",
+            "table:premier:team-star-guardians",
+            "match:m01-00088",
+            "streak:m01-00088:team-midnight-tales:league_all_levels:winless",
+            "performance:m01-00088:real::wojciech-szczesny",
+            "table:premier:team-midnight-tales",
+            "match:m01-00090",
+            "streak:m01-00090:team-zero-returners:league_all_levels:losses",
+            "streak:m01-00090:team-zero-returners:league_all_levels:winless",
+            "table:premier:team-zero-returners"
+          ],
+          "kind": "body",
+          "label": null,
+          "text": "Premier Division 榜尾，Ocean Stars 主场 1-0 击败 Star Guardians，第 89 分钟绝杀，终结联赛八场不胜，拿到本赛季联赛首胜，积分升至 6 分，仍排第 19。Star Guardians 联赛五场不胜，积 9 分列第 15。Midnight Tales 主场 1-0 小胜 Crystal Roses，Wojciech Szczesny 保持零封，球队终结联赛五场不胜，积 12 分升至第 12。Zero Returners 主场 0-0 战平 Solford Town，联赛四连败终结，但联赛九场不胜仍在延续，仍以 3 分垫底。"
+        },
+        {
+          "fact_ids": [
+            "match:m01-00469",
+            "before:m01-00469:team-northern-lords",
+            "before:m01-00469:team-brookgate-wanderers",
+            "table:second:team-northern-lords",
+            "table:second:team-brookgate-wanderers",
+            "match:m01-00467",
+            "streak:m01-00467:team-blazing-shadows:league_all_levels:unbeaten",
+            "streak:m01-00467:team-ruined-legion:league_all_levels:losses",
+            "table:second:team-blazing-shadows",
+            "match:m01-00461",
+            "table:second:team-ancient-dragonfire",
+            "table:second:team-royal-junction"
+          ],
+          "kind": "body",
+          "label": null,
+          "text": "Second Division 方面，Northern Lords 主场 1-0 击败 Brookgate Wanderers，第 4 分钟闪击得手，赛前排名第 20 的他们拿下这场后积 8 分升至第 18，Brookgate Wanderers 则从第 4 跌至第 8。Blazing Shadows 主场 2-0 击败 Ruined Legion，联赛六场不败，积 13 分升至第 11；Ruined Legion 联赛三连败，仍列第 14。Ancient Dragonfire 客场 3-1 击败 Royal Junction，积 14 分从第 10 跃升至第 5，Royal Junction 从第 8 跌至第 12。"
+        }
+      ],
+      "heading": "其他战线：Ocean Stars 首胜，Midnight Tales 零封止颓",
+      "heading_fact_ids": [
+        "match:m01-00085",
+        "match:m01-00088"
+      ]
+    }
+  ],
+  "summary": "第 9 周 Premier Division 迎来榜首更替：Celestial Vanguard 主场 1-2 不敌 Polaris FC，联赛三连胜与七场不败同时终结；Pain FC 主场 5-1 大胜 Xeno Hunters，以净胜球优势登上榜首。Second Division 同样换领头羊，Chaos Overture 客场 1-1 战平 Thorned Reliquary，凭借 Yellowjackets FC 输球升至第一。",
+  "summary_fact_ids": [
+    "table:premier:team-pain-fc",
+    "match:m01-00089",
+    "match:m01-00084",
+    "table:second:team-chaos-overture",
+    "match:m01-00466",
+    "match:m01-00462"
+  ],
+  "title": "Pain FC 登顶 Premier Division，Celestial Vanguard 不败金身告破",
+  "title_fact_ids": [
+    "table:premier:team-pain-fc",
+    "match:m01-00084"
+  ],
+  "used_topic_ids": [
+    "topic:league_lead:premier:m01-00089",
+    "topic:league_lead:second:m01-00466",
+    "topic:upset:m01-00084",
+    "topic:streak:team-celestial-vanguard:league_all_levels:wins:m01-00084",
+    "topic:streak:team-celestial-vanguard:league_all_levels:unbeaten:m01-00084",
+    "topic:standout:real::pierre-emerick-aubameyang:m01-00089",
+    "topic:upset:m01-00462",
+    "topic:streak:team-yellowjackets-fc:league_all_levels:unbeaten:m01-00462"
+  ]
+}

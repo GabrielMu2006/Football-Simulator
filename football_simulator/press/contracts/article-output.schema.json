@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:football-simulator:press:article:0.1-draft",
+  "title": "报刊文章输出草案",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "press.article/0.1-draft"
+    },
+    "report_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title_fact_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+      },
+      "minItems": 1
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "summary_fact_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+      },
+      "minItems": 1
+    },
+    "used_topic_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+      },
+      "minItems": 0
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "heading": {
+            "type": "string",
+            "minLength": 1
+          },
+          "heading_fact_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+            },
+            "minItems": 1
+          },
+          "blocks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "body",
+                    "media_comment",
+                    "fan_voice"
+                  ]
+                },
+                "label": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "text": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "fact_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+                  },
+                  "minItems": 1
+                }
+              },
+              "required": [
+                "kind",
+                "label",
+                "text",
+                "fact_ids"
+              ],
+              "oneOf": [
+                {
+                  "properties": {
+                    "kind": {
+                      "const": "body"
+                    },
+                    "label": {
+                      "type": "null"
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "kind": {
+                      "const": "media_comment"
+                    },
+                    "label": {
+                      "const": "媒体评论（虚构）"
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "kind": {
+                      "const": "fan_voice"
+                    },
+                    "label": {
+                      "const": "看台声音（虚构）"
+                    }
+                  }
+                }
+              ]
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "heading",
+          "heading_fact_ids",
+          "blocks"
+        ]
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "schema_version",
+    "report_id",
+    "title",
+    "title_fact_ids",
+    "summary",
+    "summary_fact_ids",
+    "used_topic_ids",
+    "sections"
+  ]
+}

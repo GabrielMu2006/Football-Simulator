@@ -124,6 +124,9 @@ class TransfersPage(BasePage):
             ability_submit.clicked.connect(self._submit_ability)
             action_row.addWidget(ability_submit, 0, Qt.AlignTop)
         action_row.addWidget(submit, 0, Qt.AlignTop)
+        if self.app.press:
+            reports=self.app.press.related_button(season=data['season'],kind='transfer')
+            if reports:action_row.addWidget(reports,0,Qt.AlignTop)
         wrapper = QWidget()
         wrapper.setLayout(action_row)
         self.scroll.layout.addWidget(wrapper)
@@ -383,6 +386,9 @@ class DraftPage(BasePage):
         confirm.setEnabled(data["status"] == "awaiting_input" and data.get("selected_season", data["season"]) == int(world["season_number"]) and not snapshot["pending"]["ability_review"])
         confirm.clicked.connect(lambda: self._confirm(data["candidates"]))
         action_row.addWidget(confirm, 0, Qt.AlignTop)
+        if self.app.press:
+            reports=self.app.press.related_button(season=data.get('selected_season',data['season']),kind='draft')
+            if reports:action_row.addWidget(reports,0,Qt.AlignTop)
         wrapper = QWidget()
         wrapper.setLayout(action_row)
         self.scroll.layout.addWidget(wrapper)

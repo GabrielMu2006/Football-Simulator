@@ -5,6 +5,14 @@ from __future__ import annotations
 from football_simulator.ui import tokens as t
 
 APP_STYLE = f"""
+QTextBrowser#PressReader {{
+    background: {t.CARD}; color: {t.TEXT};
+    border: 1px solid {t.BORDER}; border-radius: 12px;
+    selection-background-color: {t.TABLE_SELECT};
+}}
+QLabel#PressHeadline {{ font-size: 24px; font-weight: 700; color: {t.TEXT_STRONG}; }}
+QLabel#PressDeck {{ font-size: 16px; color: {t.MUTED}; }}
+QLabel#PressIssue {{ font-size: 15px; color: {t.ACCENT}; font-weight: 650; }}
 QMainWindow, QWidget#AppRoot, QStackedWidget, QWidget#PageBody, QWidget#PageRoot {{
     background: {t.BG};
     color: {t.TEXT};

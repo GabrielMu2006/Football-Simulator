@@ -1017,6 +1017,9 @@ class CompetitionDetailPage(BasePage):
         layout.setSpacing(t.S16)
         layout.addWidget(TrophyImage(data["id"], 112), 0, Qt.AlignTop)
         layout.addWidget(PageHeader(f"第 {data['season']} 赛季", data["label"], f"{rules.display_name(data['id'], 'zh')} · {subtitle}"), 1)
+        if self.app.press:
+            reports=self.app.press.related_button(season=data['season'],competition=data['id'])
+            if reports:layout.addWidget(reports,0,Qt.AlignTop)
         return holder
 
     def _tie_row(self, world: dict, tie: dict) -> QWidget:

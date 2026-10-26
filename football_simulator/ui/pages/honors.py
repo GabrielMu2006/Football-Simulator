@@ -808,6 +808,9 @@ class AnnualTop20Page(BasePage):
         # Route params preserve the selected edition through F5 and Back.
         selector.currentIndexChanged.connect(lambda _: self.open_route("annual_top20", season=selector.currentData()))
         self.scroll.layout.addWidget(selector, 0, Qt.AlignLeft)
+        if self.app.press:
+            reports=self.app.press.related_button(season=selected,kind='top20')
+            if reports:self.scroll.layout.addWidget(reports,0,Qt.AlignLeft)
         panel = card()
         layout = QVBoxLayout(panel)
         layout.setContentsMargins(t.S20, t.S16, t.S20, t.S16)

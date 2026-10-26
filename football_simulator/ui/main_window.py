@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import traceback
+import os
+import sys
 from typing import Dict, Optional, Tuple
 
 from PySide6.QtCore import QThread, QTimer, Qt, Signal
@@ -55,6 +57,7 @@ from football_simulator.ui.pages.honors import (
     TeamHonorsPage,
 )
 from football_simulator.ui.pages.tools import DraftPage, SavesPage, TransfersPage
+from football_simulator.ui.pages.press import PressPage, ArticlePage
 from football_simulator.ui.theme import APP_STYLE, apply_theme
 
 
@@ -119,6 +122,8 @@ def initial_window_geometry(available_width: int, available_height: int) -> tupl
     return min_width, min_height, width, height
 
 ROUTE_CLASSES = {
+    "press": PressPage,
+    "press_article": ArticlePage,
     "dashboard": DashboardPage,
     "weekly": WeeklyPage,
     "matches": MatchesPage,
@@ -143,6 +148,8 @@ ROUTE_CLASSES = {
 }
 
 NAV_PARENT = {
+    "press": "press",
+    "press_article": "press",
     "dashboard": "dashboard",
     "weekly": "dashboard",
     "match": "matches",
@@ -233,7 +240,16 @@ class MainWindow(QMainWindow):
         self._view_states: Dict[tuple, list] = {}
         self._route_generation = 0
         self.ui_drafts: Dict[str, Dict[str, bool]] = {}
-        self.setWindowTitle("Football Simulator — 联赛观察")
+        self.press = None
+        self._nav_entries = list(NAV_ENTRIES)
+        # Availability is macOS-only; collection/generation still requires
+        # explicit opt-in for each save. Stable bundles are separate artifacts.
+        if os.environ.get('FS_PRESS_DEV') != '0' and sys.platform == 'darwin':
+            from football_simulator.ui.press_controller import PressController
+            self.press = PressController(self)
+            self._nav_entries.append(('press', '报刊'))
+        from football_simulator.version import APP_VERSION
+        self.setWindowTitle(f"Football Simulator V{APP_VERSION} — 联赛观察" if self.press else "Football Simulator — 联赛观察")
         self._apply_initial_geometry()
         apply_theme(QApplication.instance())
         self.setStyleSheet(APP_STYLE)
@@ -324,7 +340,7 @@ class MainWindow(QMainWindow):
         self.nav.setFrameShape(QFrame.NoFrame)
         self.nav.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.nav.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        for key, text in NAV_ENTRIES:
+        for key, text in self._nav_entries:
             item = QListWidgetItem(text)
             item.setData(Qt.UserRole, key)
             self.nav.addItem(item)
@@ -455,6 +471,8 @@ class MainWindow(QMainWindow):
     # -- 路由 ------------------------------------------------------------
 
     def navigate(self, name: str, **params) -> None:
+        if name in ('press', 'press_article') and self.press is None:
+            return
         if name not in ROUTE_CLASSES or self._route_transitioning:
             return
         if name not in ("saves",) and not self.has_save:
@@ -545,7 +563,7 @@ class MainWindow(QMainWindow):
 
     def _sync_nav(self, name: str) -> None:
         parent = self._route_parent(name)
-        entries = [key for key, _ in NAV_ENTRIES]
+        entries = [key for key, _ in self._nav_entries]
         tools = [key for key, _ in TOOL_ENTRIES]
         if parent in entries:
             self.nav.blockSignals(True)
@@ -576,7 +594,7 @@ class MainWindow(QMainWindow):
 
     def _update_breadcrumb(self, name: str, params: dict) -> None:
         parent = self._route_parent(name)
-        texts = {key: text for key, text in [*NAV_ENTRIES, *TOOL_ENTRIES]}
+        texts = {key: text for key, text in [*self._nav_entries, *TOOL_ENTRIES]}
         trail = ["总览"] if parent == "dashboard" else [texts.get(parent, parent)]
         if name != parent:
             titles = {
@@ -592,8 +610,11 @@ class MainWindow(QMainWindow):
                 "player_honors": "球员荣誉馆",
                 "history_competition": "历史赛事",
                 "annual_top20": "年度 Top20",
+                "press_article": "阅读",
             }
             trail.append(titles.get(name, name))
+            if name == 'weekly' and self.press:
+                trail[-1] = '赛况'
         self.breadcrumb.setText(" / ".join(trail))
 
     def go_back(self) -> None:
@@ -614,6 +635,15 @@ class MainWindow(QMainWindow):
 
     def _refresh_chrome(self) -> None:
         self._sync_save_box()
+        if self.press and self.has_save:
+            try:
+                unread = self.press.library().unread_count()
+                for index in range(self.nav.count()):
+                    item = self.nav.item(index)
+                    if item.data(Qt.UserRole) == 'press':
+                        item.setText(f'报刊 · {unread} 未读' if unread else '报刊')
+            except Exception:
+                pass  # The press page reports its own errors without blocking play.
         if self.mode_box.currentData() is not None and self._snapshot:
             mode = self._snapshot.get("mode")
             index = self.mode_box.findData(mode)
@@ -1034,11 +1064,17 @@ class MainWindow(QMainWindow):
         self._show_error(f"没有找到与“{self.search.text().strip()}”匹配的球队或球员。")
 
     def closeEvent(self, event) -> None:  # noqa: N802 - Qt API
+        if self.press and self.press.running:
+            self.press.prepare_close()
+            self.status_line.setText('正在保存当前段落，完成本次请求后关闭；其余部分下次续写。')
+            event.ignore()
+            return
         if self._worker_running():
             self._worker.request_stop()
             if not self._worker.wait(15000):
                 QMessageBox.warning(self, "正在保存", "当前推进仍在提交事务，窗口将在完成后关闭。")
                 self._worker.wait()
+        if self.press:self.press.timer.stop()
         event.accept()
 
 
