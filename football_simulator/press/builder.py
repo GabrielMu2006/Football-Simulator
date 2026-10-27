@@ -333,6 +333,10 @@ def build_packet(conn, world, week, activation):
         if row['decided_week'] <= week:
             titles.append({'season': season, 'competition': row['competition_id'], 'team_id': row['champion_team_id']})
     record('honours-context', 'derived', {'history_complete': history_complete, 'titles': titles})
+    from football_simulator.press.expectations import load
+    baseline=next((r for r in load(conn,season,week) if r['before_week']==week),None)
+    if baseline:
+        record('expectations:week','derived',baseline)
     return packet, sources
 
 

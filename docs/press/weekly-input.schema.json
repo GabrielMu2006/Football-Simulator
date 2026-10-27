@@ -1,0 +1,1570 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:football-simulator:press:weekly:0.1-draft",
+  "title": "周报输入草案（语义要求见 SPEC.md）",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "press.weekly/0.1-draft"
+        },
+        "report_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "report_type": {
+          "const": "weekly"
+        },
+        "world_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "season": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "completed_week": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 52
+        },
+        "cutoff": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "season": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "week": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 52
+            }
+          },
+          "required": [
+            "season",
+            "week"
+          ]
+        },
+        "input_validity": {
+          "enum": [
+            "ready",
+            "no_matches",
+            "insufficient_material"
+          ]
+        },
+        "source_mode": {
+          "enum": [
+            "production_export",
+            "synthetic_example"
+          ]
+        },
+        "source_game_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rules_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "exporter_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "history_first_season": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "fixture_coverage": {
+          "enum": [
+            "full",
+            "excerpt"
+          ]
+        },
+        "missing_material": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        },
+        "sample_note": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_world_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "save_instance_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "schema_version",
+        "report_id",
+        "report_type",
+        "world_id",
+        "season",
+        "completed_week",
+        "cutoff",
+        "input_validity",
+        "source_mode",
+        "source_game_version",
+        "rules_version",
+        "exporter_version",
+        "history_first_season",
+        "fixture_coverage",
+        "missing_material",
+        "sample_note"
+      ]
+    },
+    "entities": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "teams": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name_en": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "name_en"
+            ]
+          }
+        },
+        "players": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "position": {
+                "enum": [
+                  "GK",
+                  "DF",
+                  "MF",
+                  "FW"
+                ]
+              },
+              "is_real": {
+                "const": true
+              }
+            },
+            "required": [
+              "name",
+              "position",
+              "is_real"
+            ]
+          }
+        },
+        "competitions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name_en": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "name_en"
+            ]
+          }
+        },
+        "stadiums": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name_zh": {
+                "type": "string",
+                "minLength": 1
+              },
+              "name_en": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "name_zh",
+              "name_en"
+            ]
+          }
+        }
+      },
+      "required": [
+        "teams",
+        "players",
+        "competitions",
+        "stadiums"
+      ]
+    },
+    "week_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "completed_matches": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "goals_excluding_shootouts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "competitions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "competition_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+              },
+              "completed_matches": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "competition_id",
+              "completed_matches"
+            ]
+          },
+          "minItems": 0
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "completed_matches",
+        "goals_excluding_shootouts",
+        "competitions",
+        "notes"
+      ]
+    },
+    "facts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "fact_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+          },
+          "kind": {
+            "enum": [
+              "match_result",
+              "player_match",
+              "historical_title",
+              "former_club",
+              "streak",
+              "table_row",
+              "competition_status",
+              "record",
+              "tie_result",
+              "title_clinched",
+              "swiss_record"
+            ]
+          },
+          "time": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "season": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "week": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 52
+              }
+            },
+            "required": [
+              "season",
+              "week"
+            ]
+          },
+          "competition_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "team_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+            },
+            "minItems": 0
+          },
+          "player_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+            },
+            "minItems": 0
+          },
+          "match_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+            },
+            "minItems": 0
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "match",
+                    "player_match_stats",
+                    "edition_archive",
+                    "season_archive",
+                    "transfer",
+                    "draft",
+                    "derived",
+                    "frozen_week",
+                    "synthetic"
+                  ]
+                },
+                "key": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "as_of": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "season": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "week": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 52
+                    }
+                  },
+                  "required": [
+                    "season",
+                    "week"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "key",
+                "as_of"
+              ]
+            },
+            "minItems": 1
+          },
+          "data": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "fact_id",
+          "kind",
+          "time",
+          "competition_id",
+          "team_ids",
+          "player_ids",
+          "match_ids",
+          "sources",
+          "data"
+        ],
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "match_result"
+              },
+              "data": {
+                "$ref": "#/$defs/data_match_result"
+              }
+            }
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "player_match"
+              },
+              "data": {
+                "$ref": "#/$defs/data_player_match"
+              }
+            }
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "historical_title"
+              },
+              "data": {
+                "$ref": "#/$defs/data_historical_title"
+              }
+            }
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "former_club"
+              },
+              "data": {
+                "$ref": "#/$defs/data_former_club"
+              }
+            }
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "streak"
+              },
+              "data": {
+                "$ref": "#/$defs/data_streak"
+              }
+            }
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "table_row"
+              },
+              "data": {
+                "$ref": "#/$defs/data_table_row"
+              }
+            }
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "competition_status"
+              },
+              "data": {
+                "$ref": "#/$defs/data_competition_status"
+              }
+            }
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "record"
+              },
+              "data": {
+                "$ref": "#/$defs/data_record"
+              }
+            }
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "tie_result"
+              },
+              "data": {
+                "$ref": "#/$defs/data_tie_result"
+              }
+            }
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "title_clinched"
+              },
+              "data": {
+                "$ref": "#/$defs/data_title_clinched"
+              }
+            }
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "swiss_record"
+              },
+              "data": {
+                "$ref": "#/$defs/data_swiss_record"
+              }
+            }
+          }
+        ]
+      },
+      "minItems": 0
+    },
+    "editorial": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "policy_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "judgements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "judgement_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+              },
+              "label": {
+                "enum": [
+                  "upset",
+                  "dark_horse",
+                  "standout_performance",
+                  "key_match"
+                ]
+              },
+              "basis_fact_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+                },
+                "minItems": 1
+              },
+              "policy_version": {
+                "type": "string",
+                "minLength": 1
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "judgement_id",
+              "label",
+              "basis_fact_ids",
+              "policy_version",
+              "reason"
+            ]
+          },
+          "minItems": 0
+        },
+        "topics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "topic_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+              },
+              "event_type": {
+                "type": "string",
+                "minLength": 1
+              },
+              "story_group_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+              },
+              "priority": {
+                "enum": [
+                  "primary",
+                  "supporting",
+                  "brief"
+                ]
+              },
+              "required_fact_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+                },
+                "minItems": 1
+              },
+              "context_fact_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+                },
+                "minItems": 0
+              },
+              "judgement_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+                },
+                "minItems": 0
+              },
+              "suggested_angle": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "topic_id",
+              "event_type",
+              "story_group_id",
+              "priority",
+              "required_fact_ids",
+              "context_fact_ids",
+              "judgement_ids",
+              "suggested_angle"
+            ]
+          },
+          "minItems": 0
+        },
+        "streak_groups": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "preferred_fact_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+              },
+              "equivalent_fact_ids": {
+                "type": "array",
+                "minItems": 2,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+                }
+              }
+            },
+            "required": [
+              "preferred_fact_id",
+              "equivalent_fact_ids"
+            ]
+          }
+        }
+      },
+      "required": [
+        "policy_version",
+        "judgements",
+        "topics"
+      ]
+    }
+  },
+  "required": [
+    "meta",
+    "entities",
+    "week_summary",
+    "facts",
+    "editorial"
+  ],
+  "$defs": {
+    "data_match_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "match_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "stage": {
+          "type": "string",
+          "minLength": 1
+        },
+        "leg": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2
+        },
+        "tie_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "home_team_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "away_team_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "regulation": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "home": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "away": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "home",
+            "away"
+          ]
+        },
+        "extra_time": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "home": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "away": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "home",
+                "away"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "shootout": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "home": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "away": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "home",
+                "away"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "on_field_winner_team_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "shootout_winner_team_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "stadium_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "venue_mode": {
+          "enum": [
+            "home",
+            "neutral"
+          ]
+        },
+        "goal_events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "minute": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 150
+              },
+              "team_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+              },
+              "player_id": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "minute",
+              "team_id",
+              "player_id"
+            ]
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "match_id",
+        "stage",
+        "leg",
+        "tie_id",
+        "home_team_id",
+        "away_team_id",
+        "regulation",
+        "extra_time",
+        "shootout",
+        "on_field_winner_team_id",
+        "shootout_winner_team_id",
+        "stadium_id",
+        "venue_mode",
+        "goal_events"
+      ]
+    },
+    "data_player_match": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "match_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "player_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "team_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "appeared": {
+          "const": true
+        },
+        "goals": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "assists": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "chances_created": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "successful_defenses": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "successful_saves": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "clean_sheets": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "required": [
+        "match_id",
+        "player_id",
+        "team_id",
+        "appeared",
+        "goals",
+        "assists",
+        "chances_created",
+        "successful_defenses",
+        "successful_saves",
+        "clean_sheets"
+      ]
+    },
+    "data_historical_title": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "team_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "season": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "competition_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "result": {
+          "const": "champion"
+        }
+      },
+      "required": [
+        "team_id",
+        "season",
+        "competition_id",
+        "result"
+      ]
+    },
+    "data_former_club": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "player_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "former_team_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "current_team_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "transfer_effective": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "season": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "week": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 52
+            }
+          },
+          "required": [
+            "season",
+            "week"
+          ]
+        },
+        "appeared_for_former": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "departure_destination_team_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "is_immediate_previous_club": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "player_id",
+        "former_team_id",
+        "current_team_id",
+        "transfer_effective",
+        "appeared_for_former"
+      ]
+    },
+    "data_streak": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "team_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "scope": {
+          "enum": [
+            "all_official",
+            "league_all_levels",
+            "competition"
+          ]
+        },
+        "scope_competition_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "kind": {
+          "enum": [
+            "wins",
+            "losses",
+            "unbeaten",
+            "winless"
+          ]
+        },
+        "before": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "after": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ended": {
+          "type": "boolean"
+        },
+        "affected_match_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "crosses_seasons": {
+          "type": "boolean"
+        },
+        "history_complete": {
+          "type": "boolean"
+        },
+        "basis": {
+          "const": "regulation_plus_extra_time_excluding_shootout"
+        },
+        "competition_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "team_id",
+        "scope",
+        "scope_competition_id",
+        "kind",
+        "before",
+        "after",
+        "ended",
+        "affected_match_id",
+        "crosses_seasons",
+        "history_complete",
+        "basis"
+      ]
+    },
+    "data_table_row": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "team_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "timing": {
+          "enum": [
+            "before_match",
+            "end_of_week"
+          ]
+        },
+        "rank": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "points": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "played": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "week_comparison": {
+          "$ref": "#/$defs/week_comparison"
+        },
+        "lead_context": {
+          "$ref": "#/$defs/lead_context"
+        },
+        "season_record": {
+          "$ref": "#/$defs/season_record"
+        }
+      },
+      "required": [
+        "team_id",
+        "timing",
+        "rank",
+        "points",
+        "played"
+      ]
+    },
+    "data_competition_status": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "team_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "status": {
+          "enum": [
+            "in_competition",
+            "qualified",
+            "eliminated",
+            "champion",
+            "entered_losers_bracket",
+            "awaiting_tie_second_leg"
+          ]
+        },
+        "next_stage": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "team_id",
+        "status",
+        "next_stage"
+      ]
+    },
+    "data_record": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "record_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "comparison": {
+          "enum": [
+            "first",
+            "equalled",
+            "broken",
+            "best_in_available_records"
+          ]
+        },
+        "complete_history": {
+          "type": "boolean"
+        },
+        "history_start_season": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "previous_best": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "current_achievement": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "entity_id",
+        "record_type",
+        "comparison",
+        "complete_history",
+        "history_start_season",
+        "previous_best",
+        "current_achievement"
+      ]
+    },
+    "data_tie_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tie_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "team_a_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "team_b_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "team_a_goals": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "team_b_goals": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "leg_match_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+          },
+          "minItems": 1
+        },
+        "complete": {
+          "type": "boolean"
+        },
+        "advancing_team_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "away_goals_rule": {
+          "const": false
+        },
+        "shootout_match_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "tie_id",
+        "team_a_id",
+        "team_b_id",
+        "team_a_goals",
+        "team_b_goals",
+        "leg_match_ids",
+        "complete",
+        "advancing_team_id",
+        "away_goals_rule",
+        "shootout_match_id"
+      ]
+    },
+    "data_title_clinched": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "team_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+        },
+        "confirmed": {
+          "const": true
+        },
+        "proof_method": {
+          "enum": [
+            "completed_final",
+            "strict_points_bound",
+            "full_tiebreak_proof"
+          ]
+        },
+        "proof_source_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "awards_ready": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "team_id",
+        "confirmed",
+        "proof_method",
+        "proof_source_key",
+        "awards_ready"
+      ]
+    },
+    "data_swiss_record": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "team_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "wins": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3
+        },
+        "losses": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3
+        },
+        "buchholz": {
+          "type": "integer"
+        },
+        "basis": {
+          "const": "swiss_ties_including_shootout_wins"
+        }
+      },
+      "required": [
+        "team_id",
+        "wins",
+        "losses",
+        "buchholz",
+        "basis"
+      ]
+    },
+    "week_comparison": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "basis": {
+          "const": "completed_week_start_to_end"
+        },
+        "before_rank": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "before_points": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "before_played": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rank_change": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -19,
+              "maximum": 19
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "points_change": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "basis",
+        "before_rank",
+        "before_points",
+        "before_played",
+        "rank_change",
+        "points_change"
+      ]
+    },
+    "lead_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "before_leader_team_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "leader_changed": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "before_gap": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "after_gap": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "same_leader_gap_change": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "before_leader_team_id",
+        "leader_changed",
+        "before_gap",
+        "after_gap",
+        "same_leader_gap_change"
+      ]
+    },
+    "season_record": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "wins": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "draws": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "losses": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "goal_diff": {
+          "type": "integer"
+        },
+        "first_loss_match_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "first_lead_week": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 52
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "wins",
+        "draws",
+        "losses",
+        "goal_diff",
+        "first_loss_match_id",
+        "first_lead_week"
+      ]
+    }
+  }
+}

@@ -37,7 +37,7 @@ def main() -> int:
     elif sys.platform == 'darwin' and getattr(sys, 'frozen', False):
         from football_simulator import runtime
         # Keep the V0.1.0 game and its live saves independent of the press edition.
-        runtime.set_data_root_override(runtime.user_data_root().with_name('Football Simulator V0.2.0'))
+        runtime.set_data_root_override(runtime.user_data_root().with_name('Football Simulator V0.3.0'))
     else:
         # 源码运行时把总配置作为只读来源；不复制、不改写用户文件。
         from football_simulator import runtime
@@ -85,6 +85,8 @@ def main() -> int:
             window.setFixedSize(width, height)
         except ValueError:
             pass
+    if os.environ.get('FS_SMOKE_PRESS_PAUSE')=='1' and data_root and window.press:
+        window.press.auto_paused=True
     window.show()
     # 打包/前台冒烟钩子（仅环境变量触发；不影响正常启动）。
     smoke_route = os.environ.get("FS_SMOKE_ROUTE")
@@ -178,7 +180,7 @@ def main() -> int:
                 "executable": sys.executable,
                 "frozen": bool(getattr(sys, "frozen", False)),
                 "press_available": window.press is not None,
-                "bundle_default_data_root": str(_runtime.user_data_root().with_name('Football Simulator V0.2.0')) if sys.platform == 'darwin' and getattr(sys,'frozen',False) else None,
+                "bundle_default_data_root": str(_runtime.user_data_root().with_name('Football Simulator V0.3.0')) if sys.platform == 'darwin' and getattr(sys,'frozen',False) else None,
                 "main_window_module": main_module,
                 "main_window_file": getattr(sys.modules.get(main_module), "__file__", ""),
                 "page": type(page).__name__,
@@ -245,20 +247,9 @@ def main() -> int:
                 Path(smoke_result).write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
             except OSError:
                 pass
-            if os.environ.get('FS_SMOKE_KEYCHAIN_CHECK') == '1' and data_root and window.press:
-                # Optional isolated acceptance only: no secret, API call or
-                # saved-credential mutation crosses this receipt boundary.
-                import threading
-                def _check_keychain():
-                    from football_simulator.press.credentials import Credentials
-                    result={'pid':os.getpid(),'available':False,'error':None}
-                    try:
-                        key=Credentials().get();result['available']=bool(key);key=None
-                    except Exception:
-                        result['error']='keychain_unavailable'
-                    Path(smoke_result+'.keychain.json').write_text(json.dumps(result),encoding='utf-8')
-                threading.Thread(target=_check_keychain,daemon=True).start()
         QTimer.singleShot(900, _write_result)
+        if os.environ.get('FS_SMOKE_LIVE')=='1':
+            receipt_timer=QTimer(window);receipt_timer.timeout.connect(_write_result);receipt_timer.start(1000)
     smoke_shot = os.environ.get("FS_SMOKE_SCREENSHOT")
     if smoke_shot:
         def _grab() -> None:

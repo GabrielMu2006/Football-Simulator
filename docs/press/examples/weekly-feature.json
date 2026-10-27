@@ -1,0 +1,711 @@
+{
+  "meta": {
+    "schema_version": "press.weekly/0.1-draft",
+    "report_id": "demo-weekly-s5-w28",
+    "report_type": "weekly",
+    "world_id": "synthetic-world-only",
+    "season": 5,
+    "completed_week": 28,
+    "cutoff": {
+      "season": 5,
+      "week": 28
+    },
+    "input_validity": "ready",
+    "source_mode": "synthetic_example",
+    "source_game_version": "0.1.0",
+    "rules_version": "2026-10-20.2",
+    "exporter_version": "design-draft-1",
+    "history_first_season": 1,
+    "fixture_coverage": "full",
+    "missing_material": [],
+    "sample_note": "人工合成的规范示例。队名和场地名采用项目现有名称，赛果、球员归属及历史均为虚构，不是用户存档，也不是实际运行导出。"
+  },
+  "entities": {
+    "teams": {
+      "demo-kingsmeadow-rovers": {
+        "name_en": "Kingsmeadow Rovers"
+      },
+      "demo-hannya-masks": {
+        "name_en": "Hannya Masks"
+      },
+      "demo-xeno-hunters": {
+        "name_en": "Xeno Hunters"
+      },
+      "demo-star-guardians": {
+        "name_en": "Star Guardians"
+      }
+    },
+    "players": {
+      "demo-player-moise-kean": {
+        "name": "Moise Kean",
+        "position": "FW",
+        "is_real": true
+      }
+    },
+    "competitions": {
+      "confluence": {
+        "name_en": "Destiny Cup"
+      },
+      "premier": {
+        "name_en": "Premier Division"
+      }
+    },
+    "stadiums": {
+      "stadium-28": {
+        "name_en": "Hannya Theatre",
+        "name_zh": "般若剧场"
+      },
+      "stadium-14": {
+        "name_en": "Starwatch Stadium",
+        "name_zh": "星穹守望球场"
+      }
+    }
+  },
+  "week_summary": {
+    "completed_matches": 2,
+    "goals_excluding_shootouts": 5,
+    "competitions": [
+      {
+        "competition_id": "confluence",
+        "completed_matches": 2
+      }
+    ],
+    "notes": [
+      "第28周只有两场 Destiny Cup 半决赛，没有联赛；这是合成案例中的完整当周赛果。",
+      "没有冻结逐场评分，球员亮点使用实际进球等统计。"
+    ]
+  },
+  "facts": [
+    {
+      "fact_id": "f-match-1",
+      "kind": "match_result",
+      "time": {
+        "season": 5,
+        "week": 28
+      },
+      "competition_id": "confluence",
+      "team_ids": [
+        "demo-hannya-masks",
+        "demo-kingsmeadow-rovers"
+      ],
+      "player_ids": [],
+      "match_ids": [
+        "demo-m1"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-match-1",
+          "as_of": {
+            "season": 5,
+            "week": 28
+          }
+        }
+      ],
+      "data": {
+        "match_id": "demo-m1",
+        "stage": "semifinal",
+        "leg": 1,
+        "tie_id": null,
+        "home_team_id": "demo-hannya-masks",
+        "away_team_id": "demo-kingsmeadow-rovers",
+        "regulation": {
+          "home": 1,
+          "away": 2
+        },
+        "extra_time": null,
+        "shootout": null,
+        "on_field_winner_team_id": "demo-kingsmeadow-rovers",
+        "shootout_winner_team_id": null,
+        "stadium_id": "stadium-28",
+        "venue_mode": "home",
+        "goal_events": [
+          {
+            "minute": 22,
+            "team_id": "demo-hannya-masks",
+            "player_id": null
+          },
+          {
+            "minute": 58,
+            "team_id": "demo-kingsmeadow-rovers",
+            "player_id": "demo-player-moise-kean"
+          },
+          {
+            "minute": 81,
+            "team_id": "demo-kingsmeadow-rovers",
+            "player_id": "demo-player-moise-kean"
+          }
+        ]
+      }
+    },
+    {
+      "fact_id": "f-match-2",
+      "kind": "match_result",
+      "time": {
+        "season": 5,
+        "week": 28
+      },
+      "competition_id": "confluence",
+      "team_ids": [
+        "demo-star-guardians",
+        "demo-xeno-hunters"
+      ],
+      "player_ids": [],
+      "match_ids": [
+        "demo-m2"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-match-2",
+          "as_of": {
+            "season": 5,
+            "week": 28
+          }
+        }
+      ],
+      "data": {
+        "match_id": "demo-m2",
+        "stage": "semifinal",
+        "leg": 1,
+        "tie_id": null,
+        "home_team_id": "demo-star-guardians",
+        "away_team_id": "demo-xeno-hunters",
+        "regulation": {
+          "home": 1,
+          "away": 1
+        },
+        "extra_time": {
+          "home": 0,
+          "away": 0
+        },
+        "shootout": {
+          "home": 3,
+          "away": 4
+        },
+        "on_field_winner_team_id": null,
+        "shootout_winner_team_id": "demo-xeno-hunters",
+        "stadium_id": "stadium-14",
+        "venue_mode": "home",
+        "goal_events": []
+      }
+    },
+    {
+      "fact_id": "f-kean",
+      "kind": "player_match",
+      "time": {
+        "season": 5,
+        "week": 28
+      },
+      "competition_id": "confluence",
+      "team_ids": [
+        "demo-kingsmeadow-rovers"
+      ],
+      "player_ids": [
+        "demo-player-moise-kean"
+      ],
+      "match_ids": [
+        "demo-m1"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-kean",
+          "as_of": {
+            "season": 5,
+            "week": 28
+          }
+        }
+      ],
+      "data": {
+        "match_id": "demo-m1",
+        "player_id": "demo-player-moise-kean",
+        "team_id": "demo-kingsmeadow-rovers",
+        "appeared": true,
+        "goals": 2,
+        "assists": 0,
+        "chances_created": 1,
+        "successful_defenses": 0,
+        "successful_saves": 0,
+        "clean_sheets": 0
+      }
+    },
+    {
+      "fact_id": "f-defender-title",
+      "kind": "historical_title",
+      "time": {
+        "season": 4,
+        "week": 30
+      },
+      "competition_id": "confluence",
+      "team_ids": [
+        "demo-hannya-masks"
+      ],
+      "player_ids": [],
+      "match_ids": [],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-defender-title",
+          "as_of": {
+            "season": 4,
+            "week": 30
+          }
+        }
+      ],
+      "data": {
+        "team_id": "demo-hannya-masks",
+        "season": 4,
+        "competition_id": "confluence",
+        "result": "champion"
+      }
+    },
+    {
+      "fact_id": "f-former-club",
+      "kind": "former_club",
+      "time": {
+        "season": 4,
+        "week": 51
+      },
+      "competition_id": null,
+      "team_ids": [
+        "demo-hannya-masks",
+        "demo-kingsmeadow-rovers"
+      ],
+      "player_ids": [
+        "demo-player-moise-kean"
+      ],
+      "match_ids": [],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-former-club",
+          "as_of": {
+            "season": 4,
+            "week": 51
+          }
+        }
+      ],
+      "data": {
+        "player_id": "demo-player-moise-kean",
+        "former_team_id": "demo-hannya-masks",
+        "current_team_id": "demo-kingsmeadow-rovers",
+        "transfer_effective": {
+          "season": 4,
+          "week": 51
+        },
+        "appeared_for_former": true
+      }
+    },
+    {
+      "fact_id": "f-hannya-streak",
+      "kind": "streak",
+      "time": {
+        "season": 5,
+        "week": 28
+      },
+      "competition_id": null,
+      "team_ids": [
+        "demo-hannya-masks"
+      ],
+      "player_ids": [],
+      "match_ids": [
+        "demo-m1"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-hannya-streak",
+          "as_of": {
+            "season": 5,
+            "week": 28
+          }
+        }
+      ],
+      "data": {
+        "team_id": "demo-hannya-masks",
+        "scope": "all_official",
+        "scope_competition_id": null,
+        "kind": "unbeaten",
+        "before": 8,
+        "after": 0,
+        "ended": true,
+        "affected_match_id": "demo-m1",
+        "crosses_seasons": false,
+        "history_complete": true,
+        "basis": "regulation_plus_extra_time_excluding_shootout"
+      }
+    },
+    {
+      "fact_id": "f-star-streak",
+      "kind": "streak",
+      "time": {
+        "season": 5,
+        "week": 28
+      },
+      "competition_id": null,
+      "team_ids": [
+        "demo-star-guardians"
+      ],
+      "player_ids": [],
+      "match_ids": [
+        "demo-m2"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-star-streak",
+          "as_of": {
+            "season": 5,
+            "week": 28
+          }
+        }
+      ],
+      "data": {
+        "team_id": "demo-star-guardians",
+        "scope": "all_official",
+        "scope_competition_id": null,
+        "kind": "unbeaten",
+        "before": 6,
+        "after": 7,
+        "ended": false,
+        "affected_match_id": "demo-m2",
+        "crosses_seasons": false,
+        "history_complete": true,
+        "basis": "regulation_plus_extra_time_excluding_shootout"
+      }
+    },
+    {
+      "fact_id": "f-xeno-streak",
+      "kind": "streak",
+      "time": {
+        "season": 5,
+        "week": 28
+      },
+      "competition_id": null,
+      "team_ids": [
+        "demo-xeno-hunters"
+      ],
+      "player_ids": [],
+      "match_ids": [
+        "demo-m2"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-xeno-streak",
+          "as_of": {
+            "season": 5,
+            "week": 28
+          }
+        }
+      ],
+      "data": {
+        "team_id": "demo-xeno-hunters",
+        "scope": "all_official",
+        "scope_competition_id": null,
+        "kind": "winless",
+        "before": 4,
+        "after": 5,
+        "ended": false,
+        "affected_match_id": "demo-m2",
+        "crosses_seasons": false,
+        "history_complete": true,
+        "basis": "regulation_plus_extra_time_excluding_shootout"
+      }
+    },
+    {
+      "fact_id": "f-kings-qualified",
+      "kind": "competition_status",
+      "time": {
+        "season": 5,
+        "week": 28
+      },
+      "competition_id": "confluence",
+      "team_ids": [
+        "demo-kingsmeadow-rovers"
+      ],
+      "player_ids": [],
+      "match_ids": [
+        "demo-m1"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-kings-qualified",
+          "as_of": {
+            "season": 5,
+            "week": 28
+          }
+        }
+      ],
+      "data": {
+        "team_id": "demo-kingsmeadow-rovers",
+        "status": "qualified",
+        "next_stage": "final"
+      }
+    },
+    {
+      "fact_id": "f-hannya-out",
+      "kind": "competition_status",
+      "time": {
+        "season": 5,
+        "week": 28
+      },
+      "competition_id": "confluence",
+      "team_ids": [
+        "demo-hannya-masks"
+      ],
+      "player_ids": [],
+      "match_ids": [
+        "demo-m1"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-hannya-out",
+          "as_of": {
+            "season": 5,
+            "week": 28
+          }
+        }
+      ],
+      "data": {
+        "team_id": "demo-hannya-masks",
+        "status": "eliminated",
+        "next_stage": null
+      }
+    },
+    {
+      "fact_id": "f-xeno-qualified",
+      "kind": "competition_status",
+      "time": {
+        "season": 5,
+        "week": 28
+      },
+      "competition_id": "confluence",
+      "team_ids": [
+        "demo-xeno-hunters"
+      ],
+      "player_ids": [],
+      "match_ids": [
+        "demo-m2"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-xeno-qualified",
+          "as_of": {
+            "season": 5,
+            "week": 28
+          }
+        }
+      ],
+      "data": {
+        "team_id": "demo-xeno-hunters",
+        "status": "qualified",
+        "next_stage": "final"
+      }
+    },
+    {
+      "fact_id": "f-star-out",
+      "kind": "competition_status",
+      "time": {
+        "season": 5,
+        "week": 28
+      },
+      "competition_id": "confluence",
+      "team_ids": [
+        "demo-star-guardians"
+      ],
+      "player_ids": [],
+      "match_ids": [
+        "demo-m2"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-star-out",
+          "as_of": {
+            "season": 5,
+            "week": 28
+          }
+        }
+      ],
+      "data": {
+        "team_id": "demo-star-guardians",
+        "status": "eliminated",
+        "next_stage": null
+      }
+    },
+    {
+      "fact_id": "f-kings-first-final",
+      "kind": "record",
+      "time": {
+        "season": 5,
+        "week": 28
+      },
+      "competition_id": "confluence",
+      "team_ids": [
+        "demo-kingsmeadow-rovers"
+      ],
+      "player_ids": [],
+      "match_ids": [],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-kings-first-final",
+          "as_of": {
+            "season": 5,
+            "week": 28
+          }
+        }
+      ],
+      "data": {
+        "entity_id": "demo-kingsmeadow-rovers",
+        "record_type": "first_final",
+        "comparison": "first",
+        "complete_history": true,
+        "history_start_season": 1,
+        "previous_best": "半决赛",
+        "current_achievement": "Destiny Cup 决赛"
+      }
+    },
+    {
+      "fact_id": "f-hannya-before",
+      "kind": "table_row",
+      "time": {
+        "season": 5,
+        "week": 28
+      },
+      "competition_id": "premier",
+      "team_ids": [
+        "demo-hannya-masks"
+      ],
+      "player_ids": [],
+      "match_ids": [],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-hannya-before",
+          "as_of": {
+            "season": 5,
+            "week": 28
+          }
+        }
+      ],
+      "data": {
+        "team_id": "demo-hannya-masks",
+        "timing": "before_match",
+        "rank": 2,
+        "points": 48,
+        "played": 24
+      }
+    },
+    {
+      "fact_id": "f-kings-before",
+      "kind": "table_row",
+      "time": {
+        "season": 5,
+        "week": 28
+      },
+      "competition_id": "premier",
+      "team_ids": [
+        "demo-kingsmeadow-rovers"
+      ],
+      "player_ids": [],
+      "match_ids": [],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-kings-before",
+          "as_of": {
+            "season": 5,
+            "week": 28
+          }
+        }
+      ],
+      "data": {
+        "team_id": "demo-kingsmeadow-rovers",
+        "timing": "before_match",
+        "rank": 11,
+        "points": 31,
+        "played": 24
+      }
+    }
+  ],
+  "editorial": {
+    "policy_version": "editorial-policy-draft-1",
+    "judgements": [
+      {
+        "judgement_id": "j-upset",
+        "label": "upset",
+        "basis_fact_ids": [
+          "f-match-1",
+          "f-hannya-before",
+          "f-kings-before",
+          "f-defender-title",
+          "f-hannya-streak"
+        ],
+        "policy_version": "editorial-policy-draft-1",
+        "reason": "赛前联赛第11名淘汰第2名及该杯卫冕冠军，并终结其八场各项赛事不败；评价来自本合成案例的赛前材料。"
+      }
+    ],
+    "topics": [
+      {
+        "topic_id": "t-defender-exit",
+        "event_type": "defending_champion_exit",
+        "story_group_id": "demo-m1",
+        "priority": "primary",
+        "required_fact_ids": [
+          "f-match-1",
+          "f-defender-title",
+          "f-hannya-out",
+          "f-hannya-streak"
+        ],
+        "context_fact_ids": [
+          "f-hannya-before",
+          "f-kings-before"
+        ],
+        "judgement_ids": [
+          "j-upset"
+        ],
+        "suggested_angle": "卫冕在半决赛结束；赛前走势与结果形成反差。"
+      },
+      {
+        "topic_id": "t-former-club",
+        "event_type": "former_club_performance",
+        "story_group_id": "demo-m1",
+        "priority": "supporting",
+        "required_fact_ids": [
+          "f-match-1",
+          "f-kean",
+          "f-former-club"
+        ],
+        "context_fact_ids": [
+          "f-kings-first-final",
+          "f-kings-qualified"
+        ],
+        "judgement_ids": [],
+        "suggested_angle": "Kean面对前队梅开二度；与主线合并，写球员贡献和新球队首次决赛。"
+      },
+      {
+        "topic_id": "t-shootout",
+        "event_type": "shootout_qualification",
+        "story_group_id": "demo-m2",
+        "priority": "supporting",
+        "required_fact_ids": [
+          "f-match-2",
+          "f-xeno-qualified",
+          "f-star-out"
+        ],
+        "context_fact_ids": [
+          "f-star-streak",
+          "f-xeno-streak"
+        ],
+        "judgement_ids": [],
+        "suggested_angle": "场上平局、点球晋级；不败与不胜纪录和杯赛去留并不等价。"
+      }
+    ]
+  }
+}

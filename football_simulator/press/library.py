@@ -1,4 +1,8 @@
-"""Development newspaper library. Articles travel with their own save database."""
+"""Shared save storage and retained V0.2.0 DeepSeek generation.
+
+V0.3.0's UI uses local_library's explicit local entry points. This provider
+path remains for legacy compatibility tests and is never the offline fallback.
+"""
 from __future__ import annotations
 
 from contextlib import contextmanager
@@ -74,6 +78,8 @@ class Library:
                 status TEXT NOT NULL, request_json TEXT, request_sha TEXT,
                 started_at TEXT NOT NULL, finished_at TEXT, error TEXT)''')
             self._install_sections(conn)
+            from football_simulator.press.local_templates import install_columns
+            install_columns(conn, 'press_articles')
 
     @staticmethod
     def _install_sections(conn):
@@ -161,7 +167,7 @@ class Library:
                     conn.execute("UPDATE press_articles SET status='failed',error=? WHERE owner=?", (error, row['owner']))
                     conn.execute("UPDATE press_article_attempts SET status='failed',error=?,finished_at=? WHERE token=?", (error, now(), row['owner']))
 
-    def reserve(self, season, week, *, retry=False):
+    def reserve(self, season, week, *, retry=False, engine_id='deepseek', template_version=None):
         with self.connection(write=True) as conn:
             world_id = conn.execute("SELECT world_id FROM world").fetchone()[0]
             material = conn.execute("SELECT * FROM press_weeks WHERE world_id=? AND season=? AND week=?", (world_id, season, week)).fetchone()
@@ -178,15 +184,21 @@ class Library:
                 raise PressError("该周已有不同来源的报道，未覆盖或重新请求。")
             if previous and previous['status'] == 'ready':
                 return None
-            if previous and (previous['status'] == 'generating' or (previous['status'] != 'paused' and not retry)):
+            from football_simulator.press.local_templates import engine_of
+            if previous and engine_of(previous) != engine_id:
+                raise PressError('原 DeepSeek 任务未完成，V0.3.0 保留原状态，不自动转换或调用 API。')
+            if previous and (previous['status'] == 'generating' or (previous['status'] not in ('paused', 'queued') and not retry)):
                 raise PressError("正在生成，或需要手动确认失败重试。")
             token = str(uuid.uuid4())
             if previous:
                 conn.execute("UPDATE press_articles SET status='generating',owner=?,error=NULL WHERE season=? AND week=?", (token, season, week))
             else:
-                conn.execute("INSERT INTO press_articles(season,week,world_id,report_id,packet_sha,source_sha,status,owner,created_at) VALUES(?,?,?,?,?,?,'generating',?,?)", (season, week, world_id, packet['meta']['report_id'], material['packet_sha256'], material['source_sha256'], token, now()))
+                conn.execute("INSERT INTO press_articles(season,week,world_id,report_id,packet_sha,source_sha,status,owner,created_at,engine_id,template_version) VALUES(?,?,?,?,?,?,'generating',?,?,?,?)", (season, week, world_id, packet['meta']['report_id'], material['packet_sha256'], material['source_sha256'], token, now(), engine_id, template_version))
             conn.execute("INSERT INTO press_article_attempts(token,season,week,status,started_at) VALUES(?,?,?,'generating',?)", (token, season, week, now()))
-            return {"token": token, "world_id": world_id, "season": season, "week": week, "packet": packet, "sources": sources}
+            instance = conn.execute('SELECT instance_id FROM press_activation WHERE singleton=1').fetchone()[0]
+            return {"token": token, "world_id": world_id, "season": season, "week": week, "packet": packet, "sources": sources,
+                    'instance_id': instance, 'engine_id': engine_id,
+                    'template_version': previous['template_version'] if previous else template_version}
 
     def _frozen_plan(self, conn, job, *, grouped=False):
         """Freeze before dispatch. A failed job resumes its original requests."""
@@ -369,7 +381,9 @@ class Library:
     def _owns(self, conn, job):
         world_id = conn.execute("SELECT world_id FROM world").fetchone()[0]
         row = conn.execute("SELECT world_id,status FROM press_articles WHERE owner=?", (job['token'],)).fetchone()
-        if world_id != job['world_id'] or not row or row['world_id'] != world_id or row['status'] != 'generating':
+        instance = conn.execute('SELECT instance_id FROM press_activation WHERE singleton=1').fetchone()
+        if (world_id != job['world_id'] or not row or row['world_id'] != world_id or row['status'] != 'generating'
+                or (job.get('instance_id') and (not instance or instance[0] != job['instance_id']))):
             raise PressError("生成任务已失效，未写入其他存档。")
 
 

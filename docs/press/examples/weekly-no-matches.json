@@ -1,0 +1,43 @@
+{
+  "meta": {
+    "schema_version": "press.weekly/0.1-draft",
+    "report_id": "demo-weekly-s5-w26",
+    "report_type": "weekly",
+    "world_id": "synthetic-world-only",
+    "season": 5,
+    "completed_week": 26,
+    "cutoff": {
+      "season": 5,
+      "week": 26
+    },
+    "input_validity": "no_matches",
+    "source_mode": "synthetic_example",
+    "source_game_version": "0.1.0",
+    "rules_version": "2026-10-20.2",
+    "exporter_version": "design-draft-1",
+    "history_first_season": 1,
+    "fixture_coverage": "full",
+    "missing_material": [],
+    "sample_note": "人工合成的规范示例。队名和场地名采用项目现有名称，赛果、球员归属及历史均为虚构，不是用户存档，也不是实际运行导出。"
+  },
+  "entities": {
+    "teams": {},
+    "players": {},
+    "competitions": {},
+    "stadiums": {}
+  },
+  "week_summary": {
+    "completed_matches": 0,
+    "goals_excluding_shootouts": 0,
+    "competitions": [],
+    "notes": [
+      "冬窗休赛，无正式比赛。建议本地显示无比赛说明，不调用周报生成API；其他专题按自己的触发处理。"
+    ]
+  },
+  "facts": [],
+  "editorial": {
+    "policy_version": "editorial-policy-draft-1",
+    "judgements": [],
+    "topics": []
+  }
+}

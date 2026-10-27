@@ -18,7 +18,7 @@ IMAGE = "football-simulator-tests:0.1.0"
 
 def source_files():
     """Explicit source roots: never include working saves, release or home."""
-    for name in ("football_simulator", "tests", "scripts", "assets", "team_badges_40_v2", "team_badges_40_v3", "archive/legacy-ui"):
+    for name in ("football_simulator", "tests", "scripts", "assets", "team_badges_40_v2", "team_badges_40_v3", "archive/legacy-ui", "docs/press"):
         for path in (ROOT / name).rglob("*"):
             if path.is_file() and not any(part in ("__pycache__", ".DS_Store", "Variants", "gallery") for part in path.parts):
                 yield path
@@ -30,7 +30,7 @@ def source_files():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--suite", choices=("core", "ui"), default="core")
+    parser.add_argument("--suite", choices=("core", "ui", "press"), default="core")
     parser.add_argument("--build", action="store_true", help="rebuild the dependency image")
     args = parser.parse_args()
     subprocess.run(["docker", "info", "--format", "{{.ServerVersion}}"], check=True, timeout=20)

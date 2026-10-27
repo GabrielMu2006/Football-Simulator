@@ -183,7 +183,16 @@ def build_plan(packet, sources):
         elif any(f['data']['status'] == 'entered_losers_bracket' for f in statuses):
             priority, angle = 65, '转入败者组，仍保留夺冠机会'
         for match in content['matches']:
-            if match.get('season_first_losses') and priority < 150:
+            if match.get('expectation_comparison',{}).get('is_upset') and priority < 125:
+                priority, angle = 125, '综合赛前战绩与身价证据支持的冷门'
+            goals = match.get('goals', [])
+            flow = match.get('score_flow', {})
+            late = bool(goals and goals[-1]['minute'] >= 85 and goals[-1]['field_effect'] in
+                        ('首开纪录', '取得领先', '再次取得领先', '反超比分', '扳平比分'))
+            if (flow.get('winner_trailing_spells', 0) or late) and priority < 110:
+                priority, angle = 110, '有完整进球顺序支持的逆转或末段关键进球'
+            if (match.get('season_first_losses') and any(r['team'] in match['season_first_losses'] and r['played'] >= 5
+                    for r in match['league_background']) and priority < 150):
                 priority, angle = 150, '联赛赛季首败与原有走势的终结'
             for p in match.get('players', []):
                 if p.get('goals', 0) >= 3 and priority < 130:

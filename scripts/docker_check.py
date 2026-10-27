@@ -31,11 +31,20 @@ def core():
     names = ["tests.test_v2_rules", "tests.test_v2_engine", "tests.test_v2_persistence", "tests.test_v2_service",
              "tests.test_vnext_calendar", "tests.test_vnext_records_honors",
              "tests.test_swiss_transfer_rules.TransferRulesTests", "tests.test_swiss_transfer_rules.TransferPersistenceTests",
-             "tests.test_team_honor_totals.HonorTotalDataTests", "tests.test_champions_board.ChampionDataTests"]
+             "tests.test_press_local_templates", "tests.test_team_honor_totals.HonorTotalDataTests", "tests.test_champions_board.ChampionDataTests"]
     suite = unittest.defaultTestLoader.loadTestsFromNames(names)
     result = unittest.TextTestRunner(verbosity=2).run(suite)
     Path("/results/tests.json").write_text(json.dumps({"suite": "portable-core", "targets": names, "tests": result.testsRun,
         "failures": len(result.failures), "errors": len(result.errors), "skips": len(result.skipped), "passed": result.wasSuccessful()}, indent=2))
+    return 0 if result.wasSuccessful() else 1
+
+
+def press():
+    names=['tests.test_press_local_templates','tests.test_press_planning','tests.test_press_features',
+           'tests.test_press_library','tests.test_press_automatic','tests.test_press_export','tests.test_press_ui']
+    result=unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromNames(names))
+    Path('/results/tests.json').write_text(json.dumps({'suite':'press','targets':names,'tests':result.testsRun,
+        'failures':len(result.failures),'errors':len(result.errors),'passed':result.wasSuccessful()},indent=2))
     return 0 if result.wasSuccessful() else 1
 
 
@@ -87,4 +96,4 @@ def ui():
 
 if __name__ == "__main__":
     isolation()
-    raise SystemExit(ui() if sys.argv[1] == "ui" else core())
+    raise SystemExit(ui() if sys.argv[1] == "ui" else press() if sys.argv[1] == "press" else core())

@@ -73,13 +73,16 @@ class FeatureLibrary(Library):
                     conn.execute("UPDATE press_features SET status='failed',error=? WHERE owner=?",(error,row['owner']))
                     conn.execute("UPDATE press_feature_attempts SET status='failed',finished_at=?,error=? WHERE token=?",(now(),error,row['owner']))
 
-    def reserve_feature(self,report_id,*,retry=False):
+    def reserve_feature(self,report_id,*,retry=False,engine_id='deepseek',template_version=None):
         with self.connection(write=True) as conn:
             row=conn.execute('SELECT * FROM press_features WHERE report_id=?',(report_id,)).fetchone()
             if not row:raise PressError('未找到启用后冻结的专题。')
             world_id=conn.execute('SELECT world_id FROM world').fetchone()[0]
             if row['world_id']!=world_id:raise PressError('专题与当前世界不符。')
             if row['status'] in ('ready','generating'):return None
+            from football_simulator.press.local_templates import engine_of
+            if engine_of(row)!=engine_id:
+                raise PressError('原引擎任务保留，不自动转换或调用 API。')
             if row['status']=='failed' and not retry:return None
             if row['packet_json']:
                 packet=json.loads(row['packet_json'])
@@ -99,7 +102,8 @@ class FeatureLibrary(Library):
             conn.execute("UPDATE press_features SET status='generating',owner=?,error=NULL WHERE report_id=?",(token,report_id))
             conn.execute("INSERT INTO press_feature_attempts(token,season,week,status,started_at) VALUES(?,?,?,'generating',?)",(token,row['season'],row['week'],now()))
             return {'token':token,'world_id':world_id,'instance_id':instance,'season':row['season'],'week':row['week'],
-                    'packet':packet,'source_sha':row['source_sha']}
+                    'packet':packet,'source_sha':row['source_sha'],'engine_id':engine_id,
+                    'template_version':row['template_version'] or template_version}
 
     def _frozen_plan(self,conn,job,*,grouped=False):
         self._owns(conn,job);self._install_sections(conn)

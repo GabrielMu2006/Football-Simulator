@@ -1,0 +1,145 @@
+{
+  "schema_version": "press.article/0.1-draft",
+  "report_id": "demo-weekly-s5-w28",
+  "title": "旧将两球送别卫冕冠军，Xeno Hunters点球过关",
+  "title_fact_ids": [
+    "f-match-1",
+    "f-kean",
+    "f-former-club",
+    "f-defender-title",
+    "f-hannya-out",
+    "f-match-2",
+    "f-xeno-qualified"
+  ],
+  "summary": "Destiny Cup 半决赛结束：Moise Kean面对老东家梅开二度，帮助Kingsmeadow Rovers首次进入该杯决赛；另一边，Xeno Hunters在场上1–1战平后，以点球4–3淘汰Star Guardians。",
+  "summary_fact_ids": [
+    "f-match-1",
+    "f-kean",
+    "f-former-club",
+    "f-kings-first-final",
+    "f-match-2",
+    "f-xeno-qualified",
+    "f-star-out"
+  ],
+  "used_topic_ids": [
+    "t-defender-exit",
+    "t-former-club",
+    "t-shootout"
+  ],
+  "sections": [
+    {
+      "heading": "Kean让这次重逢有了不同的结局",
+      "heading_fact_ids": [
+        "f-match-1",
+        "f-kean",
+        "f-former-club"
+      ],
+      "blocks": [
+        {
+          "kind": "body",
+          "label": null,
+          "text": "第5赛季第28周，Destiny Cup的两场半决赛决定了决赛席位。最醒目的结果来自Kingsmeadow Rovers：他们在客场2–1淘汰Hannya Masks，将卫冕冠军挡在决赛之外。两粒进球都属于Moise Kean，这位上季夏窗离开Hannya Masks的前锋，亲手改变了老东家的卫冕进程。",
+          "fact_ids": [
+            "f-match-1",
+            "f-kean",
+            "f-former-club",
+            "f-defender-title",
+            "f-hannya-out",
+            "f-kings-qualified"
+          ]
+        },
+        {
+          "kind": "body",
+          "label": null,
+          "text": "比赛的走向并非一开始就属于客队。Hannya Masks在第22分钟领先，Kean直到第58分钟才扳平，第81分钟再次破门完成反超。这两粒进球，一粒追回了晋级的可能，另一粒决定了半决赛的归属。上季夏窗离开后，他与老东家的又一次交集，落在了足以结束对方卫冕之旅的时刻；对新球队而言，这也是一次靠他的个人贡献跨过门槛的比赛。",
+          "fact_ids": [
+            "f-match-1",
+            "f-kean",
+            "f-former-club",
+            "f-kings-qualified"
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "卫冕止步，另一队第一次走到决赛",
+      "heading_fact_ids": [
+        "f-defender-title",
+        "f-hannya-out",
+        "f-kings-first-final"
+      ],
+      "blocks": [
+        {
+          "kind": "body",
+          "label": null,
+          "text": "这也不是两支赛前处境相近的球队之间的一次普通交锋。Hannya Masks当时在Premier Division排名第二，Kingsmeadow Rovers位列第十一；卫冕冠军还带着各项赛事八场不败进入半决赛。正因为有这些背景，这次出局才显得意外。此前持续积累的稳定，并没有保证他们拿到继续卫冕的资格，八场不败也随着这场失利结束。",
+          "fact_ids": [
+            "f-hannya-before",
+            "f-kings-before",
+            "f-defender-title",
+            "f-hannya-streak",
+            "f-match-1",
+            "f-hannya-out"
+          ]
+        },
+        {
+          "kind": "body",
+          "label": null,
+          "text": "对Kingsmeadow Rovers而言，意义则不只在于淘汰一支强队。在这份完整的队史记录中，他们此前在Destiny Cup的最好成绩是半决赛，如今第一次跨过了这一关。联赛第十一的位置与杯赛决赛席位同时存在，提醒人们这支球队本季的表现不能只由一个名次概括。不过，突破半决赛仍然只是进入争冠的最后一步，首次决赛还没有变成首次夺冠。",
+          "fact_ids": [
+            "f-kings-first-final",
+            "f-kings-qualified",
+            "f-kings-before"
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "七场不败止步，五场不胜晋级",
+      "heading_fact_ids": [
+        "f-star-streak",
+        "f-xeno-streak",
+        "f-star-out",
+        "f-xeno-qualified"
+      ],
+      "blocks": [
+        {
+          "kind": "body",
+          "label": null,
+          "text": "另一场半决赛，Star Guardians与Xeno Hunters在常规时间1–1战平，加时双方均未进球。到了点球大战，Xeno Hunters以4–3拿到决赛席位，Star Guardians就此出局。两队在一百二十分钟里都没能建立比分优势，最后的去留，交给了点球结果。",
+          "fact_ids": [
+            "f-match-2",
+            "f-xeno-qualified",
+            "f-star-out"
+          ]
+        },
+        {
+          "kind": "body",
+          "label": null,
+          "text": "这为两队的近期战绩留下了特别的注脚。Star Guardians各项赛事不败扩大到七场，却已无缘本届决赛；Xeno Hunters场上不胜延续到五场，仍然保住了争冠机会。前者此前延续的稳定，最后没能换来晋级；后者还没有结束的不胜，也没有挡住这次前进。本周两场半决赛，一场由Kean在落后局面下连入两球改写结果，另一场走到点球才分出晋级者。Kingsmeadow Rovers已经刷新队史最好成绩，Xeno Hunters则带着尚未终结的不胜纪录继续向前。决赛席位到手以后，他们还各有一件事要完成：把突破变成冠军，把晋级变成一场场上的胜利。",
+          "fact_ids": [
+            "f-star-streak",
+            "f-xeno-streak",
+            "f-star-out",
+            "f-xeno-qualified",
+            "f-match-1",
+            "f-kean",
+            "f-kings-qualified",
+            "f-kings-first-final"
+          ]
+        },
+        {
+          "kind": "fan_voice",
+          "label": "看台声音（虚构）",
+          "text": "“不败不等于还能留下，晋级也不一定要先改写不胜纪录。杯赛有时候就是这么难以用一行战绩说明。”",
+          "fact_ids": [
+            "f-star-streak",
+            "f-xeno-streak",
+            "f-star-out",
+            "f-xeno-qualified"
+          ]
+        }
+      ]
+    }
+  ]
+}

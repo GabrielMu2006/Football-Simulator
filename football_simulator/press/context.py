@@ -78,6 +78,7 @@ class Context:
         result['leader_and_runner_up'] = [self.table_row(cid, f['data']) for f in rows[:2]]
         if first.get('lead_context'):
             lead = first['lead_context']
+            result['leader_changed_this_week'] = lead['leader_changed']
             old_top = sorted([f['data'] for f in rows if f['data'].get('week_comparison', {}).get('before_rank') is not None], key=lambda d:d['week_comparison']['before_rank'])
             leader = self.team(first['team_id'])
             end = f"周末{leader}{first['points']}分排名第一，领先当前次席{self.team(rows[1]['data']['team_id'])}{lead['after_gap']}分。"
@@ -163,8 +164,9 @@ class Context:
         return selected
 
     def match(self, mid):
+        from football_simulator.press.features import stage_name
         f = self.games[mid]; d = f['data']; notes = self.view[f['fact_id']]['reading_notes']
-        result = {'competition': self.competition(f['competition_id']), 'stage': rules.stage_label(d['stage']),
+        result = {'competition': self.competition(f['competition_id']), 'stage': stage_name(d['stage']),
                   'home': self.team(d['home_team_id']), 'away': self.team(d['away_team_id']),
                   'field_score_home_away': score(d)}
         if d['extra_time'] is not None:
@@ -177,6 +179,10 @@ class Context:
         if d.get('venue_mode') == 'neutral':
             result['neutral_venue'] = True
         result['league_background'] = self.boundary_rows(f)
+        if f['competition_id'] in rules.LEAGUE_COMPETITIONS:
+            before = result['league_background']
+            if len(before) == 2 and all(r['rank'] <= 4 for r in before):
+                result['race_meeting'] = before
         if f['competition_id'] in rules.LEAGUE_COMPETITIONS:
             result['league_week_end'] = [self.table_row(f['competition_id'], self.row(f['competition_id'], tid)) for tid in f['team_ids']]
         statuses, records, former, performances = [], [], [], []
@@ -280,6 +286,21 @@ class Context:
             row = self.row(f['competition_id'], tid)
             if row and row.get('season_record', {}).get('first_loss_match_id') == mid:
                 result.setdefault('season_first_losses', []).append(self.team(tid))
+        baseline=self.book.get('expectations:week',{}).get('value')
+        winner=d.get('shootout_winner_team_id') or d.get('on_field_winner_team_id')
+        if baseline and winner and winner in baseline['teams']:
+            from copy import deepcopy
+            from football_simulator.press.expectations import compare
+            loser=next(t for t in f['team_ids'] if t!=winner)
+            profiles=deepcopy(baseline['teams'])
+            for row in result['league_background']:
+                tid=next((t for t in f['team_ids'] if self.team(t)==row['team']),None)
+                if tid:profiles[tid]['current_league']={'competition':row['league'],**{k:row[k] for k in ('rank','points','played')}}
+            result['expectation_comparison']=compare(profiles[winner],profiles[loser])
+            result['expectation_source_key']='expectations:week'
+        if baseline:
+            result['club_backgrounds']={self.team(t):baseline['teams'][t]['heritage'] for t in f['team_ids']
+                                       if baseline['teams'].get(t,{}).get('heritage')}
         return result
 
     def honours(self, team, cid):

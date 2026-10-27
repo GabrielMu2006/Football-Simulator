@@ -1,0 +1,1209 @@
+{
+  "meta": {
+    "schema_version": "press.weekly/0.1-draft",
+    "report_id": "demo-weekly-s5-w1",
+    "report_type": "weekly",
+    "world_id": "synthetic-world-only",
+    "season": 5,
+    "completed_week": 1,
+    "cutoff": {
+      "season": 5,
+      "week": 1
+    },
+    "input_validity": "ready",
+    "source_mode": "synthetic_example",
+    "source_game_version": "0.1.0",
+    "rules_version": "2026-10-20.2",
+    "exporter_version": "design-draft-1",
+    "history_first_season": 1,
+    "fixture_coverage": "full",
+    "missing_material": [],
+    "sample_note": "人工合成的规范示例。队名和场地名采用项目现有名称，赛果、球员归属及历史均为虚构，不是用户存档，也不是实际运行导出。"
+  },
+  "entities": {
+    "teams": {
+      "demo-kingsmeadow-rovers": {
+        "name_en": "Kingsmeadow Rovers"
+      },
+      "demo-glazed-dreams": {
+        "name_en": "Glazed Dreams"
+      },
+      "demo-thorned-reliquary": {
+        "name_en": "Thorned Reliquary"
+      },
+      "demo-dark-side-of-the-moon": {
+        "name_en": "Dark Side of the Moon"
+      },
+      "demo-crownfield-athletic": {
+        "name_en": "Crownfield Athletic"
+      },
+      "demo-crimson-moon": {
+        "name_en": "Crimson Moon"
+      },
+      "demo-void-relics": {
+        "name_en": "Void Relics"
+      },
+      "demo-midnight-tales": {
+        "name_en": "Midnight Tales"
+      },
+      "demo-yellowjackets-fc": {
+        "name_en": "Yellowjackets FC"
+      },
+      "demo-gaias-revenge": {
+        "name_en": "Gaia's Revenge"
+      },
+      "demo-ancient-dragonfire": {
+        "name_en": "Ancient Dragonfire"
+      },
+      "demo-icefire-ballad": {
+        "name_en": "Icefire Ballad"
+      },
+      "demo-northern-lords": {
+        "name_en": "Northern Lords"
+      },
+      "demo-star-guardians": {
+        "name_en": "Star Guardians"
+      },
+      "demo-brookgate-wanderers": {
+        "name_en": "Brookgate Wanderers"
+      },
+      "demo-solford-town": {
+        "name_en": "Solford Town"
+      },
+      "demo-shadow-eaters": {
+        "name_en": "Shadow Eaters"
+      },
+      "demo-xeno-hunters": {
+        "name_en": "Xeno Hunters"
+      },
+      "demo-blazing-shadows": {
+        "name_en": "Blazing Shadows"
+      },
+      "demo-ironvale-fc": {
+        "name_en": "Ironvale FC"
+      },
+      "demo-nightingales": {
+        "name_en": "Nightingales"
+      },
+      "demo-pain-fc": {
+        "name_en": "Pain FC"
+      },
+      "demo-hands-of-fate": {
+        "name_en": "Hands of Fate"
+      },
+      "demo-ocean-stars": {
+        "name_en": "Ocean Stars"
+      },
+      "demo-celestial-vanguard": {
+        "name_en": "Celestial Vanguard"
+      },
+      "demo-supersonic-knights": {
+        "name_en": "Supersonic Knights"
+      },
+      "demo-polaris-fc": {
+        "name_en": "Polaris FC"
+      },
+      "demo-hannya-masks": {
+        "name_en": "Hannya Masks"
+      },
+      "demo-zero-returners": {
+        "name_en": "Zero Returners"
+      },
+      "demo-fallen-heirlooms": {
+        "name_en": "Fallen Heirlooms"
+      },
+      "demo-ravenhill": {
+        "name_en": "Ravenhill"
+      },
+      "demo-doom-knights": {
+        "name_en": "Doom Knights"
+      },
+      "demo-ruined-legion": {
+        "name_en": "Ruined Legion"
+      },
+      "demo-thunder-rangers": {
+        "name_en": "Thunder Rangers"
+      },
+      "demo-crystal-roses": {
+        "name_en": "Crystal Roses"
+      },
+      "demo-sentinels-of-light": {
+        "name_en": "Sentinels of Light"
+      },
+      "demo-glorious-vision": {
+        "name_en": "Glorious Vision"
+      },
+      "demo-miracle-makers": {
+        "name_en": "Miracle Makers"
+      },
+      "demo-chaos-overture": {
+        "name_en": "Chaos Overture"
+      },
+      "demo-royal-junction": {
+        "name_en": "Royal Junction"
+      }
+    },
+    "players": {},
+    "competitions": {
+      "premier": {
+        "name_en": "Premier Division"
+      },
+      "second": {
+        "name_en": "Second Division"
+      }
+    },
+    "stadiums": {
+      "stadium-01": {
+        "name_en": "Kingsmeadow Park",
+        "name_zh": "王庭草甸球场"
+      },
+      "stadium-03": {
+        "name_en": "Thorncrown Sanctuary",
+        "name_zh": "荆冠圣所球场"
+      },
+      "stadium-05": {
+        "name_en": "Gilded Fields",
+        "name_zh": "鎏金之原球场"
+      },
+      "stadium-07": {
+        "name_en": "Voidgate Stadium",
+        "name_zh": "虚空之门球场"
+      },
+      "stadium-09": {
+        "name_en": "The Hive",
+        "name_zh": "蜂巢球场"
+      },
+      "stadium-11": {
+        "name_en": "Dragonbreath Caldera",
+        "name_zh": "龙息火山球场"
+      },
+      "stadium-13": {
+        "name_en": "Winter Throne Stadium",
+        "name_zh": "凛冬王座球场"
+      },
+      "stadium-15": {
+        "name_en": "Brookgate Bridge Ground",
+        "name_zh": "溪门桥球场"
+      },
+      "stadium-17": {
+        "name_en": "Dusk Hollow Stadium",
+        "name_zh": "暮影深渊球场"
+      },
+      "stadium-19": {
+        "name_en": "Shadowflame Park",
+        "name_zh": "暗焰球场"
+      },
+      "stadium-21": {
+        "name_en": "Nightingale Grove",
+        "name_zh": "夜莺林球场"
+      },
+      "stadium-23": {
+        "name_en": "Fatecross Stadium",
+        "name_zh": "命运十字路球场"
+      },
+      "stadium-25": {
+        "name_en": "Celestial Citadel",
+        "name_zh": "天界要塞球场"
+      },
+      "stadium-27": {
+        "name_en": "Northstar Stadium",
+        "name_zh": "北辰球场"
+      },
+      "stadium-29": {
+        "name_en": "Origin Park",
+        "name_zh": "原点球场"
+      },
+      "stadium-31": {
+        "name_en": "Ravenfeather Ridge",
+        "name_zh": "鸦羽岭球场"
+      },
+      "stadium-33": {
+        "name_en": "Broken Banner Stadium",
+        "name_zh": "断旗城球场"
+      },
+      "stadium-35": {
+        "name_en": "Crystal Garden Stadium",
+        "name_zh": "水晶花园球场"
+      },
+      "stadium-37": {
+        "name_en": "Field of Glory",
+        "name_zh": "荣光之境球场"
+      },
+      "stadium-39": {
+        "name_en": "Chaos Symphony Arena",
+        "name_zh": "混沌交响球场"
+      }
+    }
+  },
+  "week_summary": {
+    "completed_matches": 20,
+    "goals_excluding_shootouts": 34,
+    "competitions": [
+      {
+        "competition_id": "premier",
+        "completed_matches": 10
+      },
+      {
+        "competition_id": "second",
+        "completed_matches": 10
+      }
+    ],
+    "notes": [
+      "两级联赛首轮共20场完赛，本文仅选择部分结果展开。",
+      "无已确认爆冷、历史纪录或连续战绩热点；不应强行创造。",
+      "本例的赛季分级为合成设置，并非用户存档。"
+    ]
+  },
+  "facts": [
+    {
+      "fact_id": "f-premier-1",
+      "kind": "match_result",
+      "time": {
+        "season": 5,
+        "week": 1
+      },
+      "competition_id": "premier",
+      "team_ids": [
+        "demo-kingsmeadow-rovers",
+        "demo-glazed-dreams"
+      ],
+      "player_ids": [],
+      "match_ids": [
+        "demo-premier-1"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-premier-1",
+          "as_of": {
+            "season": 5,
+            "week": 1
+          }
+        }
+      ],
+      "data": {
+        "match_id": "demo-premier-1",
+        "stage": "league",
+        "leg": 1,
+        "tie_id": null,
+        "home_team_id": "demo-kingsmeadow-rovers",
+        "away_team_id": "demo-glazed-dreams",
+        "regulation": {
+          "home": 2,
+          "away": 1
+        },
+        "extra_time": null,
+        "shootout": null,
+        "on_field_winner_team_id": "demo-kingsmeadow-rovers",
+        "shootout_winner_team_id": null,
+        "stadium_id": "stadium-01",
+        "venue_mode": "home",
+        "goal_events": []
+      }
+    },
+    {
+      "fact_id": "f-premier-2",
+      "kind": "match_result",
+      "time": {
+        "season": 5,
+        "week": 1
+      },
+      "competition_id": "premier",
+      "team_ids": [
+        "demo-thorned-reliquary",
+        "demo-dark-side-of-the-moon"
+      ],
+      "player_ids": [],
+      "match_ids": [
+        "demo-premier-2"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-premier-2",
+          "as_of": {
+            "season": 5,
+            "week": 1
+          }
+        }
+      ],
+      "data": {
+        "match_id": "demo-premier-2",
+        "stage": "league",
+        "leg": 1,
+        "tie_id": null,
+        "home_team_id": "demo-thorned-reliquary",
+        "away_team_id": "demo-dark-side-of-the-moon",
+        "regulation": {
+          "home": 0,
+          "away": 0
+        },
+        "extra_time": null,
+        "shootout": null,
+        "on_field_winner_team_id": null,
+        "shootout_winner_team_id": null,
+        "stadium_id": "stadium-03",
+        "venue_mode": "home",
+        "goal_events": []
+      }
+    },
+    {
+      "fact_id": "f-premier-3",
+      "kind": "match_result",
+      "time": {
+        "season": 5,
+        "week": 1
+      },
+      "competition_id": "premier",
+      "team_ids": [
+        "demo-crownfield-athletic",
+        "demo-crimson-moon"
+      ],
+      "player_ids": [],
+      "match_ids": [
+        "demo-premier-3"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-premier-3",
+          "as_of": {
+            "season": 5,
+            "week": 1
+          }
+        }
+      ],
+      "data": {
+        "match_id": "demo-premier-3",
+        "stage": "league",
+        "leg": 1,
+        "tie_id": null,
+        "home_team_id": "demo-crownfield-athletic",
+        "away_team_id": "demo-crimson-moon",
+        "regulation": {
+          "home": 1,
+          "away": 2
+        },
+        "extra_time": null,
+        "shootout": null,
+        "on_field_winner_team_id": "demo-crimson-moon",
+        "shootout_winner_team_id": null,
+        "stadium_id": "stadium-05",
+        "venue_mode": "home",
+        "goal_events": []
+      }
+    },
+    {
+      "fact_id": "f-premier-4",
+      "kind": "match_result",
+      "time": {
+        "season": 5,
+        "week": 1
+      },
+      "competition_id": "premier",
+      "team_ids": [
+        "demo-void-relics",
+        "demo-midnight-tales"
+      ],
+      "player_ids": [],
+      "match_ids": [
+        "demo-premier-4"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-premier-4",
+          "as_of": {
+            "season": 5,
+            "week": 1
+          }
+        }
+      ],
+      "data": {
+        "match_id": "demo-premier-4",
+        "stage": "league",
+        "leg": 1,
+        "tie_id": null,
+        "home_team_id": "demo-void-relics",
+        "away_team_id": "demo-midnight-tales",
+        "regulation": {
+          "home": 1,
+          "away": 0
+        },
+        "extra_time": null,
+        "shootout": null,
+        "on_field_winner_team_id": "demo-void-relics",
+        "shootout_winner_team_id": null,
+        "stadium_id": "stadium-07",
+        "venue_mode": "home",
+        "goal_events": []
+      }
+    },
+    {
+      "fact_id": "f-premier-5",
+      "kind": "match_result",
+      "time": {
+        "season": 5,
+        "week": 1
+      },
+      "competition_id": "premier",
+      "team_ids": [
+        "demo-yellowjackets-fc",
+        "demo-gaias-revenge"
+      ],
+      "player_ids": [],
+      "match_ids": [
+        "demo-premier-5"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-premier-5",
+          "as_of": {
+            "season": 5,
+            "week": 1
+          }
+        }
+      ],
+      "data": {
+        "match_id": "demo-premier-5",
+        "stage": "league",
+        "leg": 1,
+        "tie_id": null,
+        "home_team_id": "demo-yellowjackets-fc",
+        "away_team_id": "demo-gaias-revenge",
+        "regulation": {
+          "home": 1,
+          "away": 1
+        },
+        "extra_time": null,
+        "shootout": null,
+        "on_field_winner_team_id": null,
+        "shootout_winner_team_id": null,
+        "stadium_id": "stadium-09",
+        "venue_mode": "home",
+        "goal_events": []
+      }
+    },
+    {
+      "fact_id": "f-premier-6",
+      "kind": "match_result",
+      "time": {
+        "season": 5,
+        "week": 1
+      },
+      "competition_id": "premier",
+      "team_ids": [
+        "demo-ancient-dragonfire",
+        "demo-icefire-ballad"
+      ],
+      "player_ids": [],
+      "match_ids": [
+        "demo-premier-6"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-premier-6",
+          "as_of": {
+            "season": 5,
+            "week": 1
+          }
+        }
+      ],
+      "data": {
+        "match_id": "demo-premier-6",
+        "stage": "league",
+        "leg": 1,
+        "tie_id": null,
+        "home_team_id": "demo-ancient-dragonfire",
+        "away_team_id": "demo-icefire-ballad",
+        "regulation": {
+          "home": 0,
+          "away": 1
+        },
+        "extra_time": null,
+        "shootout": null,
+        "on_field_winner_team_id": "demo-icefire-ballad",
+        "shootout_winner_team_id": null,
+        "stadium_id": "stadium-11",
+        "venue_mode": "home",
+        "goal_events": []
+      }
+    },
+    {
+      "fact_id": "f-premier-7",
+      "kind": "match_result",
+      "time": {
+        "season": 5,
+        "week": 1
+      },
+      "competition_id": "premier",
+      "team_ids": [
+        "demo-northern-lords",
+        "demo-star-guardians"
+      ],
+      "player_ids": [],
+      "match_ids": [
+        "demo-premier-7"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-premier-7",
+          "as_of": {
+            "season": 5,
+            "week": 1
+          }
+        }
+      ],
+      "data": {
+        "match_id": "demo-premier-7",
+        "stage": "league",
+        "leg": 1,
+        "tie_id": null,
+        "home_team_id": "demo-northern-lords",
+        "away_team_id": "demo-star-guardians",
+        "regulation": {
+          "home": 2,
+          "away": 0
+        },
+        "extra_time": null,
+        "shootout": null,
+        "on_field_winner_team_id": "demo-northern-lords",
+        "shootout_winner_team_id": null,
+        "stadium_id": "stadium-13",
+        "venue_mode": "home",
+        "goal_events": []
+      }
+    },
+    {
+      "fact_id": "f-premier-8",
+      "kind": "match_result",
+      "time": {
+        "season": 5,
+        "week": 1
+      },
+      "competition_id": "premier",
+      "team_ids": [
+        "demo-brookgate-wanderers",
+        "demo-solford-town"
+      ],
+      "player_ids": [],
+      "match_ids": [
+        "demo-premier-8"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-premier-8",
+          "as_of": {
+            "season": 5,
+            "week": 1
+          }
+        }
+      ],
+      "data": {
+        "match_id": "demo-premier-8",
+        "stage": "league",
+        "leg": 1,
+        "tie_id": null,
+        "home_team_id": "demo-brookgate-wanderers",
+        "away_team_id": "demo-solford-town",
+        "regulation": {
+          "home": 1,
+          "away": 1
+        },
+        "extra_time": null,
+        "shootout": null,
+        "on_field_winner_team_id": null,
+        "shootout_winner_team_id": null,
+        "stadium_id": "stadium-15",
+        "venue_mode": "home",
+        "goal_events": []
+      }
+    },
+    {
+      "fact_id": "f-premier-9",
+      "kind": "match_result",
+      "time": {
+        "season": 5,
+        "week": 1
+      },
+      "competition_id": "premier",
+      "team_ids": [
+        "demo-shadow-eaters",
+        "demo-xeno-hunters"
+      ],
+      "player_ids": [],
+      "match_ids": [
+        "demo-premier-9"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-premier-9",
+          "as_of": {
+            "season": 5,
+            "week": 1
+          }
+        }
+      ],
+      "data": {
+        "match_id": "demo-premier-9",
+        "stage": "league",
+        "leg": 1,
+        "tie_id": null,
+        "home_team_id": "demo-shadow-eaters",
+        "away_team_id": "demo-xeno-hunters",
+        "regulation": {
+          "home": 0,
+          "away": 0
+        },
+        "extra_time": null,
+        "shootout": null,
+        "on_field_winner_team_id": null,
+        "shootout_winner_team_id": null,
+        "stadium_id": "stadium-17",
+        "venue_mode": "home",
+        "goal_events": []
+      }
+    },
+    {
+      "fact_id": "f-premier-10",
+      "kind": "match_result",
+      "time": {
+        "season": 5,
+        "week": 1
+      },
+      "competition_id": "premier",
+      "team_ids": [
+        "demo-blazing-shadows",
+        "demo-ironvale-fc"
+      ],
+      "player_ids": [],
+      "match_ids": [
+        "demo-premier-10"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-premier-10",
+          "as_of": {
+            "season": 5,
+            "week": 1
+          }
+        }
+      ],
+      "data": {
+        "match_id": "demo-premier-10",
+        "stage": "league",
+        "leg": 1,
+        "tie_id": null,
+        "home_team_id": "demo-blazing-shadows",
+        "away_team_id": "demo-ironvale-fc",
+        "regulation": {
+          "home": 2,
+          "away": 1
+        },
+        "extra_time": null,
+        "shootout": null,
+        "on_field_winner_team_id": "demo-blazing-shadows",
+        "shootout_winner_team_id": null,
+        "stadium_id": "stadium-19",
+        "venue_mode": "home",
+        "goal_events": []
+      }
+    },
+    {
+      "fact_id": "f-second-1",
+      "kind": "match_result",
+      "time": {
+        "season": 5,
+        "week": 1
+      },
+      "competition_id": "second",
+      "team_ids": [
+        "demo-nightingales",
+        "demo-pain-fc"
+      ],
+      "player_ids": [],
+      "match_ids": [
+        "demo-second-1"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-second-1",
+          "as_of": {
+            "season": 5,
+            "week": 1
+          }
+        }
+      ],
+      "data": {
+        "match_id": "demo-second-1",
+        "stage": "league",
+        "leg": 1,
+        "tie_id": null,
+        "home_team_id": "demo-nightingales",
+        "away_team_id": "demo-pain-fc",
+        "regulation": {
+          "home": 2,
+          "away": 1
+        },
+        "extra_time": null,
+        "shootout": null,
+        "on_field_winner_team_id": "demo-nightingales",
+        "shootout_winner_team_id": null,
+        "stadium_id": "stadium-21",
+        "venue_mode": "home",
+        "goal_events": []
+      }
+    },
+    {
+      "fact_id": "f-second-2",
+      "kind": "match_result",
+      "time": {
+        "season": 5,
+        "week": 1
+      },
+      "competition_id": "second",
+      "team_ids": [
+        "demo-hands-of-fate",
+        "demo-ocean-stars"
+      ],
+      "player_ids": [],
+      "match_ids": [
+        "demo-second-2"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-second-2",
+          "as_of": {
+            "season": 5,
+            "week": 1
+          }
+        }
+      ],
+      "data": {
+        "match_id": "demo-second-2",
+        "stage": "league",
+        "leg": 1,
+        "tie_id": null,
+        "home_team_id": "demo-hands-of-fate",
+        "away_team_id": "demo-ocean-stars",
+        "regulation": {
+          "home": 0,
+          "away": 0
+        },
+        "extra_time": null,
+        "shootout": null,
+        "on_field_winner_team_id": null,
+        "shootout_winner_team_id": null,
+        "stadium_id": "stadium-23",
+        "venue_mode": "home",
+        "goal_events": []
+      }
+    },
+    {
+      "fact_id": "f-second-3",
+      "kind": "match_result",
+      "time": {
+        "season": 5,
+        "week": 1
+      },
+      "competition_id": "second",
+      "team_ids": [
+        "demo-celestial-vanguard",
+        "demo-supersonic-knights"
+      ],
+      "player_ids": [],
+      "match_ids": [
+        "demo-second-3"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-second-3",
+          "as_of": {
+            "season": 5,
+            "week": 1
+          }
+        }
+      ],
+      "data": {
+        "match_id": "demo-second-3",
+        "stage": "league",
+        "leg": 1,
+        "tie_id": null,
+        "home_team_id": "demo-celestial-vanguard",
+        "away_team_id": "demo-supersonic-knights",
+        "regulation": {
+          "home": 1,
+          "away": 2
+        },
+        "extra_time": null,
+        "shootout": null,
+        "on_field_winner_team_id": "demo-supersonic-knights",
+        "shootout_winner_team_id": null,
+        "stadium_id": "stadium-25",
+        "venue_mode": "home",
+        "goal_events": []
+      }
+    },
+    {
+      "fact_id": "f-second-4",
+      "kind": "match_result",
+      "time": {
+        "season": 5,
+        "week": 1
+      },
+      "competition_id": "second",
+      "team_ids": [
+        "demo-polaris-fc",
+        "demo-hannya-masks"
+      ],
+      "player_ids": [],
+      "match_ids": [
+        "demo-second-4"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-second-4",
+          "as_of": {
+            "season": 5,
+            "week": 1
+          }
+        }
+      ],
+      "data": {
+        "match_id": "demo-second-4",
+        "stage": "league",
+        "leg": 1,
+        "tie_id": null,
+        "home_team_id": "demo-polaris-fc",
+        "away_team_id": "demo-hannya-masks",
+        "regulation": {
+          "home": 1,
+          "away": 0
+        },
+        "extra_time": null,
+        "shootout": null,
+        "on_field_winner_team_id": "demo-polaris-fc",
+        "shootout_winner_team_id": null,
+        "stadium_id": "stadium-27",
+        "venue_mode": "home",
+        "goal_events": []
+      }
+    },
+    {
+      "fact_id": "f-second-5",
+      "kind": "match_result",
+      "time": {
+        "season": 5,
+        "week": 1
+      },
+      "competition_id": "second",
+      "team_ids": [
+        "demo-zero-returners",
+        "demo-fallen-heirlooms"
+      ],
+      "player_ids": [],
+      "match_ids": [
+        "demo-second-5"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-second-5",
+          "as_of": {
+            "season": 5,
+            "week": 1
+          }
+        }
+      ],
+      "data": {
+        "match_id": "demo-second-5",
+        "stage": "league",
+        "leg": 1,
+        "tie_id": null,
+        "home_team_id": "demo-zero-returners",
+        "away_team_id": "demo-fallen-heirlooms",
+        "regulation": {
+          "home": 1,
+          "away": 1
+        },
+        "extra_time": null,
+        "shootout": null,
+        "on_field_winner_team_id": null,
+        "shootout_winner_team_id": null,
+        "stadium_id": "stadium-29",
+        "venue_mode": "home",
+        "goal_events": []
+      }
+    },
+    {
+      "fact_id": "f-second-6",
+      "kind": "match_result",
+      "time": {
+        "season": 5,
+        "week": 1
+      },
+      "competition_id": "second",
+      "team_ids": [
+        "demo-ravenhill",
+        "demo-doom-knights"
+      ],
+      "player_ids": [],
+      "match_ids": [
+        "demo-second-6"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-second-6",
+          "as_of": {
+            "season": 5,
+            "week": 1
+          }
+        }
+      ],
+      "data": {
+        "match_id": "demo-second-6",
+        "stage": "league",
+        "leg": 1,
+        "tie_id": null,
+        "home_team_id": "demo-ravenhill",
+        "away_team_id": "demo-doom-knights",
+        "regulation": {
+          "home": 0,
+          "away": 1
+        },
+        "extra_time": null,
+        "shootout": null,
+        "on_field_winner_team_id": "demo-doom-knights",
+        "shootout_winner_team_id": null,
+        "stadium_id": "stadium-31",
+        "venue_mode": "home",
+        "goal_events": []
+      }
+    },
+    {
+      "fact_id": "f-second-7",
+      "kind": "match_result",
+      "time": {
+        "season": 5,
+        "week": 1
+      },
+      "competition_id": "second",
+      "team_ids": [
+        "demo-ruined-legion",
+        "demo-thunder-rangers"
+      ],
+      "player_ids": [],
+      "match_ids": [
+        "demo-second-7"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-second-7",
+          "as_of": {
+            "season": 5,
+            "week": 1
+          }
+        }
+      ],
+      "data": {
+        "match_id": "demo-second-7",
+        "stage": "league",
+        "leg": 1,
+        "tie_id": null,
+        "home_team_id": "demo-ruined-legion",
+        "away_team_id": "demo-thunder-rangers",
+        "regulation": {
+          "home": 2,
+          "away": 0
+        },
+        "extra_time": null,
+        "shootout": null,
+        "on_field_winner_team_id": "demo-ruined-legion",
+        "shootout_winner_team_id": null,
+        "stadium_id": "stadium-33",
+        "venue_mode": "home",
+        "goal_events": []
+      }
+    },
+    {
+      "fact_id": "f-second-8",
+      "kind": "match_result",
+      "time": {
+        "season": 5,
+        "week": 1
+      },
+      "competition_id": "second",
+      "team_ids": [
+        "demo-crystal-roses",
+        "demo-sentinels-of-light"
+      ],
+      "player_ids": [],
+      "match_ids": [
+        "demo-second-8"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-second-8",
+          "as_of": {
+            "season": 5,
+            "week": 1
+          }
+        }
+      ],
+      "data": {
+        "match_id": "demo-second-8",
+        "stage": "league",
+        "leg": 1,
+        "tie_id": null,
+        "home_team_id": "demo-crystal-roses",
+        "away_team_id": "demo-sentinels-of-light",
+        "regulation": {
+          "home": 1,
+          "away": 1
+        },
+        "extra_time": null,
+        "shootout": null,
+        "on_field_winner_team_id": null,
+        "shootout_winner_team_id": null,
+        "stadium_id": "stadium-35",
+        "venue_mode": "home",
+        "goal_events": []
+      }
+    },
+    {
+      "fact_id": "f-second-9",
+      "kind": "match_result",
+      "time": {
+        "season": 5,
+        "week": 1
+      },
+      "competition_id": "second",
+      "team_ids": [
+        "demo-glorious-vision",
+        "demo-miracle-makers"
+      ],
+      "player_ids": [],
+      "match_ids": [
+        "demo-second-9"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-second-9",
+          "as_of": {
+            "season": 5,
+            "week": 1
+          }
+        }
+      ],
+      "data": {
+        "match_id": "demo-second-9",
+        "stage": "league",
+        "leg": 1,
+        "tie_id": null,
+        "home_team_id": "demo-glorious-vision",
+        "away_team_id": "demo-miracle-makers",
+        "regulation": {
+          "home": 0,
+          "away": 0
+        },
+        "extra_time": null,
+        "shootout": null,
+        "on_field_winner_team_id": null,
+        "shootout_winner_team_id": null,
+        "stadium_id": "stadium-37",
+        "venue_mode": "home",
+        "goal_events": []
+      }
+    },
+    {
+      "fact_id": "f-second-10",
+      "kind": "match_result",
+      "time": {
+        "season": 5,
+        "week": 1
+      },
+      "competition_id": "second",
+      "team_ids": [
+        "demo-chaos-overture",
+        "demo-royal-junction"
+      ],
+      "player_ids": [],
+      "match_ids": [
+        "demo-second-10"
+      ],
+      "sources": [
+        {
+          "kind": "synthetic",
+          "key": "f-second-10",
+          "as_of": {
+            "season": 5,
+            "week": 1
+          }
+        }
+      ],
+      "data": {
+        "match_id": "demo-second-10",
+        "stage": "league",
+        "leg": 1,
+        "tie_id": null,
+        "home_team_id": "demo-chaos-overture",
+        "away_team_id": "demo-royal-junction",
+        "regulation": {
+          "home": 2,
+          "away": 1
+        },
+        "extra_time": null,
+        "shootout": null,
+        "on_field_winner_team_id": "demo-chaos-overture",
+        "shootout_winner_team_id": null,
+        "stadium_id": "stadium-39",
+        "venue_mode": "home",
+        "goal_events": []
+      }
+    }
+  ],
+  "editorial": {
+    "policy_version": "editorial-policy-draft-1",
+    "judgements": [],
+    "topics": [
+      {
+        "topic_id": "t-opening-premier",
+        "event_type": "ordinary_result",
+        "story_group_id": "demo-premier-1",
+        "priority": "primary",
+        "required_fact_ids": [
+          "f-premier-1"
+        ],
+        "context_fact_ids": [],
+        "judgement_ids": [],
+        "suggested_angle": "平实交代Kingsmeadow Rovers首轮2–1取胜；没有材料支持争冠预测或心理描写。"
+      },
+      {
+        "topic_id": "t-opening-second",
+        "event_type": "ordinary_result",
+        "story_group_id": "demo-second-1",
+        "priority": "supporting",
+        "required_fact_ids": [
+          "f-second-1"
+        ],
+        "context_fact_ids": [],
+        "judgement_ids": [],
+        "suggested_angle": "次级首轮结果作为另一条简讯，避免写长期走势。"
+      }
+    ]
+  }
+}

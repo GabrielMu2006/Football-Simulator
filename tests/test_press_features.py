@@ -203,6 +203,55 @@ class FeatureTests(PressSaveCase):
         article=feature_planning.prepare({'title':'选秀','deck':'摘要','body':'正文。'},packet,plan,plan['sections'][0])
         self.assertEqual(article['report_id'],packet['meta']['report_id'])
 
+    def test_draft_cohort_review_uses_the_historical_playoff_season(self):
+        source=self.source();world=source['world']
+        keeper=next(r for r in source['player_match_stats']
+                    if world['players'][r['player_id']]['position']=='GK' and r['successful_saves'])
+        match=next(m for m in source['matches'] if m['match_id']==keeper['match_id'])
+        home,away=match['home_team_id'],match['away_team_id']
+        match.update(season_number=2,competition='playoff',stage='promotion_final_leg_2')
+        keeper['season_number']=2
+        source['matches']=[match];source['player_match_stats']=[keeper]
+        world['season_number']=3;world['season'].update(number=3,week=50)
+        source['identity'].update(season=3,week=49)
+        world['season']['draft_log']=[{'season':3,'results':[],'undrafted':[]}]
+        world['archives']=[{'season_number':1,'draft':[{'season':1,'results':[{
+            'player_id':keeper['player_id'],'team_id':keeper['team_id'],'pick':1,'ability':70}]}]},
+            {'season_number':2}]
+        world['edition_archives']={
+            '2:second':{'tables':{'second':[{'team_id':away},{'team_id':home}]}},
+            '3:second':{'tables':{'second':[{'team_id':t} for t in world['teams'] if t not in (home,away)]}}}
+        before=digest(source)
+        from football_simulator.press.features import venue_basis
+        basis=venue_basis(FeatureContext(source),match)
+        self.assertIn('第2赛季Second Division',basis)
+        self.assertIn(FeatureContext(source).team(home)+'第2',basis)
+        packet=draft_packet(source)
+        review=packet['facts'][0]['data']['previous_two_cohorts'][0]
+        self.assertEqual([(r['season'],r['appearances']) for r in review['by_season']],[(2,1),(3,0)])
+        self.assertEqual(len(feature_planning.generation_plan(packet)['sections']),1)
+        self.assertEqual(digest(source),before)
+
+    def test_historical_venue_uses_its_own_previous_ranks_and_handles_missing_rows(self):
+        from football_simulator.press.features import venue_basis
+        source=self.source();world=source['world'];home,away,other=list(world['teams'])[:3]
+        world['season_number']=3;world['season'].update(number=3,week=50)
+        source['identity'].update(season=3,week=49)
+        world['season']['previous']={'premier_order':[home,away],'second_order':[]}
+        world['archives']=[{'season_number':1,'premier_order':[away,home],'second_order':[]}]
+        fixture={'season_number':2,'competition':'aureole','stage':'quarterfinal_leg_2',
+                 'home_team_id':home,'away_team_id':away,'venue_mode':'home'}
+        ctx=FeatureContext(source);basis=venue_basis(ctx,fixture)
+        self.assertIn('第1赛季总顺序',basis);self.assertIn(ctx.team(home)+'第2',basis)
+        fixture['competition']='playoff'
+        world['edition_archives']={'2:second':{'tables':{'second':[{'team_id':other}]}}}
+        basis=venue_basis(ctx,fixture)
+        self.assertIn('按第2赛季Second Division最终排名',basis)
+        self.assertNotIn(ctx.team(home)+'第',basis)
+        world['archives'].append({'season_number':2,'second_table':[{'team_id':away},{'team_id':home}]})
+        world['edition_archives']={};ctx=FeatureContext(source)
+        self.assertIn(ctx.team(home)+'第2',venue_basis(ctx,fixture))
+
     def test_award_counts_and_title_milestones_keep_their_scope(self):
         data={'awards':{'助攻王':[{'player':'Player A','value':14,'team_at_award':'New Club',
               'actual_teams_in_edition':[{'team':'Old Club','assists':11},{'team':'New Club','assists':3}]}]},

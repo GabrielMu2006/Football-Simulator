@@ -75,6 +75,8 @@ def capture(conn, world, completed_week):
     packet, sources = build_packet(conn, world, week, dict(activation))
     validate_packet(packet, sources)
     conn.execute("INSERT INTO press_weeks VALUES(?,?,?,?,?,?,?,?)", (world["world_id"], season, week, world["version"], canonical(packet), canonical(sources), digest(packet), digest(sources)))
+    from football_simulator.press.local_library import enqueue_week
+    enqueue_week(conn, packet, digest(packet), digest(sources))
 
 
 def load_week(save_name, season, week):

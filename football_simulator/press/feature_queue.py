@@ -50,7 +50,10 @@ def events(world):
 def install(conn):
     from football_simulator.press.repository import enabled
     if not enabled(conn):raise PressError('请先启用报刊。')
-    if installed(conn):return
+    if installed(conn):
+        from football_simulator.press.local_templates import install_columns
+        install_columns(conn, 'press_features')
+        return
     world=json.loads(conn.execute('SELECT data_json FROM world').fetchone()[0])
     conn.execute('CREATE TABLE press_feature_activation (singleton INTEGER PRIMARY KEY CHECK(singleton=1), world_id TEXT NOT NULL, enabled_version INTEGER NOT NULL)')
     conn.execute('CREATE TABLE press_feature_seen (event_id TEXT PRIMARY KEY, baseline INTEGER NOT NULL)')
@@ -71,12 +74,16 @@ def install(conn):
         started_at TEXT NOT NULL, finished_at TEXT, error TEXT)''')
     conn.execute('INSERT INTO press_feature_activation VALUES(1,?,?)',(world['world_id'],world['version']))
     conn.executemany('INSERT INTO press_feature_seen VALUES(?,1)',[(e['event_id'],) for e in events(world)])
+    from football_simulator.press.local_templates import install_columns
+    install_columns(conn, 'press_features')
 
 
 def capture(conn,world):
     if not installed(conn):return
     activation=conn.execute('SELECT * FROM press_feature_activation WHERE singleton=1').fetchone()
     if not activation or activation['world_id']!=world['world_id']:raise PressError('专题记录与世界不符。')
+    from football_simulator.press.expectations import capture_next
+    capture_next(conn,world)
     seen={r[0] for r in conn.execute('SELECT event_id FROM press_feature_seen')}
     fresh=[e for e in events(world) if e['event_id'] not in seen]
     if not fresh:return
@@ -101,3 +108,7 @@ def capture(conn,world):
            world['season_number'],boundary(world),world['world_id'],world['version'],canonical(packet) if packet else None,
            digest(packet) if packet else None,sha,'queued' if packet else 'failed',datetime.now(timezone.utc).isoformat(),error))
         conn.execute('INSERT INTO press_feature_seen VALUES(?,0)',(event['event_id'],))
+        activation_columns = {r[1] for r in conn.execute('PRAGMA table_info(press_activation)')}
+        if 'engine_id' in activation_columns:
+            active = conn.execute('SELECT engine_id,template_version FROM press_activation WHERE singleton=1').fetchone()
+            conn.execute('UPDATE press_features SET engine_id=?,template_version=? WHERE report_id=?', (*active, rid))

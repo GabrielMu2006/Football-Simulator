@@ -58,8 +58,10 @@ def _capture_snapshot(conn, completed_week, history_from):
     stats = [dict(r) for r in conn.execute('''SELECT p.* FROM player_match_stats p JOIN players x ON x.player_id=p.player_id
         JOIN matches m ON m.match_id=p.match_id WHERE x.is_real=1 AND m.status='completed'
         AND m.season_number>=? AND (m.season_number<? OR (m.season_number=? AND m.week<=?)) ORDER BY m.season_number,m.week,m.match_id,p.player_id''', (history_from,season,season,week))]
+    from football_simulator.press.expectations import load
     return {'schema_version':'press.feature-sources/1','identity':{'world_id':world['world_id'],'source_world_version':world['version'],
-            'season':season,'week':week},'world':world,'matches':matches,'player_match_stats':stats}
+            'season':season,'week':week},'world':world,'matches':matches,'player_match_stats':stats,
+            'expectation_history':load(conn,season,week)}
 
 
 class FeatureContext:
@@ -75,6 +77,9 @@ class FeatureContext:
             raise PressError('专题来源包含截止点之后的比赛。')
         if any(r['match_id'] not in self.matches or not self.world['players'].get(r['player_id'],{}).get('is_real') for r in self.stats):
             raise PressError('专题球员事实缺少比赛或真实身份。')
+        if any(r['world_id']!=identity['world_id'] or r['season']!=self.season or r['before_week']>self.week
+               or r['source_version']>identity['source_world_version'] for r in source.get('expectation_history',[])):
+            raise PressError('赛前预期快照包含未来数据或其他世界。')
         self.archives={int(a['season_number']):a for a in self.world.get('archives',[])}
         self.history_complete=set(range(1,self.season)) <= set(self.archives)
         self.stadiums={s['stadium_id']:s for s in rules.load_stadiums()}
@@ -187,6 +192,8 @@ class FeatureContext:
 
 def make_packet(ctx,kind,key,content):
     identity=ctx.source['identity']
+    from football_simulator.press.team_background import backgrounds
+    content['team_backgrounds']={ctx.team(t):data for t,data in backgrounds(ctx.world).items()}
     return {'meta':{'schema_version':'press.feature/1','report_id':f"{kind}:{identity['world_id']}:{ctx.season}:{key}",
                     'report_type':kind,'world_id':identity['world_id'],'season':ctx.season,'completed_week':ctx.week,
                     'source_world_version':identity['source_world_version'],'cutoff':{'season':ctx.season,'week':ctx.week},'source_sha256':digest(ctx.source)},
@@ -232,22 +239,35 @@ def venue_basis(ctx,fixture,*,two_legs=False):
     if fixture.get('venue_mode')=='neutral':return '中立场地；记录中的主客顺序仅用于展示。'
     if fixture.get('venue_reason'):return fixture['venue_reason']
     comp=fixture['competition'];stage=fixture.get('stage','')
+    season=int(fixture.get('season_number',ctx.season))
+    h=fixture['home_team_id'];a=fixture['away_team_id']
     if comp=='playoff':
-        rows=ctx.world.get('edition_archives',{}).get(f'{ctx.season}:second',{}).get('tables',{}).get('second',[])
-        if rows:
-            ranks={row['team_id']:n for n,row in enumerate(rows,1)}
-            h=fixture['home_team_id'];a=fixture['away_team_id']
-            return (f"本季Second Division最终排名：{ctx.team(h)}第{ranks[h]}、{ctx.team(a)}第{ranks[a]}；"
+        rows=ctx.world.get('edition_archives',{}).get(f'{season}:second',{}).get('tables',{}).get('second',[])
+        if not rows:rows=ctx.archives.get(season,{}).get('second_table',[])
+        ranks={row['team_id']:n for n,row in enumerate(rows,1)}
+        if h in ranks and a in ranks:
+            return (f"第{season}赛季Second Division最终排名：{ctx.team(h)}第{ranks[h]}、{ctx.team(a)}第{ranks[a]}；"
                     '排名较高者在次回合主场。')
-        return '升级附加赛按本季Second Division最终排名，较高者在次回合主场。'
+        return f'升级附加赛按第{season}赛季Second Division最终排名，较高者在次回合主场。'
     if comp in rules.LEAGUE_COMPETITIONS or stage.startswith(('group','cross_group')):
         return '按该阶段主客场赛程安排。'
     from football_simulator.game.competitions import previous_ranks
-    ranks=previous_ranks(ctx.world);h=fixture['home_team_id'];a=fixture['away_team_id']
-    order=f"上季总顺序：{ctx.team(h)}第{ranks[h]}、{ctx.team(a)}第{ranks[a]}（一级1–20，其后次级1–20）。"
+    if season==ctx.season:
+        ranks=previous_ranks(ctx.world)
+    else:
+        # Historical performances must not inherit the report season's seeds.
+        archive=ctx.archives.get(season-1,{})
+        ranks={}
+        for league,offset in (('premier',0),('second',20)):
+            rows=ctx.world.get('edition_archives',{}).get(f'{season-1}:{league}',{}).get('tables',{}).get(league,[])
+            order=[row['team_id'] for row in rows] if rows else archive.get(league+'_order',[])
+            ranks.update({team_id:offset+n for n,team_id in enumerate(order,1)})
+    previous='上季' if season==ctx.season else f'第{season-1}赛季'
+    order=(f"{previous}总顺序：{ctx.team(h)}第{ranks[h]}、{ctx.team(a)}第{ranks[a]}（一级1–20，其后次级1–20）。"
+           if h in ranks and a in ranks else '')
     if two_legs or '_leg_' in stage:
-        return order+'两回合由上季排名较高者在次回合主场，不按本届小组排名分配。'
-    return order+'本场按上季联赛排名确定主场。'
+        return order+f'两回合由{previous}排名较高者在次回合主场，不按本届小组排名分配。'
+    return order+f'本场按{previous}联赛排名确定主场。'
 
 
 def bracket_view(ctx,state):
@@ -319,6 +339,10 @@ def phase_packet(source,competition,phase):
             content['groups']={group:table_view(ctx,rows) for group,rows in state['group_standings'].items()}
             content['qualified']=[ctx.team(r['team_id']) for rows in state['group_standings'].values() for r in rows[:2]]
             content['eliminated']=[ctx.team(r['team_id']) for rows in state['group_standings'].values() for r in rows[2:]]
+            from football_simulator.press.expectations import group_surprises
+            content['group_surprises']=group_surprises(ctx,state,games)
+            participants=state.get('participants',[])
+            content['draw_pots']=[{'team':ctx.team(t),'pot':n//4+1} for n,t in enumerate(participants)] if len(participants)==16 else []
         elif competition=='starpath':
             content['swiss_records']=[{'team':ctx.team(t),'wins':r[0],'losses':r[1],'seed':state.get('knockout_seeds',{}).get(t)} for t,r in state['records'].items()]
             content['qualified']=[ctx.team(t) for t,r in state['records'].items() if r[0]==3]
@@ -333,20 +357,34 @@ def phase_packet(source,competition,phase):
                 content['qualified']=content['direct_quarterfinalists']+content['playin_winners']
                 content['eliminated'] += [ctx.team(team) for tie in state['playin'] for team in tie['teams'] if team!=tie['winner']]
         else:raise PressError('没有设置该类大阶段报道。')
+        if competition!='aureole':
+            from football_simulator.press.expectations import qualification_surprises
+            content['qualification_surprises']=qualification_surprises(ctx,state,
+                content.get('qualified',content.get('direct_quarterfinalists',[])),content.get('eliminated',[]),games)
         content['bracket']=bracket_view(ctx,state)
         # A phase report sees only the fixtures already decided/scheduled here.
         content['history_notes']=[]
+        content['history_breakthroughs']=[]
         for tid in {t for m in games for t in (m['home_team_id'],m['away_team_id'])}:
             if ctx.team(tid) not in content.get('qualified',content.get('direct_quarterfinalists',[])):continue
             prior=[a.get('cup_placements',{}).get(competition,{}).get(tid,999) for y,a in ctx.archives.items() if y<ctx.season]
             threshold=5
             if ctx.history_complete and min(prior,default=999)>threshold:
                 content['history_notes'].append(ctx.team(tid)+'首次进入该赛事八强')
+                content['history_breakthroughs'].append({'team':ctx.team(tid),'achievement':'quarterfinal',
+                    'first_time':True,'history_complete':True})
     # A small set of actual stars and deciding results supplements the whole table.
     pids={r['player_id'] for r in ctx.stats if r['season_number']==ctx.season and ctx.matches[r['match_id']]['competition']==competition and r['appeared']}
     cards=[ctx.player_card(p,competition=competition) for p in pids]
     cards.sort(key=lambda p:(-(p['goals']+p['assists']),-p['goals'],p['player']))
     content['players']=cards[:3]
+    content['key_results']=[]
+    seen=set()
+    for card in cards[:3]:
+        for row in card['representative_matches'][:1]:
+            game=row['match'];key=(game['stage'],game['home'],game['away'])
+            if key not in seen and len(content['key_results'])<2:
+                content['key_results'].append(game);seen.add(key)
     return make_packet(ctx,'phase',competition+'-'+phase,content)
 
 
@@ -379,6 +417,9 @@ def competition_packet(source,competition):
         content['champion_route']=[ctx.match(m) for m in ctx.games(competition) if champion in (m['home_team_id'],m['away_team_id'])]
         if competition=='playoff':content['result_meaning']='升级附加赛胜者取得升级资格，不设置三项赛事个人奖'
     content['champion']=ctx.team(champion)
+    from football_simulator.press.expectations import qualification_surprises
+    eliminated=[ctx.team(t) for t in ctx.world['teams'] if t!=champion and any(t in (m['home_team_id'],m['away_team_id']) for m in ctx.games(competition))]
+    content['campaign_surprises']=qualification_surprises(ctx,state,[ctx.team(champion)],eliminated,ctx.games(competition))
     campaign=Counter()
     from football_simulator.press.builder import field_score
     for game in ctx.games(competition):
@@ -390,6 +431,23 @@ def competition_packet(source,competition):
             ph,pa=game['home_pk'],game['away_pk'];won=ph>pa if home else pa>ph
             campaign['shootout_wins' if won else 'shootout_losses']+=1
     content['champion_campaign']=dict(campaign)
+    content['champion_campaign'].update({k:campaign[k] for k in
+        ('matches','W','D','L','goals_for','goals_against','shootout_wins','shootout_losses')})
+    finals=[m for m in ctx.games(competition) if m['stage'] in
+        ('final','grand_final','promotion_final','final_leg_1','final_leg_2','promotion_final_leg_1','promotion_final_leg_2')]
+    if finals:
+        last=finals[-1]
+        runner=next(t for t in (last['home_team_id'],last['away_team_id']) if t!=champion)
+        content['runner_up']=ctx.team(runner)
+        content['decisive_games']=[ctx.match(m) for m in finals]
+        performances=[]
+        for r in ctx.stats:
+            if r['match_id']!=last['match_id'] or not r['appeared']:continue
+            if not (r['goals'] or r['assists'] or r['successful_saves']>=3):continue
+            performances.append({'player':ctx.player(r['player_id']),'team':ctx.team(r['team_id']),
+                'position':ctx.world['players'][r['player_id']]['position'],
+                **{k:r[k] for k in ('goals','assists','successful_saves','clean_sheets')}})
+        content['decisive_performances']=performances
     if competition!='playoff':
         content['awards']=ctx.awards(competition)
         content['history']=ctx.title_history(champion,competition)
@@ -487,6 +545,8 @@ def top20_packet(source):
         card.update(rank=row['rank'],history_status=history['status'],selection_history=history,previous_rank=prev.get(pid),origin=origin(ctx,pid),
                     personal_awards=personal_awards(ctx,pid),team_titles=player_titles(ctx,pid),
                     teams_season_results=team_results_for_player(ctx,pid))
+        tids=sorted({r['team_id'] for r in ctx.stats if r['player_id']==pid and r['season_number']==ctx.season and r['appeared']})
+        card['team_honor_summaries']=[official_team_summary(ctx,t,ctx.season) for t in tids]
         cards.append(card)
     current={r['player_id'] for r in rows}
     changes={'first_edition':ctx.season==1,'newcomers':[c['player'] for c in cards if c['history_status']=='首次入选Top20'],
@@ -585,7 +645,7 @@ def transfer_packet(source,window):
                 moved.append(card)
         positions_a=Counter(ctx.world['players'][p]['position'] for p in row['players_a'])
         positions_b=Counter(ctx.world['players'][p]['position'] for p in row['players_b'])
-        completed.append({'week':row['week'],'moves':moved,'position_exchange':[
+        completed.append({'trade_id':row['trade_id'],'week':row['week'],'moves':moved,'position_exchange':[
                           {'team':ctx.team(row['team_a']),'outgoing':dict(positions_a),'incoming':dict(positions_b)},
                           {'team':ctx.team(row['team_b']),'outgoing':dict(positions_b),'incoming':dict(positions_a)}],
                           'estimated_package_values':[
@@ -597,6 +657,7 @@ def transfer_packet(source,window):
     label='冬季' if window=='winter' else '夏季'
     return make_packet(ctx,'transfer',window,{'window':window,'completed_trades':len(rows),
         'window_summary':f'第{ctx.season}赛季{label}转会窗共完成{len(rows)}笔球员交换，计数仅限这一次转会窗。','focus_trades':completed[:6],
+        'other_trades':[{'trade_id':r['trade_id'],'week':r['week'],'moves':[{k:p[k] for k in ('player','from_team','to_team','position')} for p in r['moves']]} for r in completed[6:]],
         'window_team_rosters':transfer_roster_context(ctx,list(rows.values())),
         'recorded_position_roles':{'GK':'门将','DF':'后卫','MF':'中场','FW':'前锋'},
         'unrecorded_attributes':['年龄','细分站位和技术风格','俱乐部谈判与交易动机','身价差的因素分解'],
@@ -616,7 +677,8 @@ def draft_packet(source):
         picks.append({'player':ctx.player(row['player_id']),'actual_pick':pick,'team':team,
                       'selection_result':f"实际第{pick}顺位：{team}选中{ctx.player(row['player_id'])}。",
                       'team_season_finish':f"{team}在刚结束的第{ctx.season}赛季{finish['competition']}排名第{finish['rank']}。",
-                      'position':row['position'],'registered_ability_at_pick':row['ability']})
+                      'position':row['position'],'registered_ability_at_pick':row['ability'],
+                      'receiving_team_record':official_team_summary(ctx,row['team_id'],ctx.season)})
     progress=[]
     for year in range(max(1,ctx.season-2),ctx.season):
         old=logs.get(year)
@@ -624,9 +686,19 @@ def draft_packet(source):
         for n,row in enumerate(old.get('results',[]),1):
             if int(row.get('pick') or n)>5:continue
             pid=row['player_id'];p=ctx.world['players'][pid]
+            development=[]
+            for y in range(year+1,ctx.season+1):
+                card=compact_card(ctx.player_card(pid,season=y))
+                edition=ctx.world['season'] if y==ctx.season else ctx.archives.get(y,{})
+                top=edition.get('awards',{}).get('top20') if y==ctx.season else edition.get('top20')
+                card['top20_known']=isinstance(top,list)
+                card['top20_rank']=next((r['rank'] for r in (top or []) if r['player_id']==pid),None)
+                tids=sorted({r['team_id'] for r in ctx.stats if r['player_id']==pid and r['season_number']==y and r['appeared']})
+                card['team_records']=[official_team_summary(ctx,t,y,pid=pid) for t in tids]
+                development.append(card)
             progress.append({'player':ctx.player(pid),'draft_season':year,'actual_pick':int(row.get('pick') or n),
                 'draft_team':ctx.team(row['team_id']),'current_registered_team':ctx.team(p['team_id']) if p.get('team_id') else None,
-                'by_season':[compact_card(ctx.player_card(pid,season=y)) for y in range(year+1,ctx.season+1)],
+                'by_season':development,
                 'ability_at_selection':row['ability'],'ability_at_report':p['ability']})
     reasons={'user_skipped':'本届未选择参与球队分配','no_open_slot':'没有符合位置上限的空位'}
     return make_packet(ctx,'draft','draft',{'picks':picks,'unselected':[{'player':r['name'],'position':r['position'],'reason':reasons.get(r['reason'],r['reason'])} for r in log.get('undrafted',[])],
@@ -636,3 +708,21 @@ def draft_packet(source):
 
 def build_feature(source,kind,**kwargs):
     return {'phase':phase_packet,'competition':competition_packet,'transfer':transfer_packet,'draft':draft_packet,'top20':top20_packet}[kind](source,**kwargs)
+
+
+def official_team_summary(ctx,tid,year,*,pid=None):
+    """Team achievements stay distinct from a player's championship credit."""
+    edition=ctx.world['season'] if year==ctx.season else ctx.archives.get(year,{})
+    final=edition.get('finalized',False) if year==ctx.season else year in ctx.archives
+    tables=edition.get('final_tables') or {'premier':edition.get('premier_table',[]),'second':edition.get('second_table',[])}
+    finish=next(({'competition':rules.display_name(c),'rank':n} for c,rows in tables.items()
+                 for n,r in enumerate(rows,1) if r['team_id']==tid),None)
+    recorded=edition.get('championships')
+    titles=[t for t in (recorded or {}).values() if t['champion_team_id']==tid]
+    result={'team':ctx.team(tid),'season':year,'finalized':bool(final),'league_finish':finish,
+            'honor_points':edition.get('honor_totals',{}).get(tid) if final else None,
+            'championship_count':len(titles) if isinstance(recorded,dict) and final else None,
+            'team_championships':[rules.display_name(t['competition_id']) for t in titles]}
+    if pid is not None:
+        result['player_roster_titles']=[rules.display_name(t['competition_id']) for t in titles if isinstance(t.get('roster_player_ids'),list) and pid in t['roster_player_ids']]
+    return result

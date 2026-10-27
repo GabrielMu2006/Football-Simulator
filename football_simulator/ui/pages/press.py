@@ -62,12 +62,12 @@ class PressPage(BasePage):
         data = controller.overview()
         header = QHBoxLayout()
         header.addWidget(PageHeader('THE PRESS', '报刊', '每周观察、赛事回顾与赛季人物。'), 1)
-        header.addWidget(button('API 设置', controller.settings), 0, Qt.AlignTop)
+        header.addWidget(plain('本地模板 · 离线生成', 'PressIssue'), 0, Qt.AlignTop)
         self.scroll.layout.addLayout(header)
         if not data['enabled']:
             frame = card(); layout = QVBoxLayout(frame); layout.setContentsMargins(24, 24, 24, 24)
             layout.addWidget(plain('从下一场比赛开始记录', 'SectionTitle'))
-            layout.addWidget(plain('周报手动生成；阶段、赛事、转会窗、选秀和Top20结束后自动后台撰稿。已结束的历史事件不补报。'))
+            layout.addWidget(plain('每周推进完成后自动生成周报；阶段、赛事、转会窗、选秀和Top20结束后也会自动后台撰稿。已结束的历史事件不补报。'))
             layout.addWidget(button('启用本存档报刊', controller.enable, secondary=False), 0, Qt.AlignLeft)
             self.scroll.layout.addWidget(frame); self.scroll.layout.addStretch(1)
             return
@@ -79,7 +79,7 @@ class PressPage(BasePage):
         self.week_box = QComboBox(); self.week_box.setObjectName('PressWeekChoice')
         self.week_box.setMinimumWidth(230)
         for item in candidates:
-            caption = {'available': '可生成', 'generating': '生成中', 'ready': '已刊发', 'failed': '未完成', 'paused':'待续写'}[item['status']]
+            caption = {'queued':'待刊', 'available': '可生成', 'generating': '生成中', 'ready': '已刊发', 'failed': '未完成', 'paused':'待续写'}[item['status']]
             self.week_box.addItem(f"S{item['season']} · 第 {item['week']} 周 · {caption}", (item['season'], item['week']))
         if self.selection:
             index = self.week_box.findData(self.selection)
@@ -97,11 +97,12 @@ class PressPage(BasePage):
         self.scroll.layout.addWidget(toolbar)
         features=data.get('features',[])
         queue=card();queue_layout=QVBoxLayout(queue);queue_layout.setContentsMargins(24,18,24,18)
-        queued=sum(r['status'] in ('queued','paused') for r in features);running=sum(r['status']=='generating' for r in features)
-        failed=sum(r['status']=='failed' for r in features)
-        queue_text=f'专题队列 · 待刊 {queued} · 撰稿 {running} · 未完成 {failed}'
-        if controller.auto_needs_key:queue_text+='\n请在 API 设置中配置密钥，待刊材料已保存。'
-        elif controller.auto_paused:queue_text+='\n自动专题已暂停，请检查 API 设置后继续。'
+        queued=sum(r['status'] in ('queued','paused') and r.get('engine_id')=='local-template' for r in features+weeks);running=sum(r['status']=='generating' and r.get('engine_id')=='local-template' for r in features+weeks)
+        failed=sum(r['status']=='failed' and r.get('engine_id')=='local-template' for r in features+weeks)
+        queue_text=f'本地报道队列 · 待刊 {queued} · 撰稿 {running} · 未完成 {failed}'
+        legacy_pending=sum(r.get('engine_id')=='deepseek' and r['status']!='ready' for r in features+weeks)
+        if legacy_pending:queue_text+=f'\n原 DeepSeek 未完成任务 {legacy_pending} 篇，保留原状态，离线版不执行。'
+        if controller.auto_paused:queue_text+='\n本地生成已暂停，请检查未完成任务后继续。'
         message=plain(queue_text);message.setObjectName('PressAutoQueue');queue_layout.addWidget(message)
         if controller.auto_needs_key or controller.auto_paused:
             queue_layout.addWidget(button('继续后台队列',controller.resume_auto),0,Qt.AlignLeft)
@@ -128,7 +129,7 @@ class PressPage(BasePage):
         status_box.setCurrentIndex(max(0,status_box.findData(self.status_filter)))
         status_box.currentIndexChanged.connect(lambda:self._status(status_box.currentData()))
         filters.addWidget(status_box);self.scroll.layout.addLayout(filters)
-        reports=[{**r,'kind':'weekly','label':'周报'} for r in weeks if r['status'] in ('ready','generating','failed','paused')]+features
+        reports=[{**r,'kind':'weekly','label':'周报'} for r in weeks if r['status'] in ('ready','queued','generating','failed','paused')]+features
         reports.sort(key=lambda r:(r['season'],r['week'],r.get('created_at','')),reverse=True)
         published=[r for r in reports if (self.season_filter is None or r['season']==self.season_filter)
                    and (self.kind_filter is None or r['kind']==self.kind_filter)
@@ -143,17 +144,17 @@ class PressPage(BasePage):
             frame = card(); layout = QVBoxLayout(frame); layout.setContentsMargins(24, 20, 24, 20)
             layout.setSpacing(12)
             state={'queued':'待刊','generating':'撰稿中','failed':'未完成','ready':'已刊发','paused':'待续写'}[item['status']]
-            layout.addWidget(plain(f"S{item['season']} · 第 {item['week']} 周 · {KINDS.get(item['kind'],'周报')} · {state}" + (' · 未读' if item['unread'] else ''), 'PressIssue'))
+            layout.addWidget(plain(f"S{item['season']} · 第 {item['week']} 周 · {KINDS.get(item['kind'],'周报')} · {state}" + (' · 本地模板' if item.get('engine_id')=='local-template' else ' · 原 DeepSeek') + (' · 未读' if item['unread'] else ''), 'PressIssue'))
             layout.addWidget(plain(item['title'] or item['label'], 'PressHeadline'))
             if item['summary']:layout.addWidget(plain(item['summary'], 'PressDeck'))
             if item['status']=='ready':
                 open_button=button('阅读全文 →',lambda checked=False,r=item:self._read(r))
                 open_button.setProperty('report_id',item.get('report_id'));layout.addWidget(open_button,0,Qt.AlignLeft)
             elif item['kind']!='weekly':
-                detail=(item.get('error') or '将自动在后台撰写，你可以继续推进赛季。')
-                if item['status'] in ('generating','failed','paused'):detail+=f" 已保留 {item['sections_done']}/{item['section_total']} 部分。"
+                detail=('原 DeepSeek 任务，离线版保留原状态，不自动执行或转换。' if item.get('engine_id')!='local-template' else item.get('error') or '将自动在后台撰写，你可以继续推进赛季。')
+                if item['status'] in ('generating','failed','paused') and item.get('engine_id')!='local-template':detail+=f" 已保留 {item['sections_done']}/{item['section_total']} 部分。"
                 layout.addWidget(plain(detail))
-                if item['status']=='failed':
+                if item['status']=='failed' and item.get('engine_id')=='local-template':
                     retry=button('重试未完成部分',lambda checked=False,rid=item['report_id']:controller.retry_feature(rid))
                     retry.setEnabled(not controller.running);layout.addWidget(retry,0,Qt.AlignLeft)
             self.scroll.layout.addWidget(frame)
@@ -169,21 +170,23 @@ class PressPage(BasePage):
         selected = self.week_box.currentData()
         self.selection = selected
         item = next((r for r in self._weeks if (r['season'], r['week']) == selected), None)
-        self.generate_button.setEnabled(bool(item and item['status'] != 'generating'))
+        self.generate_button.setEnabled(bool(item and item['status'] != 'generating' and (item['status']=='ready' or item.get('engine_id')=='local-template' or item['status']=='available')))
         self.generate_button.setText({'ready': '阅读周报', 'failed': '重试生成', 'paused':'继续生成', 'generating': '正在撰稿…'}.get(item['status'] if item else '', '生成周报'))
         text = '暂无可生成周次，请先推进一周。'
         if item:
             done, total = item['sections_done'], item['section_total']
             if item['status'] == 'generating':
-                text = f'已完成 {done}/{total} 部分 · 正在后台撰稿，你可以继续观察比赛。'
+                text = '正在使用本地模板后台撰稿，你可以继续观察比赛。'
             elif item['status'] == 'failed':
-                text = (item.get('error') or '生成未完成。') + f' 已保留 {done}/{total} 节，重试只请求缺失部分。'
+                text = (item.get('error') or '生成未完成。') + ' 重试沿用冻结的本地模板。'
             elif item['status'] == 'ready':
                 text = '这期周报已保存。'
             elif item['status'] == 'paused':
-                text = f'已保存 {done}/{total} 部分，继续时只请求尚未生成的部分。'
+                text = '任务已暂停，继续时沿用冻结的本地模板。'
             else:
-                text = '根据本周重点撰写整期周报，后台完成后提醒你阅读。'
+                text = '推进后自动在后台撰写周报；也可在此立即生成。'
+        if item and item.get('engine_id')=='deepseek' and item['status']!='ready':
+            text='原 DeepSeek 任务，离线版保留原状态，不自动执行或转换。'
         self.job_message.setText(text)
 
     def _generate(self):
@@ -193,10 +196,6 @@ class PressPage(BasePage):
         if item['status'] == 'ready':
             self.open_route('press_article', season=item['season'], week=item['week'])
         else:
-            if item['status'] == 'failed':
-                from PySide6.QtWidgets import QMessageBox
-                if QMessageBox.question(self, '继续生成周报', '保留已完成的稿件部分，只请求缺失部分。未完成的旧请求可能已计费，是否继续？') != QMessageBox.Yes:
-                    return
             self.app.press.generate(item['season'], item['week'], retry=item['status'] == 'failed')
 
     def _filter(self, season):
@@ -223,10 +222,13 @@ class PressPage(BasePage):
         self.scroll.verticalScrollBar().setValue(0)
 
 
-def article_html(article, season, week, *, sample=False, kind='weekly', issue_label=None):
+def article_html(article, season, week, *, sample=False, kind='weekly', issue_label=None, source=None):
     esc = html.escape
     parts = [f'<p class="issue">S{season} / WEEK {week:02d}' + (' · 历史开发稿示例' if sample else ' · '+esc(issue_label or KINDS.get(kind,'周报'))) + '</p>',
              f'<h1>{esc(article["title"])}</h1>', f'<p class="deck">{esc(article["summary"])}</p><hr>']
+    if source:
+        origin='本地模板' if source['engine_id']=='local-template' else 'DeepSeek · 历史原稿'
+        parts.insert(1,f'<p class="issue">{esc(origin)}</p>')
     for index, section in enumerate(article['sections']):
         parts.append(f'<h2 id="section-{index}">{esc(section["heading"])}</h2>')
         for block in section['blocks']:
@@ -266,9 +268,9 @@ class ArticlePage(BasePage):
         library=self.app.press.library()
         if params.get('report_id'):
             data=library.read_feature(params['report_id'])
-            self.reader.setHtml(article_html(data['article'],data['season'],data['week'],kind=data['kind'],issue_label=data['label']))
+            self.reader.setHtml(article_html(data['article'],data['season'],data['week'],kind=data['kind'],issue_label=data['label'],source=library.source(report_id=params['report_id'])))
         else:
             article = library.read(int(params['season']), int(params['week']))
-            self.reader.setHtml(article_html(article, int(params['season']), int(params['week'])))
+            self.reader.setHtml(article_html(article, int(params['season']), int(params['week']),source=library.source(season=int(params['season']),week=int(params['week']))))
         self.reader.verticalScrollBar().setValue(0)
         self.app._refresh_chrome()
