@@ -17,32 +17,48 @@ def team_result(row,player=None):
 
 
 def render(packet,plan):
-    d=plan['content'];refs=plan['fact_ids'];year=packet['meta']['season']
-    picks=sorted(d['picks'],key=lambda r:r['actual_pick'])
+    from football_simulator.press.local_templates.narrative import season_numbers,high_pick_line
+    d=plan['content'];refs=plan['fact_ids'];year=packet['meta']['season'];picks=sorted(d['picks'],key=lambda r:r['actual_pick'])
     title=f'第{year}赛季选秀落定'
-    deck=(f"{picks[0]['team']}用第{picks[0]['actual_pick']}顺位选中{picks[0]['player']}，本届共有{len(picks)}名球员被选中。" if picks else '本届选秀已经完成，没有球队选中球员。')
-    sections=[];first=[];others=[]
+    deck='本届选秀结束，没有球员被选中。'
+    first=[];others=[]
+    if picks:
+        head=picks[0];title=head['team']+'选中'+head['player']
+        deck=f"{head['team']}用第{head['actual_pick']}顺位写下{head['player']}的名字，第{year}赛季共有{len(picks)}名球员被选中。"
     for p in picks:
-        text=f"第{p['actual_pick']}顺位，{p['team']}选中{ROLES.get(p['position'],p['position'])}{p['player']}。"
+        role=ROLES.get(p['position'],p['position']);record=p.get('receiving_team_record',{});finish=record.get('league_finish')
+        text=(f"在{finish['competition']}以第{finish['rank']}名结束赛季的{p['team']}，" if finish and p['actual_pick']<=5 else p['team'])
+        text+=f"用第{p['actual_pick']}顺位选中了{role}{p['player']}。"
         if p['actual_pick']<=5:
-            text+=team_result(p.get('receiving_team_record',{'team':p['team']}));first.append(text)
+            # Club results belong to the ended season, before this rookie played.
+            text+=team_result({k:v for k,v in record.items() if k!='league_finish'}) if record.get('team') else ''
+            text+=high_pick_line(p.get('high_pick_teammates',[]),p['team'],p['player'])
+            first.append(text)
         else:others.append(text)
-    if first:sections.append(section('本届前五顺位',first,refs))
-    if others:sections.append(section('其余顺位',others,refs))
+    sections=[]
+    if first:sections.append(section('新名字进入球队',first,refs))
+    if others:sections.append(section('其余选中结果',others,refs))
     progress=[]
     for p in d.get('previous_two_cohorts',[]):
-        lines=[f"{p['player']}在第{p['draft_season']}赛季由{p['draft_team']}以第{p['actual_pick']}顺位选中。"]
-        if p.get('current_registered_team'):lines.append('目前效力于'+p['current_registered_team']+'。')
-        for year_card in p['by_season']:
-            text=f"第{year_card['season']}赛季，他"
-            if year_card.get('top20_rank') is not None:text+=f"在年度Top20排名第{year_card['top20_rank']}，"
-            elif year_card.get('top20_known'):text+='未入选年度Top20，'
-            text+=stats(year_card)+'。'
-            lines.append(text)
-            lines += [team_result(r,p['player']) for r in year_card.get('team_records',[]) if team_result(r)]
-        progress.append(''.join(lines))
-    if progress:sections.append(section('前两届新秀回顾',progress,refs))
-    if d.get('unselected'):
-        sections.append(section('未选中的候选',[names(r['player'] for r in d['unselected'])+'本届未被选中，不列入顺位名单。'],refs))
-    if not sections:sections=[section('本届结果',[deck],refs)]
+        text=p['player']+f"是第{p['draft_season']}赛季由{p['draft_team']}选中的第{p['actual_pick']}顺位新秀。"
+        cards=p['by_season'];ranked=[c for c in cards if c.get('top20_rank') is not None]
+        if len(ranked)>=2:
+            text+='从'+f"第{ranked[0]['season']}赛季的Top20第{ranked[0]['top20_rank']}名，到第{ranked[-1]['season']}赛季的第{ranked[-1]['top20_rank']}名，他在两个赛季都进入了年度榜单。"
+        elif ranked:
+            last=ranked[-1];text+=f"第{last['season']}赛季，他在年度Top20排名第{last['top20_rank']}。"
+        elif cards and all(c.get('top20_known') for c in cards):text+='回看这两个赛季，他还没有进入年度Top20。' if len(cards)==2 else '刚结束的赛季，他尚未进入年度Top20。'
+        if p.get('current_registered_team'):text+='目前他效力于'+p['current_registered_team']+'。'
+        for card in cards:
+            text+=season_numbers(card,scope=f"在第{card['season']}赛季")
+            text+=''.join(team_result(r,p['player']) for r in card.get('team_records',[]))
+        progress.append(text)
+    if progress:sections.append(section('曾经的高顺位新秀，如今走到哪里',progress,refs))
+    contrasts=[]
+    for r in d.get('draft_class_contrasts',[]):
+        text=f"第{r['season']}赛季第{r['pick']}顺位的{r['player']}本季进入Top20，排在第{r['rank']}名。"
+        text+=(f"同届第{r['first_pick']}顺位的{r['first_player']}排在第{r['first_rank']}名。" if r['first_rank'] is not None else f"同届第{r['first_pick']}顺位的{r['first_player']}本季未进入榜单。")
+        contrasts.append(text)
+    if contrasts:sections.append(section('同届新秀的不同轨迹',contrasts,refs))
+    if d.get('unselected'):sections.append(section('本届未选中的球员',[names(r['player'] for r in d['unselected'])+'本届未被选中，不列入实际顺位。'],refs))
+    if not sections:sections=[section('本届选秀',[deck],refs)]
     return article(packet,title,deck,sections),[{'story_id':'draft','template_id':'feature.draft','fact_ids':refs}]

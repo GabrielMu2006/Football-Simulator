@@ -99,7 +99,7 @@ class LocalStorageTests(PressSaveCase):
                 self.assertEqual(conn.execute('SELECT COUNT(*) FROM press_articles WHERE season=1 AND week=1').fetchone()[0],1)
                 metadata=json.loads(conn.execute('SELECT metadata_json FROM press_articles WHERE week=1').fetchone()[0])
             self.assertEqual(metadata['engine_id'],'local-template')
-            self.assertEqual(metadata['template_version'],'local-news/2')
+            self.assertEqual(metadata['template_version'],'local-news/3')
             self.assertTrue(metadata['story_templates'])
             self.assertTrue({'model','tokens','provider','usage'}.isdisjoint(metadata))
 

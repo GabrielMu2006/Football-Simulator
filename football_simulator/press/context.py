@@ -169,6 +169,12 @@ class Context:
         result = {'competition': self.competition(f['competition_id']), 'stage': stage_name(d['stage']),
                   'home': self.team(d['home_team_id']), 'away': self.team(d['away_team_id']),
                   'field_score_home_away': score(d)}
+        result['leg']=d.get('leg',1)
+        story=self.book.get('story-context',{}).get('value',{})
+        result.update(story.get('games',{}).get(mid,{}))
+        background=story.get('title_backgrounds',{}).get(f['competition_id'],{})
+        if background.get('defending_team_id') in f['team_ids']:
+            result['defending_title_run']=background
         if d['extra_time'] is not None:
             result['regulation_home_away'] = d['regulation']; result['extra_time_goals_home_away'] = d['extra_time']
         if d['shootout']:
@@ -307,6 +313,8 @@ class Context:
         value = self.book.get('honours-context', {}).get('value')
         if not value or not value['history_complete']:
             return None
+        background=self.book.get('story-context',{}).get('value',{}).get('title_backgrounds',{}).get(cid)
+        if background is not None and not background.get('complete'):return None
         titles = {(r['season'], r['competition'], r['team_id']) for r in value['titles']}
         season = self.week['season']; required = {'premier', *rules.CUP_IDS}
         current = {c for y, c, t in titles if y == season and t == team and c in required}

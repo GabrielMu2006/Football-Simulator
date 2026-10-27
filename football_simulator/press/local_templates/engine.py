@@ -2,7 +2,7 @@
 from football_simulator.press import PressError,repository
 from football_simulator.press.local_templates import ENGINE_ID,TEMPLATE_VERSION
 
-SUPPORTED_VERSIONS=('local-news/1','local-news/2')
+SUPPORTED_VERSIONS=('local-news/1','local-news/2','local-news/3')
 
 
 def freeze_plan(packet,sources=None,version=TEMPLATE_VERSION):
@@ -36,6 +36,8 @@ def render(packet,plan):
     # Static imports also keep both versions visible to the desktop bundler.
     if plan['template_version']=='local-news/1':
         from football_simulator.press.local_templates.v1 import weekly,phase,competition,transfer,draft,top20
+    elif plan['template_version']=='local-news/2':
+        from football_simulator.press.local_templates.v2 import weekly,phase,competition,transfer,draft,top20
     else:
         from football_simulator.press.local_templates import weekly,phase,competition,transfer,draft,top20
     renderer={'weekly':weekly,'phase':phase,'competition':competition,

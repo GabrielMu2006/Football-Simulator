@@ -7,9 +7,11 @@ sys.path.insert(0,str(ROOT))
 from football_simulator import runtime
 from football_simulator.app.service import GameService
 from football_simulator.persistence_v2 import store
+from football_simulator.game import rules
 from football_simulator.press import repository
 from football_simulator.press.local_library import activate,LocalLibrary
 from football_simulator.press.local_templates.engine import freeze_plan,render
+from football_simulator.press.local_templates import TEMPLATE_VERSION
 from football_simulator.press.validation import validate_article_basics
 
 
@@ -20,7 +22,7 @@ def write_sample(output,label,packet,sources=None):
     for suffix,value in [('article',article),('plan',plan),('mapping',mapping),('packet',packet)]:
         (output/(label+'.'+suffix+'.json')).write_text(json.dumps(value,ensure_ascii=False,indent=2))
     if sources:(output/(label+'.sources.json')).write_text(json.dumps(sources,ensure_ascii=False))
-    lines=['# '+article['title'],'','来源：本地模板 local-news/1；本轮独立模拟存档的真实冻结材料。','',article['summary'],'']
+    lines=['# '+article['title'],'','来源：本地模板 '+TEMPLATE_VERSION+'；本轮独立模拟存档的真实冻结材料。','',article['summary'],'']
     for section in article['sections']:
         lines+=['## '+section['heading'],'']
         for block in section['blocks']:lines += [block['text'],'']
@@ -46,7 +48,7 @@ def main():
     parser=argparse.ArgumentParser();parser.add_argument('output',type=Path);parser.add_argument('--data-name',default='sample-data-final')
     args=parser.parse_args();output=args.output.resolve();output.mkdir(parents=True,exist_ok=True)
     root=output/args.data_name;os.environ['FS_DATA_ROOT']=str(root);runtime.set_data_root_override(root)
-    service=GameService(rng_factory=lambda:random.Random(871),edition_archives=True)
+    service=GameService(rng_factory=lambda:random.Random(871),edition_archives=True,honor_profile=rules.HONOR_PROFILE)
     name='LocalSamples'
     service.create_save(name);service.initialize_save(name)
     # First two full seasons provide actual title and Top20/draft histories.

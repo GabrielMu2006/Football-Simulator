@@ -11,6 +11,26 @@ from tests.test_press_export import PressSaveCase
 
 
 class FeatureTests(PressSaveCase):
+    def test_sparse_career_evidence_cannot_add_future_or_unmatched_finals(self):
+        source=self.source();bad=deepcopy(source);future={**bad['matches'][0],'week':2}
+        bad['historical_finals']['matches'].append(future)
+        with self.assertRaises(PressError):FeatureContext(bad)
+        bad=deepcopy(source);bad['career_service_history']['team_seasons'][0]['season_number']=2
+        with self.assertRaises(PressError):FeatureContext(bad)
+
+    def test_award_defense_uses_prior_official_winners_and_actual_current_stats(self):
+        source=self.source();w=source['world'];source['identity'].update(season=2)
+        w['season_number']=2;w['season']['number']=2
+        for m in source['matches']:m['season_number']=2
+        for p in source['player_match_stats']:p['season_number']=2
+        scorer=next(r for r in source['player_match_stats'] if r['goals'])
+        winner={'player_id':scorer['player_id'],'team_id':scorer['team_id'],'value':scorer['goals']}
+        w['edition_archives']={'1:premier':{'awards':{'top_scorer':[winner]}},'2:premier':{'awards':{'top_scorer':[winner]}}}
+        row=FeatureContext(source).awards('premier')['射手王'][0]
+        self.assertTrue(row['retained_award']);self.assertEqual(row['season_performance']['goals'],scorer['goals'])
+        del w['edition_archives']['1:premier']
+        self.assertFalse(FeatureContext(source).awards('premier')['射手王'][0]['retained_award'])
+
     def source(self):
         self.advance();conn=store.open_readonly('Press')
         try:return capture_snapshot(conn,1)

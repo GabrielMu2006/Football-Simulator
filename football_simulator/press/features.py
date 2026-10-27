@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 from copy import deepcopy
+from functools import cached_property
 import json
 
 from football_simulator.game import rules
@@ -59,8 +60,28 @@ def _capture_snapshot(conn, completed_week, history_from):
         JOIN matches m ON m.match_id=p.match_id WHERE x.is_real=1 AND m.status='completed'
         AND m.season_number>=? AND (m.season_number<? OR (m.season_number=? AND m.week<=?)) ORDER BY m.season_number,m.week,m.match_id,p.player_id''', (history_from,season,season,week))]
     from football_simulator.press.expectations import load
+    # Keep long-service and old-final connections without copying every old
+    # player match into each feature snapshot's three-season working window.
+    service_rows=[dict(r) for r in conn.execute('''SELECT p.player_id,p.team_id,m.season_number,MIN(m.week) first_week
+        FROM player_match_stats p JOIN players x ON x.player_id=p.player_id JOIN matches m ON m.match_id=p.match_id
+        WHERE x.is_real=1 AND p.appeared=1 AND m.status='completed'
+        AND (m.season_number<? OR (m.season_number=? AND m.week<=?))
+        GROUP BY p.player_id,p.team_id,m.season_number ORDER BY p.player_id,m.season_number,p.team_id''',(season,season,week))]
+    counts={r[0]:r[1] for r in conn.execute("SELECT season_number,COUNT(*) FROM matches WHERE status='completed' AND season_number<? GROUP BY season_number",(season,))}
+    archived={int(a['season_number']) for a in world.get('archives',[]) if int(a['season_number'])<season}
+    coverage=archived==set(range(1,season)) and all(counts.get(y)==766+sum(rules.CUP_META[c]['match_count'] for c in rules.CUP_IDS if rules.cup_active(c,y)) for y in archived)
+    final_stages=('final','grand_final','final_leg_1','final_leg_2','promotion_final','promotion_final_leg_1','promotion_final_leg_2')
+    placeholders=','.join('?' for _ in final_stages)
+    old_finals=[dict(r) for r in conn.execute(f'''SELECT * FROM matches WHERE status='completed' AND stage IN ({placeholders})
+        AND (season_number<? OR (season_number=? AND week<=?)) ORDER BY season_number,week,match_id''',(*final_stages,season,season,week))]
+    final_stats=[dict(r) for r in conn.execute(f'''SELECT p.* FROM player_match_stats p JOIN players x ON x.player_id=p.player_id
+        JOIN matches m ON m.match_id=p.match_id WHERE x.is_real=1 AND p.appeared=1 AND m.status='completed'
+        AND m.stage IN ({placeholders}) AND (m.season_number<? OR (m.season_number=? AND m.week<=?))
+        ORDER BY m.season_number,m.week,m.match_id,p.player_id''',(*final_stages,season,season,week))]
     return {'schema_version':'press.feature-sources/1','identity':{'world_id':world['world_id'],'source_world_version':world['version'],
             'season':season,'week':week},'world':world,'matches':matches,'player_match_stats':stats,
+            'career_service_history':{'complete':coverage,'team_seasons':service_rows},
+            'historical_finals':{'matches':old_finals,'player_match_stats':final_stats},
             'expectation_history':load(conn,season,week)}
 
 
@@ -80,12 +101,25 @@ class FeatureContext:
         if any(r['world_id']!=identity['world_id'] or r['season']!=self.season or r['before_week']>self.week
                or r['source_version']>identity['source_world_version'] for r in source.get('expectation_history',[])):
             raise PressError('赛前预期快照包含未来数据或其他世界。')
+        finals=source.get('historical_finals',{})
+        final_ids={m['match_id'] for m in finals.get('matches',[])}
+        if any((m['season_number'],m['week'])>(self.season,self.week) for m in finals.get('matches',[])):
+            raise PressError('决赛履历包含截止点之后的比赛。')
+        if any(r['match_id'] not in final_ids or not self.world['players'].get(r['player_id'],{}).get('is_real') for r in finals.get('player_match_stats',[])):
+            raise PressError('决赛履历缺少对应比赛或真实身份。')
+        if any((r['season_number'],r['first_week'])>(self.season,self.week) for r in source.get('career_service_history',{}).get('team_seasons',[])):
+            raise PressError('效力履历包含截止点之后的记录。')
         self.archives={int(a['season_number']):a for a in self.world.get('archives',[])}
         self.history_complete=set(range(1,self.season)) <= set(self.archives)
         self.stadiums={s['stadium_id']:s for s in rules.load_stadiums()}
 
     def team(self, tid): return self.world['teams'][tid]['club_en']
     def player(self, pid): return self.world['players'][pid]['name']
+
+    @cached_property
+    def story_notes(self):
+        from football_simulator.press.story_context import game_notes
+        return game_notes(self.world,list(self.matches.values()),self.stats,self.season,self.week)
 
     def games(self, competition=None, season=None):
         number=self.season if season is None else season
@@ -101,6 +135,7 @@ class FeatureContext:
                 'home':self.team(m['home_team_id']),'away':self.team(m['away_team_id']),
                 'score_after_extra_time_home_away':score,'regulation_home_away':data['regulation'],
                 'extra_time_played':data['extra_time'] is not None}
+        result.update(self.story_notes.get(m['match_id'],{}))
         if data['shootout']:
             result['shootout_home_away']=data['shootout']
             result['shootout_winner']=self.team(data['shootout_winner_team_id'])
@@ -139,6 +174,13 @@ class FeatureContext:
         card={'player':self.player(pid),'position':self.world['players'][pid]['position'],'season':number,
               'appearances':len(rows),**{f:sum(r[f] for r in rows) for f in fields},
               'actual_teams':[{'team':self.team(t),**dict(v)} for t,v in by_team.items()]}
+        from football_simulator.press.story_context import career_snapshot,arrival,named_arrival
+        career=career_snapshot(self.world,self.season,self.week)
+        card['recent_arrivals']=[]
+        for team in by_team:
+            last=max((self.matches[r['match_id']] for r in rows if r['team_id']==team),key=lambda m:(m['week'],m['match_id']))
+            value=arrival(career,pid,team,number,last['week'])
+            if value:card['recent_arrivals'].append(named_arrival(value,self.world))
         if competition is None:
             comps=sorted({self.matches[r['match_id']]['competition'] for r in rows})
             card['competitions']=[{'competition':rules.display_name(c),**self._totals([r for r in rows if self.matches[r['match_id']]['competition']==c])} for c in comps]
@@ -163,9 +205,17 @@ class FeatureContext:
     def awards(self,competition):
         edition=self.world.get('edition_archives',{}).get(f'{self.season}:{competition}',{})
         awards=edition.get('awards',{})
-        return {label:[{'player':self.player(r['player_id']),'team_at_award':self.team(r['team_id']),'value':r['value'],
-                       'actual_teams_in_edition':self.player_card(r['player_id'],competition=competition)['actual_teams']} for r in awards.get(key,[])]
-                for key,label in [('top_scorer','射手王'),('assist_leader','助攻王'),('mvp','赛事MVP')]}
+        result={}
+        for key,label in [('top_scorer','射手王'),('assist_leader','助攻王'),('mvp','赛事MVP')]:
+            result[label]=[]
+            for row in awards.get(key,[]):
+                card=self.player_card(row['player_id'],competition=competition)
+                previous=self.world.get('edition_archives',{}).get(f'{self.season-1}:{competition}',{}).get('awards',{}).get(key,[])
+                result[label].append({'player':self.player(row['player_id']),'team_at_award':self.team(row['team_id']),'value':row['value'],
+                    'position':card['position'],'actual_teams_in_edition':card['actual_teams'],
+                    'season_performance':{k:card[k] for k in ('position','appearances','goals','assists','successful_saves','clean_sheets','successful_defenses','chances_created')},
+                    'retained_award':any(r['player_id']==row['player_id'] for r in previous)})
+        return result
 
     def title_history(self,team,competition):
         from football_simulator.game import editions
@@ -194,6 +244,8 @@ def make_packet(ctx,kind,key,content):
     identity=ctx.source['identity']
     from football_simulator.press.team_background import backgrounds
     content['team_backgrounds']={ctx.team(t):data for t,data in backgrounds(ctx.world).items()}
+    from football_simulator.press.story_context import enrich_feature
+    enrich_feature(ctx,kind,content)
     return {'meta':{'schema_version':'press.feature/1','report_id':f"{kind}:{identity['world_id']}:{ctx.season}:{key}",
                     'report_type':kind,'world_id':identity['world_id'],'season':ctx.season,'completed_week':ctx.week,
                     'source_world_version':identity['source_world_version'],'cutoff':{'season':ctx.season,'week':ctx.week},'source_sha256':digest(ctx.source)},
@@ -642,6 +694,10 @@ def transfer_packet(source,window):
             for pid in row[key]:
                 card=compact_card(ctx.player_card(pid));card.update(from_team=ctx.team(from_id),to_team=ctx.team(to_id),origin=origin(ctx,pid),
                     historical_top20=pid in historical,current_season_standout=pid in outstanding)
+                from football_simulator.press.story_context import transfer_notes
+                card['transfer_story']=transfer_notes(ctx.world,list(ctx.matches.values()),ctx.stats,
+                    {'player_id':pid,'from_team_id':from_id,'to_team_id':to_id,'season':row['season'],'week':row['week']},ctx.season,ctx.week,
+                    service_history=ctx.source.get('career_service_history'),final_history=ctx.source.get('historical_finals'))
                 moved.append(card)
         positions_a=Counter(ctx.world['players'][p]['position'] for p in row['players_a'])
         positions_b=Counter(ctx.world['players'][p]['position'] for p in row['players_b'])
@@ -657,7 +713,7 @@ def transfer_packet(source,window):
     label='冬季' if window=='winter' else '夏季'
     return make_packet(ctx,'transfer',window,{'window':window,'completed_trades':len(rows),
         'window_summary':f'第{ctx.season}赛季{label}转会窗共完成{len(rows)}笔球员交换，计数仅限这一次转会窗。','focus_trades':completed[:6],
-        'other_trades':[{'trade_id':r['trade_id'],'week':r['week'],'moves':[{k:p[k] for k in ('player','from_team','to_team','position')} for p in r['moves']]} for r in completed[6:]],
+        'other_trades':[{'trade_id':r['trade_id'],'week':r['week'],'moves':[{k:p[k] for k in ('player','from_team','to_team','position','transfer_story')} for p in r['moves']]} for r in completed[6:]],
         'window_team_rosters':transfer_roster_context(ctx,list(rows.values())),
         'recorded_position_roles':{'GK':'门将','DF':'后卫','MF':'中场','FW':'前锋'},
         'unrecorded_attributes':['年龄','细分站位和技术风格','俱乐部谈判与交易动机','身价差的因素分解'],

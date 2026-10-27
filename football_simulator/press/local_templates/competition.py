@@ -22,54 +22,66 @@ def honours(history):
 
 
 def render(packet,plan):
-    d=plan['content'];refs=plan['fact_ids'];comp=d['competition'];champ=d['champion']
-    title=champ+'赢得'+comp+'冠军';year=d['edition']['game_season'];edition=d['edition']['edition_number']
-    if comp=='Promotion Playoffs':title=champ+'通过升级附加赛取得升级资格'
-    deck=f"{champ}捧起第{year}赛季{comp}冠军奖杯，这项赛事的第{edition}届比赛就此落幕。"
-    if comp=='Promotion Playoffs':deck=f"{champ}赢下第{year}赛季升级附加赛，拿到升级名额。"
-    campaign=d['champion_campaign'];intro=[champ+'完成本届夺冠征程。']
-    keys=('matches','W','D','L','goals_for','goals_against')
-    if all(k in campaign for k in keys):
-        intro=[f"{champ}以{campaign['W']}胜{campaign['D']}平{campaign['L']}负走完本届{campaign['matches']}场征程，打进{campaign['goals_for']}球、丢掉{campaign['goals_against']}球。"]
-    if campaign.get('shootout_wins'):intro.append(f"上述战绩按场上比分计算；球队还赢下了{campaign['shootout_wins']}次点球大战。")
-    if d.get('runner_up'):intro.append(d['runner_up']+'获得本届亚军。')
-    sections=[section('冠军征程',intro+honours(d.get('history')),refs)]
-    from football_simulator.press.team_background import paragraph
-    background=paragraph(champ,d.get('team_backgrounds',{}).get(champ))
-    if background:sections[0]['blocks'].append({'kind':'body','label':None,'text':background,'fact_ids':refs})
+    from collections import defaultdict
+    from football_simulator.press.local_templates.narrative import production,season_numbers,history_lines,followup_line,related_followup,arrival_line
     from football_simulator.press.expectations import surprise_paragraphs
-    surprises=surprise_paragraphs(d.get('campaign_surprises',[]),campaign=True)
-    if surprises:sections.append(section('冷门与黑马',surprises,refs))
-    route=[]
-    if d.get('champion_route'):
-        for game in d['champion_route']:route.append(game['stage']+'，'+match_line(game,venue=False))
-        # Aggregate advancement is separate from a potentially lost second leg.
-        for tie in d.get('bracket',[]):
-            if champ in tie['teams'] and tie.get('aggregate'):route.append(tie_line(tie))
+    d=plan['content'];refs=plan['fact_ids'];comp=d['competition'];champ=d['champion'];year=d['edition']['game_season']
+    title=champ+'捧起'+comp+'冠军';deck=f"第{year}赛季的{comp}属于{champ}。"
+    if comp=='Promotion Playoffs':title=champ+'赢下升级附加赛';deck=champ+'拿到了本季最后一个升级名额。'
+    lead=[];finals=d.get('decisive_games',[])
+    if finals:
+        text=''.join(g['stage']+'，'+match_line(g,venue=False) for g in finals)
+        final_tie=next((t for t in d.get('bracket',[]) if t['stage'] in ('决赛','升级附加赛决赛') and t.get('aggregate')),None)
+        if final_tie:text+=tie_line(final_tie)
+        text+=champ+('由此拿到了升级名额。' if comp=='Promotion Playoffs' else '由此捧起'+comp+'冠军奖杯。')
+        people=d.get('decisive_performances',[])
+        if people:
+            text+=''.join(p['player']+'为'+p['team']+production(p)+'。'+arrival_line(p['player'],finals[-1].get('player_arrivals',{}).get(p['player'])) for p in people)
+        if d.get('runner_up'):text+=d['runner_up']+'最终获得亚军。'
+        lead.append(text)
     else:
-        route=[game['stage']+'，'+match_line(game) for game in d.get('key_results',[])]
-    if route:sections.append(section('冠军路线' if d.get('champion_route') else '赛季关键场次',route,refs))
-    performances=[]
-    for p in d.get('decisive_performances',[]):
-        parts=[]
-        if p.get('goals'):parts.append(f"打进{p['goals']}球")
-        if p.get('assists'):parts.append(f"送出{p['assists']}次助攻")
-        if p.get('position')=='GK' and p.get('successful_saves') is not None:parts.append(f"完成{p['successful_saves']}次扑救")
-        if parts:performances.append(p['player']+'在决胜一战中为'+p['team']+'、'.join(parts)+'。')
-    if performances:sections.append(section('决胜场人物',performances,refs))
-    awards=[]
+        rows=d.get('final_table',[])
+        lead.append((f"{champ}以{rows[0]['points']}分结束赛季，拿到{comp}冠军。" if rows else deck))
+    history=history_lines(d.get('narrative_history',[]))
+    if 'narrative_history' not in d:history=''.join(honours(d.get('history')))
+    if history:lead.append(history)
+    campaign=d['champion_campaign']
+    if all(k in campaign for k in ('matches','W','D','L','goals_for','goals_against')):
+        text=(f"这座奖杯背后，是{champ}在{campaign['matches']}场比赛中留下的{campaign['W']}胜{campaign['D']}平{campaign['L']}负，"
+              f"以及{campaign['goals_for']}粒进球和{campaign['goals_against']}粒失球。")
+        if campaign.get('shootout_wins'):text+=f"他们还赢下了{campaign['shootout_wins']}次点球大战。"
+        lead.append(text)
+    surprises=surprise_paragraphs(d.get('campaign_surprises',[]),campaign=True)
+    if surprises:lead.append(''.join(surprises))
+    followup=related_followup(d,[a for g in finals for a in g.get('player_arrivals',{}).values()])
+    if followup:lead.append(followup_line(followup))
+    sections=[section('这座奖杯如何到来',lead,refs)]
+    award_people=defaultdict(list)
     for label,winners in d.get('awards',{}).items():
-        for p in winners:
-            text=p['player']+'获得'+label
-            if label=='射手王':text+=f"，整届打进{p['value']}球"
-            if label=='助攻王':text+=f"，整届送出{p['value']}次助攻"
-            awards.append(text+'。')
-            teams=p.get('actual_teams_in_edition',[])
-            if len(teams)>1:
-                metric='goals' if label=='射手王' else 'assists' if label=='助攻王' else 'appearances'
-                phrase='打进{}球' if metric=='goals' else '送出{}次助攻' if metric=='assists' else '出场{}次'
-                awards.append(p['player']+'本届在各队的表现分别是：'+'；'.join(f"在{t['team']}"+phrase.format(t[metric]) for t in teams if metric in t)+'。')
-    if awards:sections.append(section('个人奖项',awards,refs))
+        for p in winners:award_people[p['player']].append((label,p))
+    awards=[]
+    for player,items in award_people.items():
+        descriptions=[]
+        for label,p in items:
+            if label=='射手王':descriptions.append(f"以{p['value']}粒进球获得射手王")
+            elif label=='助攻王':descriptions.append(f"以{p['value']}次助攻获得助攻王")
+            else:descriptions.append('获评赛事MVP')
+            if p.get('retained_award') and label in ('射手王','助攻王'):descriptions[-1]+='，连续两届赢得这一奖项'
+        text=player+'、'.join(descriptions)+'。'
+        if len(items)>1:text+='他的本届赛事以'+str(len(items))+'项正式个人奖收官。'
+        performance=items[0][1].get('season_performance')
+        if performance:text+=season_numbers(performance,scope='在本届赛事')
+        teams=items[0][1].get('actual_teams_in_edition',[])
+        if len(teams)>1:
+            text+='这些表现来自他在'+names(t['team'] for t in teams)+'的效力经历。'
+        awards.append(text)
+    if awards:sections.append(section('奖杯之外的个人收获',awards,refs))
+    route=[]
+    games=d.get('champion_route',d.get('key_results',[]))
+    for game in games:route.append(game['stage']+'：'+match_line(game,venue=False))
+    for tie in d.get('bracket',[]):
+        if champ in tie['teams'] and tie.get('aggregate'):route.append(tie_line(tie))
+    if route:sections.append(section('夺冠路线' if d.get('champion_route') else '赛季关键场次',route,refs))
     if d.get('final_table'):
         paragraphs=table_paragraphs(d['final_table'])
         for key,verb in [('directly_promoted','直接升级'),('promotion_playoff','进入升级附加赛'),('relegated','降级')]:

@@ -332,7 +332,18 @@ def build_packet(conn, world, week, activation):
     for row in world['season'].get('championships', {}).values():
         if row['decided_week'] <= week:
             titles.append({'season': season, 'competition': row['competition_id'], 'team_id': row['champion_team_id']})
+    for edition in world.get('edition_archives',{}).values():
+        year=int(edition['season_number']);title=edition.get('championship') or {}
+        if title.get('champion_team_id') and (year<season or (year==season and edition.get('completed_week') is not None and edition['completed_week']<=week)):
+            titles.append({'season':year,'competition':edition['competition_id'],'team_id':title['champion_team_id']})
     record('honours-context', 'derived', {'history_complete': history_complete, 'titles': titles})
+    from football_simulator.press.story_context import game_notes,title_background
+    all_stats=[dict(r) for r in conn.execute('''SELECT p.* FROM player_match_stats p
+        JOIN matches m ON m.match_id=p.match_id WHERE m.status='completed' AND p.appeared=1
+        AND (m.season_number<? OR (m.season_number=? AND m.week<=?))''',(season,season,week))]
+    notes=game_notes(world,raw,all_stats,season,week,target_week=week)
+    record('story-context','derived',{'games':notes,'title_backgrounds':{
+        c:title_background(world,season,c) for c in {m['competition'] for m in weekly}}})
     from football_simulator.press.expectations import load
     baseline=next((r for r in load(conn,season,week) if r['before_week']==week),None)
     if baseline:

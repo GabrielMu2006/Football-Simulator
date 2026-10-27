@@ -22,48 +22,80 @@ def exciting(game):
 
 
 def game_paragraphs(game,background_seen=None):
-    lines=[f"在{game['competition']}{game['stage']}中，"+match_line(game)+outcomes(game)]
+    from football_simulator.press.local_templates.narrative import production,arrival_line,milestone_lines,history_lines
+    from football_simulator.press.expectations import comparison_sentence
+    players=game.get('players',[])[:2]
+    statuses=game.get('qualification_outcomes',[])
+    ordered=dict(game)
+    ordered['qualification_outcomes']=sorted(statuses,key=lambda r:{'champion':0,'qualified':1,'eliminated':2}.get(r['status'],3))
+    ordered['swiss_qualification_records']=sorted(game.get('swiss_qualification_records',[]),key=lambda r:not (r['qualified_in_this_match'] or r['eliminated_in_this_match']))
+    impact=outcomes(ordered)
+    important=any(r['status'] in ('champion','qualified') or
+                  (r['status']=='eliminated' and r['team'] in game.get('defending_champions',[])) for r in statuses)
+    lead=(impact+f"在{game['competition']}{game['stage']}中，"+match_line(game,venue=False) if important else
+          f"在{game['competition']}{game['stage']}中，"+match_line(game,venue=False)+impact)
+    if players:
+        star=players[0];lead+=star['player']+'在这场比赛中'+production(star)+'。'
+        if len(players)>1:
+            other=players[1]
+            if other.get('goals',0)>=2 or other.get('assists',0)>=2 or other.get('successful_saves',0)>=5:
+                lead+=other['player']+'则'+production(other)+'。'
+        noteworthy=star.get('goals',0)>=2 or star.get('assists',0)>=2 or star.get('successful_saves',0)>=5 or star.get('successful_defenses',0)>=6
+        if noteworthy:lead+=arrival_line(star['player'],game.get('player_arrivals',{}).get(star['player']))
     action=exciting(game)
-    if action:lines.append(action)
-    players=[]
-    for p in game.get('players',[]):
-        production=[]
-        for k,phrase in [('goals','打进{}球'),('assists','送出{}次助攻'),('successful_saves','完成{}次扑救'),('clean_sheets','零封{}场')]:
-            if p.get(k):production.append(phrase.format(p[k]))
-        if production:players.append(f"{p['player']}为{p['team']}"+'、'.join(production)+'。')
+    if action:lead+=action
+    if game.get('stadium'):lead+='本场比赛在'+game['stadium']+'进行。'
+    lines=[lead];context=[]
     for p in game.get('former_clubs',[]):
-        players.append(f"这也是{p['player']}代表{p['current_team']}迎战旧主{p['former_team']}的一场比赛。")
-    if players:lines.append(''.join(players))
-    record=[]
+        context.append(p['player']+'这次面对的是旧主'+p['former_team']+'。')
     for r in game.get('streak_events',[]):
-        kind={'wins':'连胜','losses':'连败','unbeaten':'不败','winless':'不胜'}[r['kind']]
-        prefix='跨赛季的' if r.get('crosses_seasons') else ''
-        if r['ended']:text=f"{r['team']}{prefix}{r['scope']}{r['before_match']}场{kind}就此终结"
-        else:text=f"{r['team']}将{prefix}{r['scope']}{kind}纪录延续到{r['after_match']}场"
-        if r.get('later_match_in_same_scope_this_week'):text+='（本场结束时）'
-        record.append(text+'。')
-    for team in game.get('season_first_losses',[]):record.append(team+'遭遇本赛季联赛首败。')
-    # Milestones are already resolved from structured records; never parse the
-    # historical_summary sentence back into numeric or identity fields.
-    for r in game.get('club_records',[]):record.append(r['team']+'在'+game['competition']+r['milestone']+'。')
-    if record:lines.append(''.join(record))
-    if game.get('upset_basis') or game.get('race_meeting'):
-        rows=game.get('upset_basis') or game['race_meeting']
-        lines.append('赛前，'+'；'.join(f"{r['team']}在{r['league']}排第{r['rank']}，积{r['points']}分" for r in rows)+'。')
+        label={'wins':'连胜','losses':'连败','unbeaten':'不败','winless':'不胜'}[r['kind']]
+        span='跨赛季的' if r.get('crosses_seasons') else ''
+        text=(f"{r['team']}{span}{r['scope']}{r['before_match']}场{label}就此终结" if r['ended'] else
+              f"{r['team']}将{span}{r['scope']}{label}延续到{r['after_match']}场")
+        if r.get('later_match_in_same_scope_this_week'):text+='（截至本场结束）'
+        context.append(text+'。')
+    for team in game.get('season_first_losses',[]):context.append(team+'也尝到了本赛季联赛首败。')
+    for r in game.get('club_records',[]):context.append(r['team']+'在'+game['competition']+r['milestone']+'。')
+    background=game.get('defending_title_run',{})
+    if background.get('defending_team') and any(r['team']==background['defending_team'] and r['status']=='eliminated' for r in statuses):
+        context.append(history_lines([{'kind':'defense_ended','team':background['defending_team'],'previous_consecutive_titles':background.get('previous_consecutive_titles')}]))
     comparison=game.get('expectation_comparison')
-    if comparison and comparison['is_upset']:
-        from football_simulator.press.expectations import comparison_sentence
-        lines.append(comparison_sentence(comparison)+'这场胜利称得上一次爆冷。')
-    from football_simulator.press.team_background import paragraph
-    backgrounds=game.get('club_backgrounds',{})
-    preferred=game.get('shootout_winner') or game.get('score_flow',{}).get('winner')
-    order=list(dict.fromkeys([preferred,*backgrounds]))
-    seen=background_seen if background_seen is not None else set()
-    for team in order:
-        if team in seen:continue
-        text=paragraph(team,backgrounds.get(team))
-        if text:
-            lines.append(text);seen.add(team);break
+    if comparison and comparison['is_upset']:context.append(comparison_sentence(comparison)+'这次取胜，为本轮添上了一场冷门。')
+    elif game.get('race_meeting') or game.get('upset_basis'):
+        rows=game.get('race_meeting') or game['upset_basis']
+        context.append('两队赛前的联赛位置分别是'+'、'.join(f"{r['team']}第{r['rank']}（{r['points']}分）" for r in rows)+'。')
+    meaningful=[e for e in game.get('player_events',[]) if e['kind'] not in ('club_debut','club_first_goal') or
+                e['player'] in {p['player'] for p in players}]
+    context.append(milestone_lines(meaningful[:3]))
+    for r in game.get('opponent_scoring_runs',[]):context.append(f"{r['player']}近{r['last_meetings']}次出场对阵{r['opponent']}都有进球，成了这支球队的克星。")
+    for r in game.get('meeting_events',[]):
+        if r['kind']=='league_double':context.append(r['team']+'本季两次在联赛击败'+r['opponent']+'，完成赛季双杀。')
+        else:context.append(r['team']+('首次击败' if r['first_win'] else '结束近'+str(r['previous_winless'])+'次交锋不胜，击败了')+r['opponent']+'。')
+    meeting=game.get('previous_meeting_this_edition')
+    if meeting and (game['stage']!='联赛' or any(r['kind']=='league_double' for r in game.get('meeting_events',[]))):
+        context.append(f"本届第{meeting['week']}周两队曾交手，{meeting['home']}与{meeting['away']}当时的比分是{meeting['home_goals']}–{meeting['away_goals']}。")
+    for duel in game.get('exchange_duels',[]):
+        context.append(names(p['player'] for p in duel['players'])+'曾在同一笔交换中互换球队，如今分别代表新东家出场交锋。')
+    if game.get('previous_final'):
+        context.append(history_lines([{'kind':'previous_final',**game['previous_final']}]))
+    for e in meaningful:
+        if e['kind']=='scoring_streak' and not e['ended']:
+            own=next((p for p in game.get('players',[]) if p['player']==e['player']),None)
+            score=game['field_score_home_away'];won=(e['team']==game['home'] and score['home']>score['away']) or (e['team']==game['away'] and score['away']>score['home'])
+            winless=next((r for r in game.get('streak_events',[]) if r['team']==e['team'] and r['kind']=='winless' and not r['ended'] and r['after_match']>=3),None)
+            if own and not won and winless:context.append(f"{e['player']}的进球仍在继续，{e['team']}却已在{winless['scope']}连续{winless['after_match']}场未能取胜。")
+    if any(context):lines.append(''.join(context))
+    tie=game.get('two_leg_tie')
+    if tie and tie.get('complete') and game.get('leg')==2 and tie.get('advancing_team'):
+        winner=tie['advancing_team'];score=game['field_score_home_away']
+        lost=(winner==game['home'] and score['home']<score['away']) or (winner==game['away'] and score['away']<score['home'])
+        if lost:lines.append(winner+'虽然输掉了这一回合，仍赢下两回合对阵'+('并捧杯。' if any(r['team']==winner and r['status']=='champion' for r in statuses) else '并晋级。'))
+        if tie.get('legs'):
+            first=tie['legs'][0];fs=first['field_score_home_away'];first_winner=first['home'] if fs['home']>fs['away'] else first['away'] if fs['away']>fs['home'] else None
+            if first_winner and first_winner!=winner:lines.append(first_winner+'首回合曾经取胜，最终仍未能赢下这轮对阵。')
+    for p in game.get('two_leg_contributors',[]):
+        lines.append(p['player']+'在两回合都为'+p['team']+'留下了贡献：首回合'+production({'goals':p['first_goals'],'assists':p['first_assists']})+'，次回合'+production({'goals':p['second_goals'],'assists':p['second_assists']})+'。')
     return lines
 
 
@@ -115,7 +147,9 @@ def heading_for(story):
     for game in games:
         for r in game.get('qualification_outcomes',[]):
             if r['status']=='champion':return r['team']+'赢得'+game['competition']
-            if r['status']=='eliminated' and r['team'] in game.get('defending_champions',[]):return r['team']+'卫冕之旅结束'
+    for game in games:
+        for r in game.get('qualification_outcomes',[]):
+            if r['status']=='eliminated' and r['team'] in game.get('defending_champions',[]):return '卫冕冠军'+r['team']+'提前出局' if not game['stage'].startswith('决赛') else r['team']+'卫冕之旅结束'
     for game in reversed(games):
         if game.get('shootout_winner'):return game['shootout_winner']+'点球胜出'
         tie=game.get('two_leg_tie')
@@ -146,9 +180,17 @@ def render(packet,plan):
             if d.get('league_race'):paragraphs+=league_paragraphs(d['league_race'])
             if d.get('promoted_via_playoff'):paragraphs.append(d['promoted_via_playoff']+'通过升级附加赛取得升级资格。')
         if not paragraphs:continue
+        honours=d.get('champion_honours')
+        if honours:
+            from football_simulator.press.local_templates.narrative import history_lines
+            paragraphs.append(history_lines([{'kind':'title','team':honours['team'],'total_titles':honours['titles_in_this_competition'],
+                'consecutive_titles':honours.get('consecutive_titles',1)}]))
+            if honours.get('career_grand_slam_completed'):paragraphs.append(honours['team']+'至此已集齐一级联赛和六项杯赛的冠军。')
+            if honours.get('season_grand_slam_completed'):paragraphs.append(honours['team']+'本季包揽了一级联赛和六项杯赛冠军。')
         sections.append(section(heading_for(story),paragraphs,story['fact_ids']))
         mapping.append({'story_id':story['id'],'template_id':'weekly.'+kind,'fact_ids':story['fact_ids'],
-                        'source_keys':sorted({g['expectation_source_key'] for g in d.get('matches',[]) if g.get('expectation_source_key')})})
+                        'source_keys':sorted({g['expectation_source_key'] for g in d.get('matches',[]) if g.get('expectation_source_key')} |
+                            ({'story-context'} if any(g.get('player_arrivals') or g.get('player_events') or g.get('meeting_events') or g.get('defending_title_run') for g in d.get('matches',[])) else set()))})
     title=heading_for(stories[0])
     first=stories[0];content=first['content']
     if first['kind'] in ('league_closure','early_champion'):

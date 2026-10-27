@@ -86,7 +86,7 @@ class PressUITests(PressSaveCase):
             window.press.pump()
             self.assertTrue(self.wait_until(lambda:lib.overview()['weeks'][0]['status']=='ready'))
             self.assertTrue(self.wait_until(lambda:not window.press.running))
-            self.assertEqual(lib.source(season=1,week=1)['template_version'],'local-news/1')
+            self.assertEqual(lib.source(season=1,week=1)['template_version'],job['template_version'])
 
     def test_related_links_preserve_selected_report_type_season_and_f5(self):
         from PySide6.QtWidgets import QPushButton
