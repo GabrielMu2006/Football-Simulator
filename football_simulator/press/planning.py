@@ -177,7 +177,7 @@ def build_plan(packet, sources):
         elif defender and any(f['data']['team_id'] == defender['data']['team_id'] and f['data']['status'] == 'eliminated' for f in statuses):
             priority, angle, mandatory = 205, '卫冕冠军本届出局', True
         elif any(f['data']['status'] == 'qualified' for f in statuses):
-            priority, angle = 90, '关键晋级与下一阶段路径'
+            priority, angle, mandatory = 90, '关键晋级与下一阶段路径', True
         elif any(f['data']['status'] == 'eliminated' for f in statuses):
             priority, angle = 75, '本届出局与比赛结果'
         elif any(f['data']['status'] == 'entered_losers_bracket' for f in statuses):

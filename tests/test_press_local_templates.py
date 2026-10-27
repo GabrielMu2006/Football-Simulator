@@ -92,6 +92,19 @@ class LocalStorageTests(PressSaveCase):
             self.assertTrue(metadata['story_templates'])
             self.assertTrue({'model','tokens','provider','usage'}.isdisjoint(metadata))
 
+    def test_new_qualification_is_mandatory_even_when_ordinary_story_budget_is_full(self):
+        from football_simulator.press.planning import build_plan
+        self.service.set_mode('Press','auto');self.advance(52)
+        self.service.start_next_season('Press');self.advance(20)
+        activate('Press');self.advance()
+        material=repository.load_week('Press',2,21)
+        plan=build_plan(material['packet'],material['sources'])
+        qualifications=[f for f in material['packet']['facts'] if f['kind']=='competition_status'
+                        and f['data']['status']=='qualified' and f['match_ids']]
+        self.assertTrue(qualifications)
+        mandatory={fid for story in plan['stories'] if story['must_cover'] for fid in story['fact_ids']}
+        self.assertTrue({f['fact_id'] for f in qualifications} <= mandatory)
+
     def test_paused_retry_uses_frozen_plan_and_template(self):
         lib=self.enabled();self.advance();weekly=LocalLibrary(lib.path);job=weekly.reserve(1,1)
         with offline_guards():
