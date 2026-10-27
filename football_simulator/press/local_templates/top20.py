@@ -9,47 +9,57 @@ def selection(card):
     if h.get('status')=='首届榜单成员':lines.append('他是首届榜单成员。')
     elif total==1 and not missing:lines.append('他首次入选年度Top20。')
     elif h.get('status')=='重返Top20':lines.append('他本季重返Top20。')
-    if total is not None:lines.append(f'截至本届累计入选{total}次。')
-    if run is not None and run>=2:lines.append(f'已连续{run}届入选。')
+    if total is not None and total>1:
+        text=f'他已累计入选{total}次'
+        if run is not None and run>=2:text+=f'，且已连续{run}届上榜'
+        lines.append(text+'。')
+    elif run is not None and run>=2:lines.append(f'他已连续{run}届上榜。')
     if previous is not None:
         movement=previous-rank
-        lines.append(f'较上届第{previous}名'+(f'上升{movement}位。' if movement>0 else f'下降{-movement}位。' if movement<0 else '名次不变。'))
+        if movement:lines.append(f'从上届第{previous}名'+(f'升至第{rank}名，上升{movement}位。' if movement>0 else f'降至第{rank}名，下降{-movement}位。'))
+        else:lines.append(f'排名与上届相同，仍列第{rank}名。')
     best=h.get('previous_best_rank')
     if best is not None and rank<best:lines.append(('刷新个人历史最佳名次' if not missing else '刷新已知最佳名次')+f'，此前最高为第{best}名。')
-    if rank==1 and not missing:lines.append(f"第{len(h.get('prior_number_one_seasons',[]))+1}次登顶年度Top20。")
+    if rank==1 and not missing:
+        times=len(h.get('prior_number_one_seasons',[]))+1
+        lines.append('这也是他'+('首次' if times==1 else f'第{times}次')+'登顶年度Top20。')
     return ''.join(lines)
 
 
 def player_paragraph(card):
-    text=card['player']+'本季司职'+ROLES.get(card['position'],card['position'])+'，'+stats(card)+'。'
     teams=card.get('actual_teams',[])
-    if len(teams)==1:text+='本季实际代表'+teams[0]['team']+'出场。'
-    elif len(teams)>1:text+='本季分别代表'+'；'.join(t['team']+'（'+stats({**t,'position':card['position']})+'）' for t in teams)+'。'
+    text=ROLES.get(card['position'],card['position'])+card['player']+'本季'
+    if len(teams)==1:text+='代表'+teams[0]['team']
+    text+=stats(card)+'。'
+    if len(teams)>1:text+='分队来看，他在'+'；在'.join(t['team']+stats({**t,'position':card['position']}) for t in teams)+'。'
     highlights=card.get('representative_matches',[])[:1]
     for row in highlights:
-        game=row['match'];text+=game['competition']+game['stage']+'中，'+match_line(game,venue=False)
+        game=row['match'];text+='在'+game['competition']+game['stage']+'中，'+match_line(game,venue=False)
         performance=[]
         if row.get('goals'):performance.append(f"打进{row['goals']}球")
         if row.get('assists'):performance.append(f"送出{row['assists']}次助攻")
         if card['position']=='GK' and row.get('successful_saves') is not None:performance.append(f"完成{row['successful_saves']}次扑救")
         if card['position']=='DF' and row.get('successful_defenses') is not None:performance.append(f"完成{row['successful_defenses']}次成功防守")
-        if performance:text+=card['player']+'在该场为'+row['player_team']+'、'.join(performance)+'。'
+        if performance:text+=card['player']+'那场为'+row['player_team']+'、'.join(performance)+'。'
     awards=card.get('personal_awards',[])
-    if awards:text+='本季个人奖项包括'+names(r['competition']+r['award'] for r in awards)+'。'
+    if awards:text+='他本季获得'+names(r['competition']+r['award'] for r in awards)+'。'
     titles=card.get('team_titles',[])
-    if titles:text+='实际随队获得'+names(r['team_at_championship']+'的'+r['competition']+'冠军' for r in titles)+'。'
+    title_teams={}
+    for row in titles:title_teams.setdefault(row['team_at_championship'],[]).append(row['competition'])
+    if titles:text+='他随'+ '，随'.join(team+'赢得'+names(comps)+'冠军' for team,comps in title_teams.items())+'。'
     # Results are explicitly attributed to clubs, never converted into the
     # player's personal championship collection after a transfer.
     finishes=[]
     for team in card.get('team_honor_summaries',[]):
         parts=[]
-        if team.get('championship_count') is not None:parts.append(f"单季{team['championship_count']}冠")
-        if team.get('honor_points') is not None:parts.append(f"球队荣誉分{team['honor_points']}分")
-        if parts:finishes.append(team['team']+'的球队成绩为'+'、'.join(parts))
+        if team.get('championship_count') is not None:
+            count=team['championship_count'];parts.append(f"全年拿到{count}座冠军" if count else '全年未能夺冠')
+        if team.get('honor_points') is not None:parts.append(f"球队荣誉积分为{team['honor_points']}分")
+        if parts:finishes.append(team['team']+'，'.join(parts))
     if not card.get('team_honor_summaries'):
         for team in card.get('teams_season_results',[]):
             known=[r for r in team['season_results'] if r['finish'] in ('冠军','亚军')]
-            if known:finishes.append(team['team']+'在部分赛事中取得'+names(r['competition']+r['finish'] for r in known))
+            if known:finishes.append(team['team']+'还取得了'+names(r['competition']+r['finish'] for r in known))
     if finishes:text+='；'.join(finishes)+'。'
     return text+selection(card)
 

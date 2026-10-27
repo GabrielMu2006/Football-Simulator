@@ -16,17 +16,21 @@ def exchange(trade):
 def render(packet,plan):
     d=plan['content'];refs=plan['fact_ids'];label='冬季' if d['window']=='winter' else '夏季'
     title=label+'转会窗落幕：'+str(d['completed_trades'])+'笔交换完成'
-    deck=f"第{packet['meta']['season']}赛季{label}转会窗关闭，已完成的球员交换改变了相关球队的阵容。" if d['completed_trades'] else label+'转会窗已经关闭，本窗没有完成的球员交换。'
+    deck=f"第{packet['meta']['season']}赛季{label}转会窗关闭，共有{d['completed_trades']}笔球员交换完成。" if d['completed_trades'] else label+'转会窗已经关闭，本窗没有球员交换完成。'
     sections=[];focus=[]
     for trade in d['focus_trades']:
         focus.append(exchange(trade))
         for p in trade['moves']:
-            note=p['player']+'司职'+ROLES.get(p['position'],p['position'])+'。'
+            note=ROLES.get(p['position'],p['position'])+p['player']
+            background=[]
             origin=p.get('origin',{})
             if origin.get('actual_pick') is not None and origin['actual_pick']<=5:
-                note+=f"他是第{origin['draft_season']}赛季实际第{origin['actual_pick']}顺位新秀。"
-            if p.get('historical_top20'):note+='此前曾入选年度Top20。'
-            if p.get('appearances') is not None:note+='截至关窗，本赛季代表各队累计'+stats(p)+'。'
+                background.append(f"是第{origin['draft_season']}赛季第{origin['actual_pick']}顺位新秀")
+            if p.get('historical_top20'):background.append('曾入选年度Top20')
+            if background:note+='，'.join(background)+'。'
+            if p.get('appearances') is not None:
+                note+=('截至关窗，他本赛季合计' if background else '本赛季截至关窗已')+stats(p)+'。'
+            elif not background:note+='本窗转投'+p['to_team']+'。'
             focus.append(note)
     if focus:sections.append(section('重点交换',focus,refs))
     if d.get('other_trades'):sections.append(section('其余已完成交易',[exchange(r) for r in d['other_trades']],refs))
@@ -34,7 +38,7 @@ def render(packet,plan):
     for team in d.get('window_team_rosters',[]):
         before=team['window_open_real_counts'];after=team['window_closed_real_counts']
         changed=[f"{ROLES[pos]}由{before[pos]}人变为{after[pos]}人" for pos in ROLES if pos in before and pos in after and before[pos]!=after[pos]]
-        text=team['team']+'：'+('，'.join(changed) if changed else '窗口首尾各位置真实球员人数相同')+'。'
+        text=('与开窗时相比，'+team['team']+'的'+'，'.join(changed) if changed else team['team']+'各位置的真实球员人数与开窗时相同')+'。'
         endpoints.append(text)
     if endpoints:sections.append(section('关窗后的阵容',endpoints,refs))
     if not sections:sections=[section('窗口结束',[deck],refs)]

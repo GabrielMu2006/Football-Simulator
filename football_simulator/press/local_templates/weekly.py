@@ -21,25 +21,25 @@ def exciting(game):
     return ''.join(lines)
 
 
-def game_paragraphs(game):
-    lines=[f"{game['competition']} · {game['stage']}，"+match_line(game)+outcomes(game)]
+def game_paragraphs(game,background_seen=None):
+    lines=[f"在{game['competition']}{game['stage']}中，"+match_line(game)+outcomes(game)]
     action=exciting(game)
     if action:lines.append(action)
     players=[]
     for p in game.get('players',[]):
         production=[]
-        for k,unit in [('goals','球'),('assists','次助攻'),('successful_saves','次扑救'),('clean_sheets','场零封')]:
-            if p.get(k):production.append(f"{p[k]}{unit}")
-        if production:players.append(f"{p['player']}为{p['team']}贡献"+'、'.join(production)+'。')
+        for k,phrase in [('goals','打进{}球'),('assists','送出{}次助攻'),('successful_saves','完成{}次扑救'),('clean_sheets','零封{}场')]:
+            if p.get(k):production.append(phrase.format(p[k]))
+        if production:players.append(f"{p['player']}为{p['team']}"+'、'.join(production)+'。')
     for p in game.get('former_clubs',[]):
-        players.append(f"{p['player']}本场代表{p['current_team']}面对曾效力的{p['former_team']}。")
+        players.append(f"这也是{p['player']}代表{p['current_team']}迎战旧主{p['former_team']}的一场比赛。")
     if players:lines.append(''.join(players))
     record=[]
     for r in game.get('streak_events',[]):
         kind={'wins':'连胜','losses':'连败','unbeaten':'不败','winless':'不胜'}[r['kind']]
         prefix='跨赛季的' if r.get('crosses_seasons') else ''
-        if r['ended']:text=f"{r['team']}{prefix}{r['scope']}{r['before_match']}场{kind}在本场结束"
-        else:text=f"本场之后，{r['team']}{prefix}{r['scope']}{kind}延续至{r['after_match']}场"
+        if r['ended']:text=f"{r['team']}{prefix}{r['scope']}{r['before_match']}场{kind}就此终结"
+        else:text=f"{r['team']}将{prefix}{r['scope']}{kind}纪录延续到{r['after_match']}场"
         if r.get('later_match_in_same_scope_this_week'):text+='（本场结束时）'
         record.append(text+'。')
     for team in game.get('season_first_losses',[]):record.append(team+'遭遇本赛季联赛首败。')
@@ -52,17 +52,25 @@ def game_paragraphs(game):
         lines.append('赛前，'+'；'.join(f"{r['team']}在{r['league']}排第{r['rank']}，积{r['points']}分" for r in rows)+'。')
     comparison=game.get('expectation_comparison')
     if comparison and comparison['is_upset']:
-        lines.append(comparison['winner']+'取得了一场冷门胜利。'+'；'.join(b['text'] for b in comparison['basis'])+'。')
+        from football_simulator.press.expectations import comparison_sentence
+        lines.append(comparison_sentence(comparison)+'这场胜利称得上一次爆冷。')
     from football_simulator.press.team_background import paragraph
-    if game.get('club_backgrounds'):
-        lines += [paragraph(team,data) for team,data in game['club_backgrounds'].items() if paragraph(team,data)]
+    backgrounds=game.get('club_backgrounds',{})
+    preferred=game.get('shootout_winner') or game.get('score_flow',{}).get('winner')
+    order=list(dict.fromkeys([preferred,*backgrounds]))
+    seen=background_seen if background_seen is not None else set()
+    for team in order:
+        if team in seen:continue
+        text=paragraph(team,backgrounds.get(team))
+        if text:
+            lines.append(text);seen.add(team);break
     return lines
 
 
 def league_paragraphs(data, *, closure=False):
     leaders=data.get('leader_and_runner_up',[]);lines=[]
     if leaders:
-        first=leaders[0];text=f"{data['competition']}，{first['team']}以{first['points']}分"+('夺冠' if closure else '位居榜首')
+        first=leaders[0];text=f"{data['competition']}"+('最终由' if closure else '目前由')+f"{first['team']}以{first['points']}分"+('夺冠' if closure else '领跑')
         if len(leaders)>1:
             second=leaders[1];gap=first['points']-second['points']
             text+=(f"，与第二名{second['team']}同分" if gap==0 else f"，领先第二名{second['team']}{gap}分")
@@ -125,16 +133,16 @@ def heading_for(story):
 
 
 def render(packet,plan):
-    sections=[];mapping=[];stories=plan['editorial']['stories']
+    sections=[];mapping=[];stories=plan['editorial']['stories'];background_seen=set()
     for story in stories:
         d=story['content'];kind=story['kind'];paragraphs=[]
         if kind in ('league_closure','early_champion'):
             paragraphs=league_paragraphs(d['league'],closure=kind=='league_closure')
             if kind=='early_champion':paragraphs.insert(0,d['champion']+'已提前锁定本赛季'+d['league']['competition']+'冠军。')
-            for g in d.get('decisive_matches',[]):paragraphs+=game_paragraphs(g)
+            for g in d.get('decisive_matches',[]):paragraphs+=game_paragraphs(g,background_seen)
         elif kind=='phase_closure':paragraphs=phase_paragraphs(d)
         else:
-            for g in d['matches']:paragraphs+=game_paragraphs(g)
+            for g in d['matches']:paragraphs+=game_paragraphs(g,background_seen)
             if d.get('league_race'):paragraphs+=league_paragraphs(d['league_race'])
             if d.get('promoted_via_playoff'):paragraphs.append(d['promoted_via_playoff']+'通过升级附加赛取得升级资格。')
         if not paragraphs:continue
@@ -142,5 +150,13 @@ def render(packet,plan):
         mapping.append({'story_id':story['id'],'template_id':'weekly.'+kind,'fact_ids':story['fact_ids'],
                         'source_keys':sorted({g['expectation_source_key'] for g in d.get('matches',[]) if g.get('expectation_source_key')})})
     title=heading_for(stories[0])
-    deck=f"第{plan['editorial']['issue']['season']}赛季第{plan['editorial']['issue']['completed_week']}周，"+title+'。'
+    first=stories[0];content=first['content']
+    if first['kind'] in ('league_closure','early_champion'):
+        lead=''.join(league_paragraphs(content['league'],closure=first['kind']=='league_closure')[:1])
+        if first['kind']=='early_champion':lead=content['champion']+'提前锁定'+content['league']['competition']+'冠军。'+lead
+    elif first['kind']=='phase_closure':lead=''.join(phase_paragraphs(content)[:1])
+    else:
+        game=content['matches'][0];lead=match_line(game,venue=False)+outcomes(game)
+        if content.get('league_race'):lead+=''.join(league_paragraphs(content['league_race'])[:1])
+    deck=f"第{plan['editorial']['issue']['season']}赛季第{plan['editorial']['issue']['completed_week']}周，"+lead
     return article(packet,title,deck,sections),mapping

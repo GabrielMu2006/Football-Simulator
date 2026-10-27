@@ -31,5 +31,16 @@ def backgrounds(world):
 def paragraph(team,data):
     if not data or not data.get('label'):return ''
     years=data['recent_seasons'];span=f"第{years[0]}至第{years[-1]}赛季" if len(years)>1 else f"第{years[0]}赛季"
-    return (team+'属于'+data['label']+f"，已结束赛季累计球队荣誉分{data['historical_honor_points']}分，"
-            +span+f"合计{data['recent_honor_points']}分。")
+    total=data['historical_honor_points'];recent=data['recent_honor_points']
+    if data['label']=='传统强队':
+        return (f"老牌劲旅{team}的队史荣誉积分已累积到{total}分，{span}合计收获{recent}分，"
+                '在历史与近期的荣誉榜上都位居前列。')
+    if data['label']=='处于低谷的传统强队':
+        return (f"{team}的队史荣誉积分累计{total}分，{span}则拿到{recent}分，"
+                '未能跻身同期前列。这支老牌劲旅正经历一段低谷。')
+    if data['label']=='新锐':
+        return (f"{team}凭借{span}合计{recent}分的荣誉成绩跻身同期前列，成为近年的一股新锐力量。"
+                f"球队的队史荣誉积分累计为{total}分。")
+    # A short history cannot establish tradition. Avoid repeating the same total
+    # as both a career and recent figure when these cover identical seasons.
+    return f"{span}，{team}的荣誉积分合计{recent}分，跻身同期强队行列。"

@@ -1,0 +1,75 @@
+"""Small expression primitives; all sporting decisions arrive as data."""
+
+
+def names(values):
+    return '、'.join(values)
+
+
+def score(values):
+    return f"{values['home']}–{values['away']}"
+
+
+def match_line(game, *, venue=True):
+    field=game.get('field_score_home_away',game.get('score_after_extra_time_home_away'))
+    h,a=field['home'],field['away']
+    verb='战胜' if h>a else '负于' if h<a else '战平'
+    text=f"{game['home']}以{h}–{a}{verb}{game['away']}"
+    regulation=game.get('regulation_home_away')
+    if regulation is not None and (game.get('extra_time_played') or 'extra_time_goals_home_away' in game):
+        text+=f"（90分钟{score(regulation)}，加时后{score(field)}）"
+    if game.get('shootout_home_away'):
+        text+=f"，点球大战{score(game['shootout_home_away'])}，{game['shootout_winner']}点球胜出"
+    text+='。'
+    if venue and game.get('stadium'):
+        text+=f"比赛在{game['stadium']}进行。"
+    return text
+
+
+def stats(card):
+    position=card.get('position')
+    fields=[('appearances','次出场')]
+    fields+=([('successful_saves','次扑救'),('clean_sheets','场零封')] if position=='GK' else
+             [('goals','球'),('assists','次助攻')])
+    if position=='DF':fields.append(('successful_defenses','次成功防守'))
+    if position=='MF':fields.append(('chances_created','次创造机会'))
+    return '、'.join(f'{card[k]}{unit}' for k,unit in fields if card.get(k) is not None)
+
+
+def section(heading, paragraphs, refs):
+    return {'heading':heading,'heading_fact_ids':list(refs),'blocks':[
+        {'kind':'body','label':None,'text':p,'fact_ids':list(refs)} for p in paragraphs if p]}
+
+
+def article(packet,title,deck,sections):
+    refs=sections[0]['heading_fact_ids']
+    return {'schema_version':'press.article/0.1-draft','report_id':packet['meta']['report_id'],
+            'title':title,'title_fact_ids':list(refs),'summary':deck,'summary_fact_ids':list(refs),
+            'used_topic_ids':[],'sections':sections}
+
+
+def outcomes(game):
+    result=[]
+    swiss={r['team'] for r in game.get('swiss_qualification_records',[])}
+    for row in game.get('qualification_outcomes',[]):
+        team=row['team'];state=row['status']
+        if team in swiss:continue
+        if state=='champion':text=team+'赢得'+game['competition']+'冠军'
+        elif state=='qualified':text=team+'晋级'+row.get('next_stage','下一阶段')
+        elif state=='eliminated':text=team+'本届出局'
+        elif state=='entered_losers_bracket':text=team+'降入败者组，仍有后续赛程'
+        else:continue
+        if state=='eliminated' and team in game.get('defending_champions',[]):text='卫冕冠军'+text
+        result.append(text+'。')
+    for row in game.get('swiss_qualification_records',[]):
+        after=row['after_match'];text=f"{row['team']}的瑞士轮战绩来到{after['wins']}胜{after['losses']}负"
+        if row['qualified_in_this_match']:text+='，取得淘汰赛资格'
+        elif row['eliminated_in_this_match']:text+='，本届出局'
+        result.append(text+'。')
+    tie=game.get('two_leg_tie')
+    if tie:
+        a,b=tie['aggregate_a_b']
+        text=f"两回合总比分为{tie['team_a']} {a}–{b} {tie['team_b']}"
+        if tie['complete'] and tie.get('advancing_team'):text+=f"，{tie['advancing_team']}赢下对阵"
+        elif not tie['complete']:text+='，对阵尚未结束'
+        result.append(text+'。')
+    return ''.join(result)

@@ -2,9 +2,11 @@
 from football_simulator.press import PressError,repository
 from football_simulator.press.local_templates import ENGINE_ID,TEMPLATE_VERSION
 
+SUPPORTED_VERSIONS=('local-news/1','local-news/2')
+
 
 def freeze_plan(packet,sources=None,version=TEMPLATE_VERSION):
-    if version!='local-news/1':raise PressError('本地模板版本不可用。')
+    if version not in SUPPORTED_VERSIONS:raise PressError('本地模板版本不可用。')
     if packet['meta'].get('report_type','weekly')!='weekly':
         kind=packet['meta']['report_type']
         if kind not in ('phase','competition','transfer','draft','top20'):raise PressError('该类专题模板尚未启用。')
@@ -25,23 +27,17 @@ def freeze_plan(packet,sources=None,version=TEMPLATE_VERSION):
 
 
 def render(packet,plan):
-    if (plan['engine_id']!=ENGINE_ID or plan['template_version']!='local-news/1'
+    if (plan['engine_id']!=ENGINE_ID or plan['template_version'] not in SUPPORTED_VERSIONS
             or plan['packet_sha256']!=repository.digest(packet)):
         raise PressError('模板版本或事实身份不符。')
-    if plan['kind']=='weekly':
-        from football_simulator.press.local_templates.weekly import render as weekly
-        return weekly(packet,plan)
-    if plan['kind']=='phase':
-        from football_simulator.press.local_templates.phase import render as phase
-        return phase(packet,plan)
-    if plan['kind']=='competition':
-        from football_simulator.press.local_templates.competition import render as competition
-        return competition(packet,plan)
-    if plan['kind']=='transfer':
-        from football_simulator.press.local_templates.transfer import render as transfer
-        return transfer(packet,plan)
-    if plan['kind']=='draft':
-        from football_simulator.press.local_templates.draft import render as draft
-        return draft(packet,plan)
-    from football_simulator.press.local_templates.top20 import render as top20
-    return top20(packet,plan)
+    if plan['kind'] not in ('weekly','phase','competition','transfer','draft','top20'):
+        raise PressError('该类专题模板尚未启用。')
+    # A paused job must retain its original language even after a template update.
+    # Static imports also keep both versions visible to the desktop bundler.
+    if plan['template_version']=='local-news/1':
+        from football_simulator.press.local_templates.v1 import weekly,phase,competition,transfer,draft,top20
+    else:
+        from football_simulator.press.local_templates import weekly,phase,competition,transfer,draft,top20
+    renderer={'weekly':weekly,'phase':phase,'competition':competition,
+              'transfer':transfer,'draft':draft,'top20':top20}[plan['kind']]
+    return renderer.render(packet,plan)

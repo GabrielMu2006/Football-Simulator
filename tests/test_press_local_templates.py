@@ -54,6 +54,16 @@ class LocalSemanticsTests(unittest.TestCase):
               'goals':[{'minute':88,'scorer':'Player A','team':'A','field_effect':'反超比分'}]}
         text=exciting(game);self.assertIn('逆转',text);self.assertIn('第88分钟',text);self.assertIn('Player A',text)
 
+    def test_decided_final_names_runner_up_but_playoff_names_promotion(self):
+        game={'competition':'Apex Cup','qualification_outcomes':[
+            {'team':'A','status':'champion'},{'team':'B','status':'eliminated'}]}
+        text=outcomes(game)
+        self.assertIn('B获得本届亚军',text)
+        game['competition']='Promotion Playoffs';text=outcomes(game)
+        self.assertIn('A赢下升级附加赛，取得升级资格',text)
+        self.assertIn('B未能通过附加赛升级',text)
+        self.assertNotIn('冠军',text)
+
     def test_second_division_closure_has_full_outcomes_without_relegation(self):
         data={'competition':'Second Division','champion':'A','leader_and_runner_up':[
               {'team':'A','points':66},{'team':'B','points':66}],
@@ -89,6 +99,7 @@ class LocalStorageTests(PressSaveCase):
                 self.assertEqual(conn.execute('SELECT COUNT(*) FROM press_articles WHERE season=1 AND week=1').fetchone()[0],1)
                 metadata=json.loads(conn.execute('SELECT metadata_json FROM press_articles WHERE week=1').fetchone()[0])
             self.assertEqual(metadata['engine_id'],'local-template')
+            self.assertEqual(metadata['template_version'],'local-news/2')
             self.assertTrue(metadata['story_templates'])
             self.assertTrue({'model','tokens','provider','usage'}.isdisjoint(metadata))
 
@@ -106,12 +117,17 @@ class LocalStorageTests(PressSaveCase):
         self.assertTrue({f['fact_id'] for f in qualifications} <= mandatory)
 
     def test_paused_retry_uses_frozen_plan_and_template(self):
-        lib=self.enabled();self.advance();weekly=LocalLibrary(lib.path);job=weekly.reserve(1,1)
+        # Simulate an interrupted first-version job that predates the upgrade.
+        with patch('football_simulator.press.local_library.TEMPLATE_VERSION','local-news/1'):
+            lib=self.enabled();self.advance();weekly=LocalLibrary(lib.path)
+            job=weekly.reserve(1,1)
         with offline_guards():
             self.assertFalse(weekly.generate_local(job,should_stop=lambda:True))
-            with patch('football_simulator.press.local_library.TEMPLATE_VERSION','future/2'),patch('football_simulator.press.planning.build_plan',side_effect=AssertionError('must reuse')):
+            expected,_=render(job['packet'],freeze_plan(job['packet'],job['sources'],version='local-news/1'))
+            with patch('football_simulator.press.local_templates.weekly.render',side_effect=AssertionError('must retain original renderer')),patch('football_simulator.press.planning.build_plan',side_effect=AssertionError('must reuse')):
                 resumed=weekly.reserve(1,1);self.assertEqual(resumed['template_version'],'local-news/1')
                 self.assertTrue(weekly.generate_local(resumed))
+                self.assertEqual(weekly.read(1,1,mark_read=False),expected)
 
     def test_archive_preserves_source_and_rejects_stale_imported_identity(self):
         lib=self.enabled();self.advance();weekly=LocalLibrary(lib.path)
@@ -239,7 +255,7 @@ class LocalEditorialContextTests(unittest.TestCase):
                                'player_roster_titles':[]}]}]}]}
         article,_=draft(packet,{'content':content,'fact_ids':['feature:test']})
         text=''.join(b['text'] for s in article['sections'] for b in s['blocks'])
-        for expected in ('Top20排名第8','全季2冠','荣誉分180','Rookie'):self.assertIn(expected,text)
+        for expected in ('Top20排名第8','全年拿到2座冠军','球队荣誉积分为180分','Rookie'):self.assertIn(expected,text)
         self.assertNotIn('99',text);self.assertNotIn('能力',text)
 
 
