@@ -1,7 +1,7 @@
 """Versioned, deterministic newspaper expression. No provider or credentials."""
 
 ENGINE_ID = 'local-template'
-TEMPLATE_VERSION = 'local-news/4'
+TEMPLATE_VERSION = 'local-news/5'
 
 
 def install_columns(conn, table):

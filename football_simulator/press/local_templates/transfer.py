@@ -26,14 +26,19 @@ def move_story(p,*,profile=True):
     if peer:parts.append(f"第{peer['season']}赛季的{peer['competition']}决赛中，{name}与{peer['player']}曾分属两支对阵球队，如今两人在{p['to_team']}成为队友。")
     if story.get('high_pick_teammates'):parts.append(high_pick_line(story['high_pick_teammates'],p['to_team'],name))
     if profile:
-        origin=p.get('origin',{});credentials=[]
-        if p.get('historical_top20'):credentials.append('曾进入年度Top20')
+        origin=p.get('origin',{});identity=''
         if origin.get('actual_pick') is not None and origin['actual_pick']<=5 and not story.get('return_to_draft_club'):
-            credentials.append(f"是第{origin['draft_season']}赛季第{origin['actual_pick']}顺位新秀")
-        if credentials:parts.append(name+'，'.join(credentials)+'。')
+            identity=f"第{origin['draft_season']}赛季第{origin['actual_pick']}顺位新秀"
+        if p.get('historical_top20'):identity='曾入选年度Top20的'+identity
         actual=p.get('actual_teams',[])
-        subject=name if not parts else '他';scope='本季为'+actual[0]['team'] if len(actual)==1 else '本季合计'
-        parts.append(season_numbers(p,subject=subject,scope=scope))
+        subject=(identity+name) if identity else (name if not parts else '他')
+        scope='本季为'+actual[0]['team'] if len(actual)==1 else '本季合计'
+        description=season_numbers(p,subject=subject,scope=scope)
+        if p.get('current_season_standout') and description and p.get('appearances',0)>0:
+            description=description.rstrip('。')+'，表现抢眼。'
+        parts.append(description)
+        if len(actual)>1:
+            parts.append('这段表现来自他在'+names(t['team'] for t in actual)+'的实际出场。')
     return ''.join(parts)
 
 

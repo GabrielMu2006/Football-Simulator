@@ -2,6 +2,25 @@
 from football_simulator.press.local_templates.common import names
 
 
+def stage_text(stage):
+    if '_' not in stage:return stage
+    from football_simulator.press.features import stage_name
+    label=stage_name(stage)
+    return label if '_' not in label else '比赛'
+
+
+def best_highlight(rows):
+    """Choose among actual appearances; stage labels do not imply victory."""
+    def importance(row):
+        stage=stage_text(row.get('match',{}).get('stage',''))
+        if stage.startswith(('总决赛','决赛','升级附加赛决赛')):value=3
+        elif stage.startswith('半决赛') or row.get('qualification_secured'):value=2
+        elif stage.startswith('八强'):value=1
+        else:value=0
+        return value, row.get('goals',0)+row.get('assists',0), row.get('successful_saves',0)
+    return max(rows,key=importance) if rows else None
+
+
 def production(card):
     g=card.get('goals',0);a=card.get('assists',0);parts=[]
     if g==3:parts.append('上演帽子戏法')

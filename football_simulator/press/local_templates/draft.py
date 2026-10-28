@@ -32,6 +32,7 @@ def render(packet,plan):
         if p['actual_pick']<=5:
             # Club results belong to the ended season, before this rookie played.
             text+=team_result({k:v for k,v in record.items() if k!='league_finish'}) if record.get('team') else ''
+            if not finish and p.get('team_season_finish'):text+=p['team_season_finish']
             text+=high_pick_line(p.get('high_pick_teammates',[]),p['team'],p['player'])
             first.append(text)
         else:others.append(text)
@@ -49,8 +50,17 @@ def render(packet,plan):
         elif cards and all(c.get('top20_known') for c in cards):text+='回看这两个赛季，他还没有进入年度Top20。' if len(cards)==2 else '刚结束的赛季，他尚未进入年度Top20。'
         if p.get('current_registered_team'):text+='目前他效力于'+p['current_registered_team']+'。'
         for card in cards:
+            actual=card.get('actual_teams',[])
+            if len(actual)>1:
+                text+=f"第{card['season']}赛季，他曾代表"+names(t['team'] for t in actual)+'出场。'
+            records=card.get('team_records',[])
             text+=season_numbers(card,scope=f"在第{card['season']}赛季")
-            text+=''.join(team_result(r,p['player']) for r in card.get('team_records',[]))
+            if len(actual)>1:
+                for team in actual:
+                    text+=season_numbers({**team,'position':card.get('position')},scope='为'+team['team'])
+                    record=next((r for r in records if r['team']==team['team']),None)
+                    if record:text+=team_result(record,p['player'])
+            else:text+=''.join(team_result(r,p['player']) for r in records)
         progress.append(text)
     if progress:sections.append(section('曾经的高顺位新秀，如今走到哪里',progress,refs))
     contrasts=[]

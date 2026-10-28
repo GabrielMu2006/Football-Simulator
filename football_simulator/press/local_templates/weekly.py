@@ -30,10 +30,7 @@ def game_paragraphs(game,background_seen=None):
     ordered['qualification_outcomes']=sorted(statuses,key=lambda r:{'champion':0,'qualified':1,'eliminated':2}.get(r['status'],3))
     ordered['swiss_qualification_records']=sorted(game.get('swiss_qualification_records',[]),key=lambda r:not (r['qualified_in_this_match'] or r['eliminated_in_this_match']))
     impact=outcomes(ordered)
-    important=any(r['status'] in ('champion','qualified') or
-                  (r['status']=='eliminated' and r['team'] in game.get('defending_champions',[])) for r in statuses)
-    lead=(impact+f"在{game['competition']}{game['stage']}中，"+match_line(game,venue=False) if important else
-          f"在{game['competition']}{game['stage']}中，"+match_line(game,venue=False)+impact)
+    lead=f"在{game['competition']}{game['stage']}中，"+match_line(game,venue=False)+impact
     if players:
         star=players[0];lead+=star['player']+'在这场比赛中'+production(star)+'。'
         if len(players)>1:
@@ -140,9 +137,14 @@ def heading_for(story):
     if kind=='league_closure':return d['league']['champion']+'收获'+d['league']['competition']+'冠军'
     if kind=='early_champion':return d['champion']+'提前夺冠'
     if kind=='phase_closure':return d['competition']+'阶段收官'
+    if kind=='qualification_roundup':return d['matches'][0]['competition']+'资格动态'
     race=d.get('league_race')
     if race and race.get('leader_changed_this_week'):
         return race['leader_and_runner_up'][0]['team']+'登上'+race['competition']+'榜首'
+    if race and '领先优势缩小' in story.get('angle',''):
+        leaders=race.get('leader_and_runner_up',[])
+        if len(leaders)>1:
+            return leaders[0]['team']+'继续领跑，优势缩至'+str(leaders[0]['points']-leaders[1]['points'])+'分'
     games=d.get('matches',[]);g=games[0]
     for game in games:
         for r in game.get('qualification_outcomes',[]):
@@ -177,7 +179,8 @@ def render(packet,plan):
         elif kind=='phase_closure':paragraphs=phase_paragraphs(d)
         else:
             for g in d['matches']:paragraphs+=game_paragraphs(g,background_seen)
-            if d.get('league_race'):paragraphs+=league_paragraphs(d['league_race'])
+            if d.get('league_race'):
+                race=d['league_race'];paragraphs+=([race['race_summary']] if race.get('race_summary') else league_paragraphs(race))
             if d.get('promoted_via_playoff'):paragraphs.append(d['promoted_via_playoff']+'通过升级附加赛取得升级资格。')
         if not paragraphs:continue
         honours=d.get('champion_honours')
@@ -199,6 +202,10 @@ def render(packet,plan):
     elif first['kind']=='phase_closure':lead=''.join(phase_paragraphs(content)[:1])
     else:
         game=content['matches'][0];lead=match_line(game,venue=False)+outcomes(game)
-        if content.get('league_race'):lead+=''.join(league_paragraphs(content['league_race'])[:1])
+        if content.get('league_race'):
+            race=content['league_race'];leaders=race.get('leader_and_runner_up',[])
+            if len(leaders)>1:
+                gap=leaders[0]['points']-leaders[1]['points']
+                lead=f"{race['competition']}本周榜首为{leaders[0]['team']}，领先{leaders[1]['team']}{gap}分。"
     deck=f"第{plan['editorial']['issue']['season']}赛季第{plan['editorial']['issue']['completed_week']}周，"+lead
     return article(packet,title,deck,sections),mapping

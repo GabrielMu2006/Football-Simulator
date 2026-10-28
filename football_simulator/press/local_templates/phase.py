@@ -29,11 +29,12 @@ def high_pot_exits(data):
 
 
 def render(packet,plan):
-    from football_simulator.press.local_templates.narrative import history_lines,season_numbers,arrival_line,followup_line,related_followup
+    from football_simulator.press.local_templates.narrative import history_lines,season_numbers,arrival_line,followup_line,related_followup,best_highlight,stage_text
     from football_simulator.press.expectations import surprise_paragraphs
     d=plan['content'];refs=plan['fact_ids'];comp=d['competition'];stage=d['stage']
     label={'halfway':'半程','groups':'小组阶段','swiss':'瑞士轮','playin':'突围赛'}[stage]
     title=comp+label+'收官';lead=[];standings=[];qualified=d.get('qualified',d.get('direct_quarterfinalists',[]))
+    deck=f"{comp}{label}结束，"+(f"{len(qualified)}支球队继续向前。" if qualified else '本阶段的结果已经确定。')
     history=history_lines(d.get('narrative_history',[]))
     group_teams={row['team'] for rows in d.get('groups',{}).values() for row in rows}
     reported_exits={r['team'] for r in d.get('draw_pots',[]) if r['pot'] in (1,2)
@@ -41,6 +42,7 @@ def render(packet,plan):
     surprises=surprise_paragraphs(d.get('group_surprises',[])+d.get('qualification_surprises',[]),
                                   opponent_exits_reported=reported_exits)
     if d.get('halfway_table'):
+        deck=comp+'已经完成半程，接下来的比赛仍将决定最终名次。'
         first=d['halfway_table'][0];title=first['team']+'领跑'+comp+'半程'
         text=f"{first['team']}带着{first['points']}分结束前半程，暂居{comp}榜首。"
         if len(d['halfway_table'])>1:
@@ -49,7 +51,8 @@ def render(packet,plan):
         text+=('最终冠军和升级资格仍待后半程揭晓。' if comp=='Second Division' else '最终冠军和降级名单仍待后半程揭晓。')
         lead.append(text);standings+=table_paragraphs(d['halfway_table'])
     else:
-        lead.append(f"{comp}{label}结束，"+(f"{len(qualified)}支球队继续向前。" if qualified else '本阶段的晋级与出局名单已经落定。'))
+        unbeaten=[r['team'] for r in d.get('swiss_records',[]) if r['wins']==3 and r['losses']==0]
+        if unbeaten:lead.append(names(unbeaten)+'均以3胜0负的战绩取得淘汰赛资格。' if len(unbeaten)>1 else unbeaten[0]+'以3胜0负的战绩取得淘汰赛资格。')
         if history:lead.append(history)
         if surprises:lead.append(''.join(surprises))
         exits=high_pot_exits(d)
@@ -72,25 +75,28 @@ def render(packet,plan):
     def game_key(g):return (g['competition'],g['stage'],g['home'],g['away'])
     for index,p in enumerate(d.get('players',[])):
         teams=p.get('actual_teams',[]);team=teams[0]['team'] if len(teams)==1 else None
-        text='';highlights=p.get('representative_matches',[])
-        if index==0 and highlights:
+        text=season_numbers(p,subject=p['player'],scope=('在'+team+'的本届征程中' if team else '截至本阶段结束'))
+        highlight=best_highlight(p.get('representative_matches',[])) if index<2 else None
+        if highlight:
             from football_simulator.press.local_templates.narrative import production
-            highlight=highlights[0];g=highlight['match'];seen_games.add(game_key(g))
-            text=g['stage']+'，'+match_line(g,venue=False)+p['player']+'为'+highlight['player_team']+production(highlight)+'。'
-        text+=season_numbers(p,subject=p['player'],scope=('在'+team+'的本届征程中' if team else '截至本阶段结束'))
+            g=highlight['match'];seen_games.add(game_key(g));performance=production(highlight)
+            if performance:text+='在'+stage_text(g['stage'])+'，'+match_line(g,venue=False)+p['player']+'为'+highlight['player_team']+performance+'。'
         arrivals=p.get('recent_arrivals',[])
         if arrivals:text+=arrival_line(p['player'],arrivals[-1])
         people.append(text)
-    if people:lead.append(''.join(people))
+    if people:lead.extend(people)
     breakthroughs=[r['team'] for r in d.get('history_breakthroughs',[]) if r.get('first_time') and r.get('history_complete')]
     if breakthroughs:lead.append('对于'+names(breakthroughs)+'，这还是队史第一次进入'+comp+'八强。')
+    elif not d.get('history_breakthroughs'):
+        for note in d.get('history_notes',[]):lead.append(note.replace('该赛事',comp)+'。')
     games=[g for g in d.get('key_results',[]) if game_key(g) not in seen_games]
     if games:
         lead.append('回看这一阶段，'+''.join(g['stage']+'，'+match_line(g,venue=False) for g in games))
     followup=related_followup(d,[a for p in d.get('players',[]) for a in p.get('recent_arrivals',[])])
     if followup:lead.append(followup_line(followup))
+    if not lead:lead=[deck]
     sections=[section(label+'回顾',lead,refs)]
     if standings:sections.append(section('完整排名与晋级名单',standings,refs))
     route=routes(d.get('bracket',[]))
     if route:sections.append(section('接下来的对阵',route,refs))
-    return article(packet,title,lead[0],sections),[{'story_id':'phase','template_id':'feature.phase.'+stage,'fact_ids':refs}]
+    return article(packet,title,deck,sections),[{'story_id':'phase','template_id':'feature.phase.'+stage,'fact_ids':refs}]

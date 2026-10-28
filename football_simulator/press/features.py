@@ -121,6 +121,20 @@ class FeatureContext:
         from football_simulator.press.story_context import game_notes
         return game_notes(self.world,list(self.matches.values()),self.stats,self.season,self.week)
 
+    @cached_property
+    def qualification_matches(self):
+        from football_simulator.press.builder import walk_ties,tie_matches
+        result={}
+        for year,competition in {(m['season_number'],m['competition']) for m in self.matches.values()}:
+            if competition in rules.LEAGUE_COMPETITIONS:continue
+            edition=self.world.get('edition_archives',{}).get(f'{year}:{competition}',{})
+            state=edition.get('state') or (self.world['season'].get('cups',{}).get(competition,{}) if year==self.season else {})
+            for tie in walk_ties(state):
+                mids=tie_matches(tie);winner=tie.get('winner')
+                if winner and mids and all(mid in self.matches for mid in mids):
+                    result.setdefault(mids[-1],set()).add(winner)
+        return result
+
     def games(self, competition=None, season=None):
         number=self.season if season is None else season
         return [m for m in self.matches.values() if m['season_number']==number and (competition is None or m['competition']==competition)]
@@ -131,7 +145,7 @@ class FeatureContext:
         from football_simulator.press.semantics import goal_context,goal_caption
         m=self.matches[match] if isinstance(match,str) else match
         data=canonical_match(m,self.world['players']);score={k:data['regulation'][k]+(data['extra_time'] or {}).get(k,0) for k in ('home','away')}
-        result={'competition':rules.display_name(m['competition']),'stage':stage_name(m['stage']),
+        result={'competition':rules.display_name(m['competition']),'stage':stage_name(m['stage']),'week':m['week'],
                 'home':self.team(m['home_team_id']),'away':self.team(m['away_team_id']),
                 'score_after_extra_time_home_away':score,'regulation_home_away':data['regulation'],
                 'extra_time_played':data['extra_time'] is not None}
@@ -194,7 +208,21 @@ class FeatureContext:
         else:
             best=sorted(rows,key=lambda r:(-(r['goals']+r['assists']),-r['goals'],r['match_id']))[:2]
             fields=('goals','assists')
+        # Keep one actual final as well as the statistical leaders: a decisive
+        # appearance can matter more than a higher-scoring routine league game.
+        finals=[r for r in rows if self.matches[r['match_id']]['stage'] in
+                ('final','grand_final','final_leg_1','final_leg_2','promotion_final','promotion_final_leg_1','promotion_final_leg_2')
+                and any(r[k] for k in fields)]
+        if finals:
+            final=max(finals,key=lambda r:(sum(r[k] for k in fields),r['match_id']))
+            if final not in best:best.append(final)
+        qualifications=[r for r in rows if r['team_id'] in self.qualification_matches.get(r['match_id'],set())
+                        and any(r[k] for k in fields)]
+        if qualifications:
+            qualifying=max(qualifications,key=lambda r:(sum(r[k] for k in fields),r['match_id']))
+            if qualifying not in best:best.append(qualifying)
         card['representative_matches']=[{'player_team':self.team(r['team_id']),**{k:r[k] for k in fields},
+                'qualification_secured':r['team_id'] in self.qualification_matches.get(r['match_id'],set()),
                 'match':self.match(r['match_id'],detailed=True)} for r in best if any(r[k] for k in fields)]
         return card
 

@@ -112,7 +112,33 @@ def phase_context(ctx, cid):
     return result
 
 
-def build_plan(packet, sources):
+def select_candidates(candidates, *, local_extra_story=False):
+    candidates=list(candidates)
+    if local_extra_story:
+        groups={}
+        for candidate in candidates:
+            games=candidate['content'].get('matches',[])
+            if (candidate['mandatory'] and candidate['priority']==90 and candidate['kind']=='match_story'
+                    and games and all(g['competition']==games[0]['competition'] for g in games)):
+                groups.setdefault(games[0]['competition'],[]).append(candidate)
+        for competition,items in groups.items():
+            if len(items)<2:continue
+            merged={'key':'roundup:'+competition,'priority':90,'kind':'qualification_roundup',
+                    'angle':'同一赛事的资格结果','mandatory':True,
+                    'content':{'matches':[g for item in items for g in item['content']['matches']]},
+                    'fact_ids':sorted({f for item in items for f in item['fact_ids']})}
+            for item in items:candidates.remove(item)
+            candidates.append(merged)
+    candidates.sort(key=lambda c: (-c['priority'], c['key']))
+    mandatory=[c for c in candidates if c['mandatory']]
+    optional=[c for c in candidates if not c['mandatory']]
+    selected=mandatory+optional[:max(0,4-len(mandatory))]
+    if local_extra_story and len(mandatory)>=4 and optional and optional[0]['priority']>=110:
+        selected.append(optional[0])
+    return sorted(selected,key=lambda c:(-c['priority'],c['key']))
+
+
+def build_plan(packet, sources, *, local_extra_story=False):
     validate_packet(packet, sources)
     ctx = Context(packet, sources)
     candidates = []
@@ -273,11 +299,7 @@ def build_plan(packet, sources):
         if len(main['content']['matches']) > 1:
             main['angle'] = '一支球队的双线一周：冠军与另一赛事的结果'
             main['content']['sequence_basis'] = '本周统计处理顺序；没有具体比赛日或相隔天数'
-    candidates.sort(key=lambda c: (-c['priority'], c['key']))
-    mandatory = [c for c in candidates if c['mandatory']]
-    optional = [c for c in candidates if not c['mandatory']]
-    selected = mandatory + optional[:max(0, 4 - len(mandatory))]
-    selected.sort(key=lambda c: (-c['priority'], c['key']))
+    selected=select_candidates(candidates,local_extra_story=local_extra_story)
     if not selected:
         raise PressError('本周没有可报道的故事。')
     stories = []

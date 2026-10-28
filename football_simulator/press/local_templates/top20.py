@@ -5,33 +5,33 @@ from football_simulator.press.local_templates.transfer import ROLES
 
 def selection(card,skip=()):
     h=card.get('selection_history',{});lines=[];previous=card.get('previous_rank');rank=card['rank']
-    total=h.get('total_selections');run=h.get('consecutive_selections');missing=h.get('missing_seasons',[])
+    total=h.get('total_selections');run=h.get('consecutive_selections');missing=h.get('missing_seasons')
     if 'identity' not in skip:
         if h.get('status')=='首届榜单成员':lines.append('他是首届榜单成员。')
-        elif total==1 and not missing:lines.append('他首次入选年度Top20。')
+        elif total==1 and missing==[]:lines.append('他首次入选年度Top20。')
         elif h.get('status')=='重返Top20':lines.append('他本季重返Top20。')
     if 'counts' not in skip and total is not None and total>1:
         text=f'他已累计入选{total}次'
         if run is not None and run>=2:text+=f'，且已连续{run}届上榜'
         lines.append(text+'。')
     elif 'counts' not in skip and run is not None and run>=2:lines.append(f'他已连续{run}届上榜。')
-    if previous is not None:
+    if previous is not None and 'movement' not in skip:
         movement=previous-rank
         if movement:lines.append(f'从上届第{previous}名'+(f'升至第{rank}名，上升{movement}位。' if movement>0 else f'降至第{rank}名，下降{-movement}位。'))
         else:lines.append(f'排名与上届相同，仍列第{rank}名。')
     best=h.get('previous_best_rank')
-    if best is not None and rank<best:lines.append(('刷新个人历史最佳名次' if not missing else '刷新已知最佳名次')+f'，此前最高为第{best}名。')
-    if rank==1 and not missing and 'number_one' not in skip:
+    if best is not None and rank<best:lines.append(('刷新个人历史最佳名次' if missing==[] else '刷新已知最佳名次')+f'，此前最高为第{best}名。')
+    if rank==1 and missing==[] and 'prior_number_one_seasons' in h and 'number_one' not in skip:
         times=len(h.get('prior_number_one_seasons',[]))+1
         lines.append('这也是他'+('首次' if times==1 else f'第{times}次')+'登顶年度Top20。')
     return ''.join(lines)
 
 
 def player_paragraph(card):
-    from football_simulator.press.local_templates.narrative import season_numbers,production,arrival_line
+    from football_simulator.press.local_templates.narrative import season_numbers,production,arrival_line,best_highlight,stage_text
     h=card.get('selection_history',{});rank=card['rank'];previous=card.get('previous_rank');name=card['player']
     skip=set();total=h.get('total_selections');run=h.get('consecutive_selections')
-    if rank==1 and total and not h.get('missing_seasons'):
+    if rank==1 and total and h.get('missing_seasons')==[] and 'prior_number_one_seasons' in h:
         text=f"这是{name}第{total}次入选年度Top20"
         if run and run>=2:text+=f"，且已连续{run}届上榜"
         first=not h.get('prior_number_one_seasons');text+='。这一届，他'+('首次' if first else '再次')+'站上榜首。'
@@ -39,15 +39,17 @@ def player_paragraph(card):
         skip.update(('counts','identity','number_one'))
     elif rank==1:text=name+'站上了这一季年度Top20的榜首。'
     elif h.get('status')=='重返Top20':text=name+f'重新回到年度Top20，这次位列第{rank}名。';skip.add('identity')
-    elif h.get('total_selections')==1 and not h.get('missing_seasons'):text=name+f'第一次进入年度Top20，便排在第{rank}名。';skip.add('identity')
-    elif previous is not None and previous-rank>=5:text=f'从上届第{previous}名来到第{rank}名，{name}在榜单上向前迈了一大步。'
-    else:text=name+f'以第{rank}名结束本届年度Top20评选。'
-    highlights=card.get('representative_matches',[])[:1]
-    if highlights:
-        row=highlights[0];game=row['match']
-        text+='回看'+game['competition']+game['stage']+'，'+match_line(game,venue=False)
+    elif h.get('total_selections')==1 and h.get('missing_seasons')==[]:text=name+f'第一次进入年度Top20，便排在第{rank}名。';skip.add('identity')
+    elif previous is not None and previous-rank>=5:
+        text=f'从上届第{previous}名来到第{rank}名，{name}在榜单上向前迈了一大步。';skip.add('movement')
+    else:text=''
+    row=best_highlight(card.get('representative_matches',[]))
+    if row:
+        game=row['match']
+        text+=('回看' if text else '')+game['competition']+stage_text(game['stage'])+'，'+match_line(game,venue=False)
         line=production({**row,'position':card['position']})
         if line:text+=name+'那场为'+row['player_team']+line+'。'
+    elif not text:text=name+f'以第{rank}名结束本届年度Top20评选。'
     teams=card.get('actual_teams',[])
     scope='代表'+teams[0]['team'] if len(teams)==1 else '合计'
     text+=season_numbers(card,scope='本季'+scope)
@@ -72,7 +74,8 @@ def player_paragraph(card):
         text+=prefix+'。'
     if not card.get('team_honor_summaries'):
         for team in card.get('teams_season_results',[]):
-            known=[r for r in team['season_results'] if r['finish'] in ('冠军','亚军')]
+            known=[r for r in team['season_results'] if r['finish'] in ('冠军','亚军')
+                   and not (r['finish']=='冠军' and r['competition'] in title_teams.get(team['team'],[]))]
             if known:text+=team['team']+'取得了'+names(r['competition']+r['finish'] for r in known)+'。'
     return text+selection(card,skip)
 

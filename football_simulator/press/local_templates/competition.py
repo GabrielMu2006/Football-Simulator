@@ -29,6 +29,12 @@ def render(packet,plan):
     title=champ+'捧起'+comp+'冠军';deck=f"第{year}赛季的{comp}属于{champ}。"
     if comp=='Promotion Playoffs':title=champ+'赢下升级附加赛';deck=champ+'拿到了本季最后一个升级名额。'
     lead=[];finals=d.get('decisive_games',[])
+    if not finals and d.get('champion_route'):
+        finals=[g for g in d['champion_route'] if g['stage'].startswith(('决赛','总决赛','升级附加赛决赛'))]
+    runner=d.get('runner_up')
+    if not runner and finals:
+        last=finals[-1]
+        if champ in (last['home'],last['away']):runner=last['away'] if last['home']==champ else last['home']
     if finals:
         text=''.join(g['stage']+'，'+match_line(g,venue=False) for g in finals)
         final_tie=next((t for t in d.get('bracket',[]) if t['stage'] in ('决赛','升级附加赛决赛') and t.get('aggregate')),None)
@@ -37,7 +43,7 @@ def render(packet,plan):
         people=d.get('decisive_performances',[])
         if people:
             text+=''.join(p['player']+'为'+p['team']+production(p)+'。'+arrival_line(p['player'],finals[-1].get('player_arrivals',{}).get(p['player'])) for p in people)
-        if d.get('runner_up'):text+=d['runner_up']+'最终获得亚军。'
+        if runner:text+=runner+'最终获得亚军。'
         lead.append(text)
     else:
         rows=d.get('final_table',[])
@@ -45,12 +51,31 @@ def render(packet,plan):
     history=history_lines(d.get('narrative_history',[]))
     if 'narrative_history' not in d:history=''.join(honours(d.get('history')))
     if history:lead.append(history)
-    campaign=d['champion_campaign']
-    if all(k in campaign for k in ('matches','W','D','L','goals_for','goals_against')):
-        text=(f"这座奖杯背后，是{champ}在{campaign['matches']}场比赛中留下的{campaign['W']}胜{campaign['D']}平{campaign['L']}负，"
-              f"以及{campaign['goals_for']}粒进球和{campaign['goals_against']}粒失球。")
+    campaign=d.get('champion_campaign',{})
+    if all(k in campaign for k in ('matches','W','goals_for','goals_against')):
+        record=(f"取得{campaign['W']}胜{campaign['D']}平{campaign['L']}负" if 'D' in campaign and 'L' in campaign
+                else f"赢下{campaign['W']}场")
+        text=(f"这座奖杯背后，{champ}在{campaign['matches']}场比赛中{record}，"
+              f"打进{campaign['goals_for']}球，失{campaign['goals_against']}球。")
         if campaign.get('shootout_wins'):text+=f"他们还赢下了{campaign['shootout_wins']}次点球大战。"
         lead.append(text)
+    turns=[g for g in d.get('champion_route',[]) if g.get('shootout_home_away') and g not in finals]
+    if turns:
+        g=turns[0];lead.append('夺冠路上，'+g['stage']+'一战走到点球决胜：'+match_line(g,venue=False))
+    if runner:
+        previous=[];seen=set()
+        for tie in d.get('bracket',[]):
+            if runner not in tie.get('teams',[]):continue
+            for g in tie.get('matches',[]):
+                if g['stage'].startswith(('决赛','总决赛','升级附加赛决赛')):continue
+                key=(g['stage'],g['home'],g['away'])
+                if key not in seen:previous.append(g);seen.add(key)
+        if previous:
+            notable=sorted(previous,key=lambda g:(not bool(g.get('shootout_home_away')),not g['stage'].startswith('半决赛')))[:2]
+            conventional={'32强':0,'16强':1,'八强':2,'半决赛':3}
+            if all(g.get('week') is not None for g in notable):notable.sort(key=lambda g:g['week'])
+            elif all(g['stage'] in conventional for g in notable):notable.sort(key=lambda g:conventional[g['stage']])
+            lead.append('回看'+runner+'此前的征程：'+''.join(g['stage']+'，'+match_line(g,venue=False) for g in notable))
     surprises=surprise_paragraphs(d.get('campaign_surprises',[]),campaign=True)
     if surprises:lead.append(''.join(surprises))
     followup=related_followup(d,[a for g in finals for a in g.get('player_arrivals',{}).values()])
