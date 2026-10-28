@@ -10,6 +10,7 @@ from football_simulator.persistence_v2 import store
 from football_simulator.press import PressError,repository
 from football_simulator.press.local_library import LocalLibrary,LocalFeatureLibrary,activate
 from football_simulator.press.local_templates.engine import freeze_plan,render
+from football_simulator.press.local_templates import TEMPLATE_VERSION
 from football_simulator.press.local_templates.common import match_line,outcomes
 from football_simulator.press.local_templates.weekly import exciting,league_paragraphs,game_paragraphs
 from tests.test_press_export import PressSaveCase
@@ -99,7 +100,7 @@ class LocalStorageTests(PressSaveCase):
                 self.assertEqual(conn.execute('SELECT COUNT(*) FROM press_articles WHERE season=1 AND week=1').fetchone()[0],1)
                 metadata=json.loads(conn.execute('SELECT metadata_json FROM press_articles WHERE week=1').fetchone()[0])
             self.assertEqual(metadata['engine_id'],'local-template')
-            self.assertEqual(metadata['template_version'],'local-news/3')
+            self.assertEqual(metadata['template_version'],TEMPLATE_VERSION)
             self.assertTrue(metadata['story_templates'])
             self.assertTrue({'model','tokens','provider','usage'}.isdisjoint(metadata))
 

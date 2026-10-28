@@ -1,4 +1,4 @@
-"""Completed player exchanges, with explicit directions and window endpoints."""
+"""Completed player exchanges and the players' recorded careers."""
 from football_simulator.press.local_templates.common import names,stats,section,article
 
 ROLES={'GK':'门将','DF':'后卫','MF':'中场','FW':'前锋'}
@@ -50,12 +50,5 @@ def render(packet,plan):
     if stories:sections.append(section('这个窗口留下的故事',stories,refs))
     if d.get('other_trades'):
         sections.append(section('其余已完成的交换',[exchange(t)+''.join(move_story(p,profile=False) for p in t['moves']) for t in d['other_trades']],refs))
-    endpoints=[]
-    for team in d.get('window_team_rosters',[]):
-        before=team['window_open_real_counts'];after=team['window_closed_real_counts']
-        changed=[f"{ROLES[pos]}从{before[pos]}人变为{after[pos]}人" for pos in ROLES if pos in before and pos in after and before[pos]!=after[pos]]
-        if changed:endpoints.append('交换完成后，'+team['team']+'的'+'，'.join(changed)+'。')
-        else:endpoints.append(team['team']+'在开窗和关窗时，各位置的真实球员人数相同。')
-    if endpoints:sections.append(section('阵容人数的变化',endpoints,refs))
     if not sections:sections=[section('窗口收官',[deck],refs)]
     return article(packet,title,deck,sections),[{'story_id':'transfer','template_id':'feature.transfer','fact_ids':refs}]

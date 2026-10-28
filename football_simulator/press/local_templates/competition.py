@@ -78,7 +78,7 @@ def render(packet,plan):
     if awards:sections.append(section('奖杯之外的个人收获',awards,refs))
     route=[]
     games=d.get('champion_route',d.get('key_results',[]))
-    for game in games:route.append(game['stage']+'：'+match_line(game,venue=False))
+    for game in games:route.append(game['stage']+'：'+match_line(game))
     for tie in d.get('bracket',[]):
         if champ in tie['teams'] and tie.get('aggregate'):route.append(tie_line(tie))
     if route:sections.append(section('夺冠路线' if d.get('champion_route') else '赛季关键场次',route,refs))

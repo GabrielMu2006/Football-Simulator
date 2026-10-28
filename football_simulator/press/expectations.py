@@ -132,7 +132,7 @@ def comparison_sentence(comparison):
     return team+'，'.join(clauses)+'。' if clauses else ''
 
 
-def surprise_paragraphs(rows,*,campaign=False):
+def surprise_paragraphs(rows,*,campaign=False,opponent_exits_reported=()):
     result=[]
     for r in rows:
         text=(r['team']+'最终捧起冠军奖杯' if campaign else
@@ -143,5 +143,8 @@ def surprise_paragraphs(rows,*,campaign=False):
         for comparison in r.get('comparisons',[]):
             if comparison['is_upset']:
                 evidence=comparison_sentence(comparison)
-                if evidence:result.append(evidence+comparison['opponent']+('则未能夺冠。' if campaign else '则未能过关。'))
+                if evidence:
+                    outcome=('' if not campaign and comparison['opponent'] in opponent_exits_reported
+                             else comparison['opponent']+('则未能夺冠。' if campaign else '则未能过关。'))
+                    result.append(evidence+outcome)
     return result

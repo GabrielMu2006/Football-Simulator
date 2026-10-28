@@ -17,6 +17,17 @@ def routes(bracket):
     return lines
 
 
+def high_pot_exits(data):
+    pots={r['team']:r['pot'] for r in data.get('draw_pots',[])}
+    eliminated=set(data.get('eliminated',[]));exits=[]
+    for group,rows in data.get('groups',{}).items():
+        for row in rows:
+            team=row['team'];pot=pots.get(team)
+            if team in eliminated and pot in (1,2):
+                exits.append(f"第{pot}档球队{team}以{row['points']}分位列{group}组第{row['rank']}名，未能晋级")
+    return '；'.join(exits)+'。' if exits else ''
+
+
 def render(packet,plan):
     from football_simulator.press.local_templates.narrative import history_lines,season_numbers,arrival_line,followup_line,related_followup
     from football_simulator.press.expectations import surprise_paragraphs
@@ -24,7 +35,11 @@ def render(packet,plan):
     label={'halfway':'半程','groups':'小组阶段','swiss':'瑞士轮','playin':'突围赛'}[stage]
     title=comp+label+'收官';lead=[];standings=[];qualified=d.get('qualified',d.get('direct_quarterfinalists',[]))
     history=history_lines(d.get('narrative_history',[]))
-    surprises=surprise_paragraphs(d.get('group_surprises',[])+d.get('qualification_surprises',[]))
+    group_teams={row['team'] for rows in d.get('groups',{}).values() for row in rows}
+    reported_exits={r['team'] for r in d.get('draw_pots',[]) if r['pot'] in (1,2)
+                    and r['team'] in d.get('eliminated',[]) and r['team'] in group_teams}
+    surprises=surprise_paragraphs(d.get('group_surprises',[])+d.get('qualification_surprises',[]),
+                                  opponent_exits_reported=reported_exits)
     if d.get('halfway_table'):
         first=d['halfway_table'][0];title=first['team']+'领跑'+comp+'半程'
         text=f"{first['team']}带着{first['points']}分结束前半程，暂居{comp}榜首。"
@@ -37,6 +52,8 @@ def render(packet,plan):
         lead.append(f"{comp}{label}结束，"+(f"{len(qualified)}支球队继续向前。" if qualified else '本阶段的晋级与出局名单已经落定。'))
         if history:lead.append(history)
         if surprises:lead.append(''.join(surprises))
+        exits=high_pot_exits(d)
+        if exits:lead.append(exits)
         dark=next((r for r in d.get('group_surprises',[])+d.get('qualification_surprises',[]) if r.get('is_dark_horse')),None)
         if dark:title=dark['team']+'突围，'+comp+label+'收官'
         for r in d.get('swiss_turnarounds',[]):
