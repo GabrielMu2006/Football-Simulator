@@ -5,6 +5,8 @@ import random
 import unittest
 
 from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import Qt
+from PySide6.QtTest import QTest
 
 from football_simulator.app.service import GameService
 from football_simulator.persistence_v2 import store
@@ -54,6 +56,26 @@ class SaveUiFlowTests(FreezeTestCase):
         self.app.processEvents()
         self.assertTrue(self.window.has_save)
         self.assertIsNotNone(self.window.stack.currentWidget())
+        self.assertEqual(self.window._current_route[0], "dashboard")
+
+    def test_create_button_survives_page_update_and_init_is_available(self) -> None:
+        self.window.navigate("saves")
+        page = self.window.stack.currentWidget()
+        name_input = page.name_input
+        from PySide6.QtWidgets import QPushButton
+        create = next(b for b in page.findChildren(QPushButton) if b.text() in ("开始", "新建"))
+        name_input.setText("flow-click")
+        QTest.mouseClick(create, Qt.LeftButton)
+        QTest.qWait(700)
+        from shiboken6 import isValid
+        self.assertTrue(isValid(create))
+        self.assertIs(page.name_input, name_input)
+        self.assertEqual(page._current_save_label.text(), "flow-click")
+        self.assertTrue(page._current_save_start.isVisible())
+        self.assertEqual(page._save_table._rows[0]["save_name"], "flow-click")
+        QTest.mouseClick(page._current_save_start, Qt.LeftButton)
+        self.app.processEvents()
+        self.assertTrue(self.window.has_save)
         self.assertEqual(self.window._current_route[0], "dashboard")
 
 

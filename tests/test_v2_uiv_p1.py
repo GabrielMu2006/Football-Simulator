@@ -155,7 +155,10 @@ class AwardAndDraftBase(unittest.TestCase):
             texts = labels + [button.text() for button in page.findChildren(QAbstractButton) if button.text()]
             self.assertTrue(any("个人奖项" in text for text in texts), competition)
             expected = queries.competition_detail(self.window.world(), "s3uiv", competition)["awards"]
-            for key in ("top_scorer", "assist_leader", "mvp"):
+            # The new UI does not expose a secondary-league MVP, even for
+            # this legacy fixture; the legacy frozen query remains unchanged.
+            keys = ("top_scorer", "assist_leader") if competition == rules.SECOND else ("top_scorer", "assist_leader", "mvp")
+            for key in keys:
                 for winner in expected[key]:
                     self.assertTrue(any(winner["label"] in text for text in texts), (competition, key, winner["label"]))
 

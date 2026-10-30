@@ -144,7 +144,7 @@ class LiveStandingsTests(unittest.TestCase):
                     self.assertTrue(page.findChild(DataTable)._rows)
                 if section=='awards':
                     text=' '.join(l.text() for l in page.findChildren(QLabel))
-                    self.assertIn('待赛季结算',text);self.assertNotIn('空缺（',text)
+                    self.assertIn('待赛事结算',text);self.assertNotIn('空缺（',text)
 
     @unittest.skipUnless(sys.platform=='darwin','macOS promotion detail')
     def test_promotion_playoffs_are_reachable_with_real_ties(self):
@@ -161,7 +161,7 @@ class LiveStandingsTests(unittest.TestCase):
         self.assertTrue(self.window.world()['season']['season_complete'])
         self.assertIn('已完成第 52 周', self.window.status_line.text())
         page = self.window.stack.currentWidget()
-        self.assertEqual(page.weekly_button.text(), '查看第 52 周周报')
+        self.assertEqual(page.weekly_button.text(), '查看第 52 周赛况')
         QTest.mouseClick(page.weekly_button, Qt.LeftButton)
         self.assertEqual(self.window._current_route, ('weekly', {'week': 52}))
 
@@ -185,6 +185,7 @@ class LiveStandingsTests(unittest.TestCase):
     def test_y_historical_player_table_is_bounded(self):
         self.window.navigate('history_competition',competition_id='premier',season=2);QTest.qWait(30)
         page=self.window.stack.currentWidget()
+        page.set_detail_section('premier:2','players');QTest.qWait(30)
         table=next(t for t in page.findChildren(DataTable) if any(c['key']=='player' for c in t._columns))
         self.assertLessEqual(table.rowCount(),10)
 

@@ -51,6 +51,13 @@ def snapshot(world, competition, *, awards=None, source="decision"):
 
 def capture_finished(world):
     if not world.get("edition_archive_version"):
+        # New-rule saves still need an event-end roster even when the optional
+        # full historical-edition archive is disabled.
+        if world.get("awards_rule_version") == "0.3.1":
+            snapshots = world["season"].setdefault("award_team_snapshots", {})
+            for competition in rules.ALL_COMPETITION_IDS:
+                if competition not in snapshots and finished(world, competition):
+                    snapshots[competition] = {pid: player.get("team_id") for pid, player in world["players"].items()}
         return []
     from football_simulator.game import world as game_world
     archives = world.setdefault("edition_archives", {})

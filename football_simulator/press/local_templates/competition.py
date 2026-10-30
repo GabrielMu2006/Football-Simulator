@@ -24,7 +24,7 @@ def honours(history):
 def render(packet,plan):
     from collections import defaultdict
     from football_simulator.press.local_templates.narrative import production,season_numbers,history_lines,followup_line,related_followup,arrival_line
-    from football_simulator.press.expectations import surprise_paragraphs
+    from football_simulator.press.expectations import comparison_sentence, surprise_paragraphs
     d=plan['content'];refs=plan['fact_ids'];comp=d['competition'];champ=d['champion'];year=d['edition']['game_season']
     title=champ+'捧起'+comp+'冠军';deck=f"第{year}赛季的{comp}属于{champ}。"
     if comp=='Promotion Playoffs':title=champ+'赢下升级附加赛';deck=champ+'拿到了本季最后一个升级名额。'
@@ -76,13 +76,24 @@ def render(packet,plan):
             if all(g.get('week') is not None for g in notable):notable.sort(key=lambda g:g['week'])
             elif all(g['stage'] in conventional for g in notable):notable.sort(key=lambda g:conventional[g['stage']])
             lead.append('回看'+runner+'此前的征程：'+''.join(g['stage']+'，'+match_line(g,venue=False) for g in notable))
-    surprises=surprise_paragraphs(d.get('campaign_surprises',[]),campaign=True)
-    if surprises:lead.append(''.join(surprises))
+    for surprise in d.get('campaign_surprises',[]):
+        # Group opponents with the same recorded evidence; the champion is
+        # already named, so repeating that each opponent failed to win adds no fact.
+        text=''.join(surprise_paragraphs([{**surprise,'comparisons':[]}],campaign=True))
+        groups={}
+        for comparison in surprise.get('comparisons',[]):
+            if comparison.get('is_upset'):
+                axes=tuple(comparison.get('adverse_axes',[]))
+                groups.setdefault(axes,[]).append(comparison['opponent'])
+        for axes,opponents in groups.items():
+            text+=comparison_sentence({'winner':surprise['team'],'opponent':names(opponents),'adverse_axes':axes})
+        if text:lead.append(text)
     followup=related_followup(d,[a for g in finals for a in g.get('player_arrivals',{}).values()])
     if followup:lead.append(followup_line(followup))
     sections=[section('这座奖杯如何到来',lead,refs)]
     award_people=defaultdict(list)
     for label,winners in d.get('awards',{}).items():
+        if label=='赛事EVP':continue
         for p in winners:award_people[p['player']].append((label,p))
     awards=[]
     for player,items in award_people.items():
@@ -100,10 +111,36 @@ def render(packet,plan):
         if len(teams)>1:
             text+='这些表现来自他在'+names(t['team'] for t in teams)+'的效力经历。'
         awards.append(text)
+    status=d.get('award_status') or {}
+    if status.get('mvp_status')=='vacant':awards.append('本届赛事MVP空缺。')
+    evps=d.get('awards',{}).get('赛事EVP',[])
+    if evps:
+        text=names(p['player'] for p in evps)+'入选本届赛事EVP。'
+        # Highlight distinct positions when recorded, without inventing match details.
+        highlights=sorted(evps,key=lambda p:(p.get('position') not in ('DF','GK'),p['player']))
+        used=set()
+        for p in highlights:
+            if p.get('position') in used:continue
+            if p.get('season_performance'):
+                text+=season_numbers(p['season_performance'],subject=p['player'],scope='在本届赛事')
+                used.add(p.get('position'))
+            if len(used)>=2:break
+        if status.get('evp_shortfall'):
+            text+=f"本届实际评出{status['evp_count']}名EVP。"
+        awards.append(text)
+    elif status.get('evp_shortfall'):
+        awards.append('本届没有评出EVP。')
     if awards:sections.append(section('奖杯之外的个人收获',awards,refs))
     route=[]
     games=d.get('champion_route',d.get('key_results',[]))
-    for game in games:route.append(game['stage']+'：'+match_line(game))
+    route_sentences=[]
+    for game in games:
+        location=('在'+game['stadium']+'，') if game.get('stadium') else ''
+        route_sentences.append(game['stage']+'，'+location+match_line(game,venue=False))
+    # Keep every recorded result and ground, while reading as a journey rather
+    # than one database-style line per match.
+    for index in range(0,len(route_sentences),2):
+        route.append(''.join(route_sentences[index:index+2]))
     for tie in d.get('bracket',[]):
         if champ in tie['teams'] and tie.get('aggregate'):route.append(tie_line(tie))
     if route:sections.append(section('夺冠路线' if d.get('champion_route') else '赛季关键场次',route,refs))

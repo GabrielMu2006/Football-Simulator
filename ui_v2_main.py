@@ -34,10 +34,10 @@ def main() -> int:
         from football_simulator import runtime
 
         runtime.set_data_root_override(Path(data_root))
-    elif sys.platform == 'darwin' and getattr(sys, 'frozen', False):
+    elif sys.platform == 'darwin':
         from football_simulator import runtime
         # Keep the V0.1.0 game and its live saves independent of the press edition.
-        runtime.set_data_root_override(runtime.user_data_root().with_name('Football Simulator V0.3.0'))
+        runtime.set_data_root_override(runtime.user_data_root().with_name('Football Simulator V0.3.1'))
     else:
         # 源码运行时把总配置作为只读来源；不复制、不改写用户文件。
         from football_simulator import runtime
@@ -73,7 +73,7 @@ def main() -> int:
     app.setApplicationName("Football Simulator")
     from football_simulator.version import APP_VERSION
     app.setApplicationVersion(APP_VERSION)
-    press_icon = runtime.resource_root() / 'assets' / 'press-v0.2.0' / 'app_icon_256.png'
+    press_icon = runtime.resource_root() / 'assets' / 'v0.3.1' / 'app_icon_256.png'
     app.setWindowIcon(QIcon(str(press_icon if press_icon.exists() and sys.platform == 'darwin' else runtime.resource_root() / "assets" / "app_icon_256.png")))
     apply_theme(app)
     from football_simulator.game import rules
@@ -180,7 +180,7 @@ def main() -> int:
                 "executable": sys.executable,
                 "frozen": bool(getattr(sys, "frozen", False)),
                 "press_available": window.press is not None,
-                "bundle_default_data_root": str(_runtime.user_data_root().with_name('Football Simulator V0.3.0')) if sys.platform == 'darwin' and getattr(sys,'frozen',False) else None,
+                "bundle_default_data_root": str(_runtime.user_data_root().with_name('Football Simulator V0.3.1')) if sys.platform == 'darwin' and getattr(sys,'frozen',False) else None,
                 "main_window_module": main_module,
                 "main_window_file": getattr(sys.modules.get(main_module), "__file__", ""),
                 "page": type(page).__name__,

@@ -52,26 +52,40 @@ def player_paragraph(card):
     elif not text:text=name+f'以第{rank}名结束本届年度Top20评选。'
     teams=card.get('actual_teams',[])
     scope='代表'+teams[0]['team'] if len(teams)==1 else '合计'
-    text+=season_numbers(card,scope='本季'+scope)
+    text+=season_numbers(card,subject='这一季，他',scope=scope)
     if len(teams)>1:
-        text+='这段赛季经历横跨'+names(t['team'] for t in teams)+'。'
-        text+=''.join(season_numbers({**t,'position':card['position']},subject='他',scope='在'+t['team']) for t in teams)
+        spells=[season_numbers({**t,'position':card['position']},subject='',scope='代表'+t['team']).rstrip('。') for t in teams]
+        text+='其中，他'+'；'.join(spells)+'。'
     arrivals=card.get('recent_arrivals',[])
     if arrivals:text+=arrival_line(name,arrivals[-1])
     awards=card.get('personal_awards',[])
     if awards:
-        text+='他的个人奖杯中还有'+names(r['competition']+r['award'] for r in awards)+'。'
-        if len(awards)>=2:text+=f'这一季共有{len(awards)}项正式个人奖记在他名下。'
+        mvps=[r for r in awards if r['award']=='赛事MVP']
+        evps=[r for r in awards if r['award']=='赛事EVP']
+        other=[r for r in awards if r['award'] not in ('赛事MVP','赛事EVP')]
+        honours=[]
+        if mvps:honours.append(f"{len(mvps)}次获评赛事MVP（"+names(r['competition'] for r in mvps)+'）')
+        if evps:honours.append(f"{len(evps)}次入选赛事EVP（"+names(r['competition'] for r in evps)+'）')
+        if other:honours.append('获得'+names(r['competition']+r['award'] for r in other))
+        if honours:
+            text+='个人奖项方面，他'+honours[0]
+            for extra in honours[1:]:text+='，还'+extra
+            text+='。'
     title_teams={}
     for row in card.get('team_titles',[]):title_teams.setdefault(row['team_at_championship'],[]).append(row['competition'])
-    for team,comps in title_teams.items():text+='在'+team+'，他也随队捧起'+names(comps)+'冠军奖杯。'
-    for team in card.get('team_honor_summaries',[]):
-        count=team.get('championship_count');points=team.get('honor_points')
-        if count is None and points is None:continue
-        prefix=team['team']+'这一季'
-        if count is not None:prefix+=(f'共拿到{count}座冠军' if count else '没有夺冠')
-        if points is not None:prefix+=('，' if count is not None else '')+f'球队荣誉积分为{points}分'
-        text+=prefix+'。'
+    summaries={row['team']:row for row in card.get('team_honor_summaries',[])}
+    for team in dict.fromkeys([*title_teams,*summaries]):
+        summary=summaries.get(team,{})
+        count=summary.get('championship_count');points=summary.get('honor_points')
+        titles=title_teams.get(team,[])
+        if count is None and points is None and not titles:continue
+        if titles:
+            sentence='他随'+team+'捧起'+names(titles)+'冠军奖杯'
+            if count is not None:sentence+=f'，球队这一季共获得{count}座冠军'
+        else:
+            sentence=team+'这一季'+(f'获得{count}座冠军' if count else '没有夺冠') if count is not None else team+'这一季'
+        if points is not None:sentence+=('，' if count is not None or titles else '')+f'球队荣誉积分为{points}分'
+        text+=sentence+'。'
     if not card.get('team_honor_summaries'):
         for team in card.get('teams_season_results',[]):
             known=[r for r in team['season_results'] if r['finish'] in ('冠军','亚军')

@@ -162,6 +162,12 @@ class CompetitionDetailPage(BasePage):
         back.setObjectName("Ghost")
         back.clicked.connect(lambda: self.app.go_back() if self.route_name == "history_competition" else self.open_route("competitions"))
         self.scroll.layout.addWidget(back, 0, Qt.AlignLeft)
+        from football_simulator.game.awards_v031 import EVP_COUNTS
+        if competition_id in EVP_COUNTS:
+            evp_button = QPushButton("查看历届 EVP")
+            evp_button.setObjectName("Secondary")
+            evp_button.clicked.connect(lambda: self.open_route("competition_evp", competition_id=competition_id, season=selected))
+            self.scroll.layout.addWidget(evp_button, 0, Qt.AlignLeft)
         if data["kind"] == "league":
             self._render_league(world, data)
         elif data["kind"] == "cup":
@@ -252,8 +258,12 @@ class CompetitionDetailPage(BasePage):
             subtitle += f" · 冠军 {data['champion']}"
         self.scroll.layout.addWidget(self._trophy_header(data, subtitle))
         tabs_row = QHBoxLayout()
+        tab_items = [("积分榜", "overview"), ("赛程", "matches"), ("球员榜", "players"), ("个人奖项", "awards"), ("历届冠军", "champions")]
+        if data["id"] != rules.SECOND:
+            tab_items.append(("历届 MVP", "mvp_history"))
+        tab_items.append(("历史积分榜", "history"))
         tabs = macos.section_tabs(
-            [("积分榜", "overview"), ("赛程", "matches"), ("球员榜", "players"), ("个人奖项", "awards"), ("历届冠军", "champions"), ("历史积分榜", "history")],
+            tab_items,
             state["section"],
             lambda section: self.set_detail_section(key, section),
         )
@@ -299,9 +309,11 @@ class CompetitionDetailPage(BasePage):
                 boards.DualLeaderboard(world, queries.competition_leaders(world, data["id"]), competition=data["id"])
             )
         elif section == "awards":
-            self.scroll.layout.addWidget(self._awards_card(data["awards"], pending=not world["season"].get("finalized")))
+            self.scroll.layout.addWidget(self._awards_card(data["awards"], pending=not data["awards"].get("awarded"), eligible=data["id"] != rules.SECOND))
         elif section == "champions":
             self.scroll.layout.addWidget(self._league_champions_card(data, state))
+        elif section == "mvp_history":
+            self.scroll.layout.addWidget(self._mvp_history_card(data["id"]))
         else:
             self.scroll.layout.addWidget(self._league_history_card(world, data, state))
         self.scroll.layout.addStretch(1)
@@ -469,7 +481,7 @@ class CompetitionDetailPage(BasePage):
             state = self.detail_state(key)
             tabs_row = QHBoxLayout()
             tabs = macos.section_tabs(
-                [("阶段与签表", "overview"), ("赛程与结果", "matches"), ("球员榜", "players"), ("个人奖项", "awards"), ("历届冠军", "history")],
+                [("阶段与签表", "overview"), ("赛程与结果", "matches"), ("球员榜", "players"), ("个人奖项", "awards"), ("历届冠军", "history"), ("历届 MVP", "mvp_history")],
                 state["section"], lambda section: self.set_detail_section(key, section),
             )
             tabs_row.addWidget(tabs, 1)
@@ -869,12 +881,15 @@ class CompetitionDetailPage(BasePage):
 
     def _cup_section(self, world: dict, data: dict, state: dict) -> None:
         section = state["section"]
+        if section == "mvp_history":
+            self.scroll.layout.addWidget(self._mvp_history_card(data["id"]))
+            return
         frame = card()
         layout = QVBoxLayout(frame)
         layout.setContentsMargins(t.S20, t.S16, t.S20, t.S16)
         layout.setSpacing(t.S12)
         if section == "awards":
-            self.scroll.layout.addWidget(self._awards_card(data["awards"], pending=not world["season"].get("finalized")))
+            self.scroll.layout.addWidget(self._awards_card(data["awards"], pending=not data["awards"].get("awarded")))
             return
         if section == "matches":
             selector = QComboBox()
@@ -1112,29 +1127,37 @@ class CompetitionDetailPage(BasePage):
         row.addStretch(1)
         return row
 
-    def _awards_card(self, awards: dict, *, pending: bool = False) -> QWidget:
+    def _awards_card(self, awards: dict, *, pending: bool = False, eligible: bool = True) -> QWidget:
         frame = card(alt=True)
         layout = QVBoxLayout(frame)
         layout.setContentsMargins(t.S20, t.S16, t.S20, t.S16)
         layout.setSpacing(t.S8)
         if pending:
-            layout.addWidget(SectionTitle("个人奖项尚未颁发", "赛季结算时按正式规则确认；进行中的数据可在球员榜查看。"))
-            for title in ("射手王", "助攻王", "赛事 MVP"):
-                layout.addWidget(label(title + " · 待赛季结算", "Meta"))
+            layout.addWidget(SectionTitle("个人奖项尚未颁发", "赛事结束并完成评选后公布；进行中的数据可在球员榜查看。"))
+            for title in (("射手王", "助攻王", "赛事 MVP", "赛事 EVP") if eligible else ("射手王", "助攻王")):
+                layout.addWidget(label(title + " · 待赛事结算", "Meta"))
             return frame
-        layout.addWidget(SectionTitle("个人奖项", f"MVP 最低出场 {awards.get('mvp_minimum') or '—'} 场"))
-        for label_text, key in (("射手王", "top_scorer"), ("助攻王", "assist_leader"), ("赛事 MVP", "mvp")):
+        layout.addWidget(SectionTitle("个人奖项"))
+        categories = [("射手王", "top_scorer"), ("助攻王", "assist_leader")]
+        if eligible and (awards.get("rule_version") != "0.3.1" or awards.get("evp_slots")):
+            categories += [("赛事 MVP", "mvp"), ("赛事 EVP", "evp")]
+            if awards.get("rule_version") == "0.3.1":
+                layout.addWidget(label("显示赛事评分；评选也考虑出场次数，排列顺序可能不同。", "Meta", wrap=True))
+        for label_text, key in categories:
+            if key in ("mvp", "evp"):
+                layout.addWidget(hline())
             people = awards.get(key) or []
-            row = QHBoxLayout()
-            row.setSpacing(t.S10)
-            row.addWidget(label(label_text, "Meta"), 0)
+            group = QGridLayout()
+            group.setHorizontalSpacing(t.S10)
+            group.setVerticalSpacing(2)
+            group.setColumnMinimumWidth(0, 96)
+            group.setColumnStretch(1, 1)
+            group.addWidget(label(label_text, "Meta"), 0, 0, Qt.AlignLeft | Qt.AlignVCenter)
             if not people:
-                row.addWidget(label("空缺", "Meta"), 1)
-                layout.addLayout(row)
+                group.addWidget(label("空缺", "Meta"), 0, 1)
+                layout.addLayout(group)
                 continue
-            names = QVBoxLayout()
-            names.setSpacing(2)
-            for item in people:
+            for index, item in enumerate(people):
                 line = QHBoxLayout()
                 line.setSpacing(t.S8)
                 player_id = item.get("player_id")
@@ -1151,10 +1174,85 @@ class CompetitionDetailPage(BasePage):
                     team_link.clicked.connect(lambda _=False, tid=item["team_id"]: self.open_route("team", team_id=tid))
                     line.addWidget(team_link, 0)
                 line.addStretch(1)
-                names.addLayout(line)
-            row.addLayout(names, 1)
-            layout.addLayout(row)
+                person = QVBoxLayout()
+                person.setSpacing(t.S4)
+                person.addLayout(line)
+                history = records.award_team_history(self.app.world(), item.get("teams") or {})
+                if history:
+                    person.addWidget(label(history, "FactText", wrap=True))
+                group.addLayout(person, index, 1)
+            layout.addLayout(group)
         return frame
+
+    def _mvp_history_card(self, competition_id: str) -> QWidget:
+        frame = card()
+        layout = QVBoxLayout(frame)
+        layout.addWidget(SectionTitle("历届 MVP", "按赛事届次列出"))
+        world = self.app.world()
+        editions = [e for e in world.get("edition_archives", {}).values() if e.get("competition_id") == competition_id]
+        if not editions:
+            layout.addWidget(label("暂无 MVP 记录。", "Meta"))
+        for edition in sorted(editions, key=lambda e: -e["season_number"]):
+            winners = edition.get("awards", {}).get("mvp") or []
+            if not winners:
+                layout.addWidget(label(f"第 {edition['season_number']} 赛季 · 空缺", "Meta"))
+            for row in winners:
+                team = self.app.team_name(row["team_id"]) if row.get("team_id") else "—"
+                link = EntityLink(f"第 {edition['season_number']} 赛季 · {row['label']} · {team}", "player", row["player_id"])
+                link.clicked.connect(lambda _=False, pid=row["player_id"]: self.open_route("player_honors", player_id=pid))
+                layout.addWidget(link)
+                history = records.award_team_history(world, row.get("teams") or {})
+                if history:
+                    layout.addWidget(label(history, "FactText", wrap=True))
+        return frame
+
+
+class CompetitionEVPPage(BasePage):
+    route_name = "competition_evp"
+
+    def __init__(self, app) -> None:
+        super().__init__(app)
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        self.scroll = PageScroll()
+        outer.addWidget(self.scroll)
+
+    def refresh(self, snapshot: dict, params: dict) -> None:
+        self.snapshot = snapshot
+        self.scroll.reset()
+        world = self.app.world()
+        competition = params.get("competition_id") or rules.PREMIER
+        selected = int(params.get("season") or world["season_number"])
+        back = QPushButton("← 返回赛事")
+        back.clicked.connect(lambda: self.open_route("competition", competition_id=competition, season=selected))
+        self.scroll.layout.addWidget(back, 0, Qt.AlignLeft)
+        self.scroll.layout.addWidget(PageHeader("赛事个人荣誉", rules.display_name(competition) + " 历届 EVP", "按赛季查看赛事优秀球员"))
+        selector = QComboBox()
+        selector.setObjectName("EVPSeason")
+        for year in range(int(world["season_number"]), 0, -1):
+            selector.addItem(f"第 {year} 赛季", year)
+        selector.setCurrentIndex(max(0, selector.findData(selected)))
+        selector.currentIndexChanged.connect(lambda _: self.open_route("competition_evp", competition_id=competition, season=selector.currentData()))
+        self.scroll.layout.addWidget(selector, 0, Qt.AlignLeft)
+        edition = world.get("edition_archives", {}).get(f"{selected}:{competition}")
+        if not edition:
+            self.scroll.layout.addWidget(EmptyState("本届尚无 EVP 记录", "赛事结束并完成评选后将在此显示。"))
+            return
+        awards = edition.get("awards") or {}
+        winners = awards.get("evp") or []
+        self.scroll.layout.addWidget(SectionTitle(f"第 {selected} 赛季", f"{len(winners)} / {awards.get('evp_slots', 0)} 名"))
+        if not winners:
+            self.scroll.layout.addWidget(label("没有符合条件的球员。", "Meta"))
+        for row in winners:
+            player_id = row["player_id"]
+            team_id = row.get("team_id")
+            link = EntityLink(f"{row['label']} · {row.get('position', '—')} · {self.app.team_name(team_id) if team_id else '—'}", "player", player_id)
+            link.clicked.connect(lambda _=False, pid=player_id: self.open_route("player_honors", player_id=pid))
+            self.scroll.layout.addWidget(link)
+            history = records.award_team_history(world, row.get("teams") or {})
+            if history:
+                self.scroll.layout.addWidget(label(history, "FactText", wrap=True))
+        self.scroll.layout.addStretch(1)
 
 
 class SeasonPage(BasePage):

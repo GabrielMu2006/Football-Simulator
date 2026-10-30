@@ -40,6 +40,16 @@ class Context:
     def competition(self, cid):
         return self.packet['entities']['competitions'].get(cid, {}).get('name_en') or rules.display_name(cid)
 
+    def edition_awards(self, cid):
+        fact = next((f for f in self.facts.values() if f['kind'] == 'edition_awards' and f['competition_id'] == cid), None)
+        if fact is None:
+            return None, None
+        data = fact['data']
+        person = lambda row: {'player': self.player(row['player_id']), 'team': self.team(row['team_id'])}
+        return {'mvp': person(data['mvp']) if data['mvp'] else None,
+                'mvp_status': '已评出' if data['mvp'] else '空缺',
+                'evp': [person(row) for row in data['evp']], 'evp_slots': data['evp_slots']}, fact['fact_id']
+
     def state(self, cid):
         return self.book.get('cup-state:' + cid, {}).get('value', {}).get('state', {})
 

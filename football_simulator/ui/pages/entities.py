@@ -1070,6 +1070,9 @@ class HistoryPage(BasePage):
         sections.addStretch(1)
         self.scroll.layout.addLayout(sections)
         if data["empty"]:
+            for award_type in ("mvp", "evp"):
+                if records.award_leaderboard(world, award_type):
+                    self.scroll.layout.addWidget(self._award_counts_card(world, award_type))
             self.scroll.layout.addWidget(EmptyState("还没有已归档赛季", "完成第 1 赛季并结束夏窗后，这里会出现正式档案。"))
             return
         selector = QHBoxLayout()
@@ -1089,10 +1092,12 @@ class HistoryPage(BasePage):
         if macos.enabled():
             state = self.__dict__.setdefault("history_section", {"section": "overview"})
             self.scroll.layout.addWidget(macos.section_tabs(
-                [("概览", "overview"), ("积分榜", "tables"), ("奖项", "awards"), ("荣誉分", "honors"), ("总荣誉榜", "all_honors"), ("代表比赛", "matches")],
+                [("概览", "overview"), ("积分榜", "tables"), ("奖项", "awards"), ("荣誉分", "honors"), ("总荣誉榜", "all_honors"), ("MVP 榜", "mvp_counts"), ("EVP 榜", "evp_counts"), ("代表比赛", "matches")],
                 state["section"], self._set_history_section,
             ))
             section = state["section"]
+            if section in ("mvp_counts", "evp_counts"):
+                self.scroll.layout.addWidget(self._award_counts_card(world, section.split("_")[0]))
             if section == "all_honors":
                 from football_simulator.ui.pages.honors import TeamHonorLeaderboard
                 self.scroll.layout.addWidget(TeamHonorLeaderboard(world, self.detail_state("team_honor_totals"), lambda tid: self.open_route("team_honors", team_id=tid)))
@@ -1124,6 +1129,8 @@ class HistoryPage(BasePage):
         self.scroll.layout.addWidget(self._tables_card(world, archive))
         self.scroll.layout.addWidget(self._honors_card(world, archive))
         self.scroll.layout.addWidget(self._awards_card(archive))
+        for award_type in ("mvp", "evp"):
+            self.scroll.layout.addWidget(self._award_counts_card(world, award_type))
         if archive.get("representative_matches"):
             frame = card()
             layout = QVBoxLayout(frame)
@@ -1136,6 +1143,20 @@ class HistoryPage(BasePage):
                 layout.addWidget(link)
             self.scroll.layout.addWidget(frame)
         self.scroll.layout.addStretch(1)
+
+    def _award_counts_card(self, world: dict, award_type: str) -> QWidget:
+        rows = records.award_leaderboard(world, award_type)
+        frame = card()
+        listing = QVBoxLayout(frame)
+        listing.addWidget(SectionTitle(f"历史 {award_type.upper()} 数量榜", "按正式赛事获奖次数统计"))
+        if not rows:
+            listing.addWidget(label("暂无获奖记录。", "Meta"))
+        for row in rows:
+            rank = 1 + sum(other["count"] > row["count"] for other in rows)
+            link = EntityLink(f"{rank}. {row['player']} · {row['count']} 次", "player", row["player_id"])
+            link.clicked.connect(lambda _=False, pid=row["player_id"]: self.open_route("player_honors", player_id=pid))
+            listing.addWidget(link)
+        return frame
 
     def _set_history_section(self, key: str) -> None:
         self.history_section = {"section": key}
@@ -1236,7 +1257,10 @@ class HistoryPage(BasePage):
         layout.addWidget(SectionTitle("赛季奖项", "" if macos.enabled() else "年度 Top20 与各赛事个人奖"))
         for competition, values in (archive.get("awards") or {}).get("competitions", {}).items():
             label_text = rules.competition_label(competition) if competition in rules.CUP_IDS else rules.display_name(competition)
-            layout.addWidget(label(f"{label_text} · 射手 {values.get('top_scorer') or '空缺'} · 助攻 {values.get('assist_leader') or '空缺'} · MVP {values.get('mvp') or '空缺'}", "Meta", wrap=True))
+            details = f"{label_text} · 射手 {values.get('top_scorer') or '空缺'} · 助攻 {values.get('assist_leader') or '空缺'}"
+            if competition not in (rules.SECOND, rules.PLAYOFF):
+                details += f" · MVP {values.get('mvp') or '空缺'} · EVP {values.get('evp') or '空缺'}"
+            layout.addWidget(label(details, "Meta", wrap=True))
         top20 = archive.get("top20") or []
         if top20 and not macos.enabled():
             # UIP-030：只展示已保存的名次与当届球队，不展示任何计算。

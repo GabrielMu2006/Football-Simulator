@@ -42,7 +42,10 @@ class LibraryTests(PressSaveCase):
         transport = Mock(side_effect=simulated_transport)
         job = lib.reserve(1, 1)
         self.assertTrue(lib.generate(job, KEY, transport=transport))
-        self.assertEqual(lib.overview()['unread'], 1)
+        self.assertEqual(lib.overview()['unread'], 0)
+        self.assertFalse(lib.overview()['weeks'][0]['unread'])
+        with lib.connection() as conn:
+            self.assertIsNotNone(conn.execute('SELECT read_at FROM press_articles').fetchone()[0])
         article = lib.read(1, 1)
         self.assertEqual(lib.overview()['unread'], 0)
         self.assertIsNone(lib.reserve(1, 1))
@@ -87,7 +90,7 @@ class LibraryTests(PressSaveCase):
         other = activate('Other')
         self.assertTrue(lib.generate(job, KEY, transport=simulated_transport))
         self.assertEqual(other.overview()['weeks'], [])
-        self.assertEqual(lib.overview()['unread'], 1)
+        self.assertEqual(lib.overview()['unread'], 0)
 
     def test_restart_recovers_returned_section_without_calling_provider_again(self):
         lib = self.ready(); job = lib.reserve(1, 1)

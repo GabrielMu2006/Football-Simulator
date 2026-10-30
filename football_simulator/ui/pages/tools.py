@@ -552,14 +552,16 @@ class SavesPage(BasePage):
         layout.setContentsMargins(t.S20, t.S14, t.S20, t.S14)
         current = self.app.current_save_name()
         layout.addWidget(label("当前存档", "Meta"), 0)
-        layout.addWidget(label(current or "未选择", "CardTitle"), 1)
-        if current:
-            suffix = "已初始化" if self.app.has_save else "仅建档，尚未初始化"
-            layout.addWidget(Badge(suffix, "success" if self.app.has_save else "warning"))
-            if not self.app.has_save:
-                start = QPushButton("初始化并开始观察")
-                start.clicked.connect(lambda: self._initialize(current))
-                layout.addWidget(start, 0)
+        self._current_save_label = label(current or "未选择", "CardTitle")
+        layout.addWidget(self._current_save_label, 1)
+        suffix = "已初始化" if self.app.has_save else "仅建档，尚未初始化"
+        self._current_save_badge = Badge(suffix, "success" if self.app.has_save else "warning")
+        self._current_save_badge.setVisible(bool(current))
+        layout.addWidget(self._current_save_badge)
+        self._current_save_start = QPushButton("初始化并开始观察")
+        self._current_save_start.clicked.connect(lambda: self._initialize(self.app.current_save_name()))
+        self._current_save_start.setVisible(bool(current and not self.app.has_save))
+        layout.addWidget(self._current_save_start, 0)
         return frame
 
     def _new_save_card(self) -> QWidget:
@@ -606,20 +608,7 @@ class SavesPage(BasePage):
                 {"key": "action_text", "label": "操作", "width": 90},
             ]
         table.set_columns(columns)
-        rows = []
-        for item in self.app.service.list_saves():
-            if item.get("has_database") and not item.get("compatible", True):
-                status, action, progress = "旧格式", "仅提示", "不读取、不迁移"
-                season_text, week_text = "—", "—"
-            elif item["initialized"]:
-                status, action, progress = "已初始化", "继续", f"第 {item['season']} 季 · 第 {item['week']} 周"
-                season_text = f"第 {item['season']} 季"
-                week_text = f"第 {item['week']} 周"
-            else:
-                status, action, progress = "未初始化", "初始化", "—"
-                season_text, week_text = "—", "—"
-            rows.append({**item, "status_text": status, "progress": progress, "action_text": action,
-                         "season_text": season_text, "week_text": week_text})
+        rows = self._save_rows()
         table.set_rows(rows)
         table.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         table.setFixedHeight(36 + 38 * len(rows) + 4)
@@ -645,13 +634,47 @@ class SavesPage(BasePage):
         buttons.addWidget(delete_button)
         buttons.addStretch(1)
         layout.addLayout(buttons)
+        self._select_current_save(rows)
+        return frame
+
+    def _save_rows(self) -> list:
+        rows = []
+        for item in self.app.service.list_saves():
+            if item.get("has_database") and not item.get("compatible", True):
+                status, action, progress = "旧格式", "仅提示", "不读取、不迁移"
+                season_text, week_text = "—", "—"
+            elif item["initialized"]:
+                status, action, progress = "已初始化", "继续", f"第 {item['season']} 季 · 第 {item['week']} 周"
+                season_text = f"第 {item['season']} 季"
+                week_text = f"第 {item['week']} 周"
+            else:
+                status, action, progress = "未初始化", "初始化", "—"
+                season_text, week_text = "—", "—"
+            rows.append({**item, "status_text": status, "progress": progress, "action_text": action,
+                         "season_text": season_text, "week_text": week_text})
+        return rows
+
+    def _select_current_save(self, rows: list) -> None:
         current = self.app.current_save_name()
         for index, row in enumerate(rows):
             if row.get("save_name") == current:
-                table.selectRow(index)
+                self._save_table.selectRow(index)
                 break
         self._update_save_actions()
-        return frame
+
+    def show_created_save(self) -> None:
+        """Update existing widgets without destroying the button handling its click."""
+        current = self.app.current_save_name()
+        self._current_save_label.setText(current or "未选择")
+        self._current_save_badge.setText("仅建档，尚未初始化")
+        self._current_save_badge.set_variant("warning")
+        self._current_save_badge.setVisible(bool(current))
+        self._current_save_start.setVisible(bool(current))
+        self.name_input.clear()
+        rows = self._save_rows()
+        self._save_table.set_rows(rows)
+        self._save_table.setFixedHeight(36 + 38 * len(rows) + 4)
+        self._select_current_save(rows)
 
     def _update_save_actions(self) -> None:
         table = getattr(self, "_save_table", None)

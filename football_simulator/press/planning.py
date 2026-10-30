@@ -17,7 +17,7 @@ from football_simulator.press.repository import digest
 from football_simulator.press.validation import validate_article_basics, validate_packet
 
 VERSION = 'weekly-stories/1'
-PROMPT = 'weekly-issue-draft-20'
+PROMPT = 'weekly-issue-draft-21'
 
 
 def team_name_aliases(packet):
@@ -138,7 +138,7 @@ def select_candidates(candidates, *, local_extra_story=False):
     return sorted(selected,key=lambda c:(-c['priority'],c['key']))
 
 
-def build_plan(packet, sources, *, local_extra_story=False):
+def build_plan(packet, sources, *, local_extra_story=False, include_edition_awards=True):
     validate_packet(packet, sources)
     ctx = Context(packet, sources)
     candidates = []
@@ -172,6 +172,10 @@ def build_plan(packet, sources, *, local_extra_story=False):
             for game in games:
                 game.pop('league_background', None); game.pop('league_week_end', None)
             content = {'league': ctx.league_context(cid), 'decisive_matches': games}
+            official, award_ref = ctx.edition_awards(cid) if include_edition_awards else (None, None)
+            if official is not None:
+                content['edition_awards'] = official
+                refs.append(award_ref)
             honours = ctx.honours(rows[0]['data']['team_id'], cid)
             if honours: content['champion_honours'] = honours
             add(210, 'league_closure', '联赛收官：冠军与最终资格已经确定', content, refs, key=cid, mandatory=True)
@@ -200,6 +204,10 @@ def build_plan(packet, sources, *, local_extra_story=False):
             priority, angle, mandatory = 230, '冠军产生：本届决胜、人物与历史意义', True
             h = ctx.honours(champions[0]['data']['team_id'], cid)
             if h: content['champion_honours'] = h
+            official, award_ref = ctx.edition_awards(cid) if include_edition_awards else (None, None)
+            if official is not None:
+                content['edition_awards'] = official
+                facts.append(ctx.facts[award_ref])
         elif defender and any(f['data']['team_id'] == defender['data']['team_id'] and f['data']['status'] == 'eliminated' for f in statuses):
             priority, angle, mandatory = 205, '卫冕冠军本届出局', True
         elif any(f['data']['status'] == 'qualified' for f in statuses):

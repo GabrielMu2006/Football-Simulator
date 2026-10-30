@@ -171,7 +171,7 @@ class UiBehaviorTests(unittest.TestCase):
         self.window.mode_box.setCurrentIndex(self.window.mode_box.findData("key_pause"))
         self.window.refresh_all()
         self.app.processEvents()
-        self.assertIn("查看第 1 周周报", page.weekly_button.text())
+        self.assertIn("查看第 1 周赛况", page.weekly_button.text())
         header_text = " ".join(label.text() for label in page.findChildren(__import__("PySide6").QtWidgets.QLabel) if label.text())
         self.assertIn("已完成第 1 周", header_text)
 

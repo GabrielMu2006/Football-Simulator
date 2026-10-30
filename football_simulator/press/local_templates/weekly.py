@@ -168,6 +168,19 @@ def heading_for(story):
     return winner+'击败'+loser
 
 
+def award_paragraph(official):
+    mvp=official.get('mvp')
+    text=(mvp['player']+'（'+mvp['team']+'）获评本届赛事MVP。' if mvp else '本届赛事MVP空缺。')
+    selected=official.get('evp',[])
+    if selected:
+        people=names(row['player'] for row in selected[:2])
+        if len(selected)>2:text+=people+f"等{len(selected)}人入选EVP。"
+        elif len(selected)==2:text+=people+'两人入选EVP。'
+        else:text+=people+'入选EVP。'
+    elif official.get('evp_slots'):text+='本届没有评出EVP。'
+    return text
+
+
 def render(packet,plan):
     sections=[];mapping=[];stories=plan['editorial']['stories'];background_seen=set()
     for story in stories:
@@ -183,6 +196,9 @@ def render(packet,plan):
                 race=d['league_race'];paragraphs+=([race['race_summary']] if race.get('race_summary') else league_paragraphs(race))
             if d.get('promoted_via_playoff'):paragraphs.append(d['promoted_via_playoff']+'通过升级附加赛取得升级资格。')
         if not paragraphs:continue
+        official=d.get('edition_awards')
+        if official is not None:
+            paragraphs.append(award_paragraph(official))
         honours=d.get('champion_honours')
         if honours:
             from football_simulator.press.local_templates.narrative import history_lines

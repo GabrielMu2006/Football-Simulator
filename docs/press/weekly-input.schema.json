@@ -299,7 +299,8 @@
               "record",
               "tie_result",
               "title_clinched",
-              "swiss_record"
+              "swiss_record",
+              "edition_awards"
             ]
           },
           "time": {
@@ -530,6 +531,30 @@
               },
               "data": {
                 "$ref": "#/$defs/data_swiss_record"
+              }
+            }
+          },
+          {
+            "properties": {
+              "kind": {"const": "edition_awards"},
+              "data": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "mvp": {"anyOf": [
+                    {"type": "null"},
+                    {"type": "object", "additionalProperties": false,
+                     "properties": {"player_id": {"type": "string"}, "team_id": {"type": "string"}},
+                     "required": ["player_id", "team_id"]}
+                  ]},
+                  "evp": {"type": "array", "items": {
+                    "type": "object", "additionalProperties": false,
+                    "properties": {"player_id": {"type": "string"}, "team_id": {"type": "string"}},
+                    "required": ["player_id", "team_id"]
+                  }},
+                  "evp_slots": {"type": "integer", "minimum": 1}
+                },
+                "required": ["mvp", "evp", "evp_slots"]
               }
             }
           }

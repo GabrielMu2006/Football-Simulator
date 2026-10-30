@@ -234,7 +234,7 @@ class FeatureContext:
         edition=self.world.get('edition_archives',{}).get(f'{self.season}:{competition}',{})
         awards=edition.get('awards',{})
         result={}
-        for key,label in [('top_scorer','射手王'),('assist_leader','助攻王'),('mvp','赛事MVP')]:
+        for key,label in [('top_scorer','射手王'),('assist_leader','助攻王'),('mvp','赛事MVP'),('evp','赛事EVP')]:
             result[label]=[]
             for row in awards.get(key,[]):
                 card=self.player_card(row['player_id'],competition=competition)
@@ -495,7 +495,7 @@ def competition_packet(source,competition):
         if not champion:raise PressError('冻结赛事缺少优胜球队。')
         content['bracket']=bracket_view(ctx,state)
         content['champion_route']=[ctx.match(m) for m in ctx.games(competition) if champion in (m['home_team_id'],m['away_team_id'])]
-        if competition=='playoff':content['result_meaning']='升级附加赛胜者取得升级资格，不设置三项赛事个人奖'
+        if competition=='playoff':content['result_meaning']='升级附加赛胜者取得升级资格，不设置个人奖项'
     content['champion']=ctx.team(champion)
     from football_simulator.press.expectations import qualification_surprises
     eliminated=[ctx.team(t) for t in ctx.world['teams'] if t!=champion and any(t in (m['home_team_id'],m['away_team_id']) for m in ctx.games(competition))]
@@ -530,8 +530,24 @@ def competition_packet(source,competition):
         content['decisive_performances']=performances
     if competition!='playoff':
         content['awards']=ctx.awards(competition)
+        content['award_status']=edition_award_status(edition)
         content['history']=ctx.title_history(champion,competition)
     return make_packet(ctx,'competition',competition,content)
+
+
+def edition_award_status(edition):
+    """Distinguish absent, vacant and unawarded using this edition's frozen record."""
+    values = edition.get('awards') or {}
+    if values.get('rule_version') != '0.3.1' or 'evp_slots' not in values:
+        return {'status': 'unknown'}
+    slots = int(values['evp_slots'])
+    if not slots:
+        return {'status': 'not_offered', 'mvp_status': 'not_offered', 'evp_slots': 0, 'evp_count': 0}
+    if 'mvp' not in values or 'evp' not in values:
+        return {'status': 'incomplete'}
+    count = len(values['evp'])
+    return {'status': 'awarded', 'mvp_status': 'awarded' if values['mvp'] else 'vacant',
+            'evp_count': count, 'evp_slots': slots, 'evp_shortfall': count < slots}
 
 
 def draft_logs(ctx):
@@ -568,7 +584,7 @@ def personal_awards(ctx,pid):
     result=[]
     for e in ctx.world.get('edition_archives',{}).values():
         if e['season_number']!=ctx.season:continue
-        for key,label in [('top_scorer','射手王'),('assist_leader','助攻王'),('mvp','赛事MVP')]:
+        for key,label in [('top_scorer','射手王'),('assist_leader','助攻王'),('mvp','赛事MVP'),('evp','赛事EVP')]:
             if any(r['player_id']==pid for r in e.get('awards',{}).get(key,[])):
                 result.append({'competition':rules.display_name(e['competition_id']),'award':label})
     return result
@@ -624,7 +640,7 @@ def top20_packet(source):
         history=top20_selection_history(ctx,pid,rows)
         card.update(rank=row['rank'],history_status=history['status'],selection_history=history,previous_rank=prev.get(pid),origin=origin(ctx,pid),
                     personal_awards=personal_awards(ctx,pid),team_titles=player_titles(ctx,pid),
-                    teams_season_results=team_results_for_player(ctx,pid))
+                    teams_season_results=team_results_for_player(ctx,pid), award_policy=ctx.world.get('awards_rule_version'))
         tids=sorted({r['team_id'] for r in ctx.stats if r['player_id']==pid and r['season_number']==ctx.season and r['appeared']})
         card['team_honor_summaries']=[official_team_summary(ctx,t,ctx.season) for t in tids]
         cards.append(card)

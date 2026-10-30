@@ -7,7 +7,7 @@ from football_simulator.press import feature_briefing as brief
 from football_simulator.press.planning import name_aliases,prepare_story_article,assemble_story_articles
 from football_simulator.press.repository import digest
 
-PROMPT='feature-author/10'
+PROMPT='feature-author/11'
 KIND_NOTES={
  'phase':'阶段收官，分析已确定的结果、晋级、出局与下一阶段路线。',
  'competition':'整届赛事已结束，回顾夺冠路线、转折、正式个人奖项与有记录的历史意义。',

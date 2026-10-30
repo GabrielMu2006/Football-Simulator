@@ -234,28 +234,21 @@ class ThreeSeasonWorldTests(unittest.TestCase):
             self.assertIn("top_scorer", values)
             self.assertIn("assist_leader", values)
             self.assertIn("mvp", values)
-        expected_thresholds = {
-            "aureole": 6,
-            "confluence": 3,
-            "starpath": 5,
-            "ember": 3,
-            "ascendant": 5,
-            "zenith": 2,
-        }
-        for cup_id, threshold in expected_thresholds.items():
-            self.assertEqual(awards["competitions"][cup_id]["mvp_minimum"], threshold, cup_id)
+        from football_simulator.game.awards_v031 import EVP_COUNTS
+        for cup_id in rules.CUP_IDS:
+            values = awards["competitions"][cup_id]
+            self.assertLessEqual(len(values["mvp"]), 1)
+            self.assertLessEqual(len(values["evp"]), EVP_COUNTS[cup_id])
+            self.assertFalse({p["player_id"] for p in values["mvp"]} & {p["player_id"] for p in values["evp"]})
+        self.assertFalse(awards["competitions"][rules.SECOND]["mvp"])
+        self.assertFalse(awards["competitions"][rules.SECOND]["evp"])
         self.assertEqual(len(self.s3["archives"]), 3)
 
     def test_top20_components_recompute_score(self) -> None:
         for row in self.s3["season"]["awards"]["top20"]:
             components = row["components"]
-            raw = (
-                components["rating"]
-                + components["ability"]
-                + components["production"]
-                + components["team_honor"]
-            ) * components["league_weight"]
-            self.assertAlmostEqual(row["score"], round(raw, 2), places=2)
+            raw = 100 * (.35 * components["performance"] + .55 * components["awards"] + .10 * components["team_honor"])
+            self.assertAlmostEqual(row["score"], raw)
 
     def test_transfer_keeps_per_match_team_and_merges_player(self) -> None:
         found = None

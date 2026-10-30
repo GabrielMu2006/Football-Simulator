@@ -130,6 +130,34 @@ class LocalStorageTests(PressSaveCase):
                 self.assertTrue(weekly.generate_local(resumed))
                 self.assertEqual(weekly.read(1,1,mark_read=False),expected)
 
+    def test_v5_paused_job_survives_v6_activation(self):
+        with patch('football_simulator.press.local_library.TEMPLATE_VERSION','local-news/5'):
+            lib=self.enabled();self.advance();weekly=LocalLibrary(lib.path)
+            job=weekly.reserve(1,1)
+        with offline_guards():
+            self.assertFalse(weekly.generate_local(job,should_stop=lambda:True))
+            expected,_=render(job['packet'],freeze_plan(job['packet'],job['sources'],version='local-news/5'))
+            lib.install()
+            resumed=weekly.reserve(1,1)
+            self.assertEqual(resumed['template_version'],'local-news/5')
+            self.assertTrue(weekly.generate_local(resumed))
+            self.assertEqual(weekly.read(1,1,mark_read=False),expected)
+            self.advance()
+            self.assertEqual(weekly.source(season=1,week=2)['template_version'],TEMPLATE_VERSION)
+
+    def test_v6_paused_job_survives_v7_activation(self):
+        with patch('football_simulator.press.local_library.TEMPLATE_VERSION','local-news/6'):
+            lib=self.enabled();self.advance();weekly=LocalLibrary(lib.path)
+            job=weekly.reserve(1,1)
+        with offline_guards():
+            self.assertFalse(weekly.generate_local(job,should_stop=lambda:True))
+            expected,_=render(job['packet'],freeze_plan(job['packet'],job['sources'],version='local-news/6'))
+            lib.install()
+            resumed=weekly.reserve(1,1)
+            self.assertEqual(resumed['template_version'],'local-news/6')
+            self.assertTrue(weekly.generate_local(resumed))
+            self.assertEqual(weekly.read(1,1,mark_read=False),expected)
+
     def test_archive_preserves_source_and_rejects_stale_imported_identity(self):
         lib=self.enabled();self.advance();weekly=LocalLibrary(lib.path)
         with offline_guards():
@@ -272,12 +300,27 @@ class SixLocalReportTests(PressSaveCase):
             for row in lib.feature_rows():kinds.setdefault(row['kind'],row)
             self.assertEqual(set(kinds),{'phase','competition','transfer','draft','top20'})
             weekly=LocalLibrary(lib.path);self.assertTrue(weekly.generate_local(weekly.reserve(1,1)))
+            with lib.connection() as conn:
+                self.assertIsNotNone(conn.execute('SELECT read_at FROM press_articles WHERE season=1 AND week=1').fetchone()[0])
             for kind in ('phase','competition','transfer','draft','top20'):
                 with self.subTest(kind=kind):
                     row=kinds[kind];job=lib.reserve_feature(row['report_id'])
                     self.assertTrue(lib.generate_local(job))
                     self.assertIsNone(lib.reserve_feature(row['report_id']))
                     self.assertEqual(lib.source(report_id=row['report_id'])['engine_id'],'local-template')
+            self.assertEqual(lib.overview()['unread'],5)
+            self.assertEqual(lib.unread_count(),5)
+            self.assertTrue(all(row['unread'] for row in lib.feature_rows() if row['status']=='ready'))
+            # Old saves can have NULL here. Interpret their weekly issues as
+            # read without changing the original historical read timestamp.
+            with lib.connection(write=True) as conn:
+                conn.execute('UPDATE press_articles SET read_at=NULL WHERE season=1 AND week=1')
+            self.assertFalse(next(row for row in lib.overview()['weeks'] if row['week']==1)['unread'])
+            self.assertEqual(lib.unread_count(),5)
+            with lib.connection() as conn:
+                self.assertIsNone(conn.execute('SELECT read_at FROM press_articles WHERE season=1 AND week=1').fetchone()[0])
+            lib.read_feature(kinds['phase']['report_id'])
+            self.assertEqual(lib.unread_count(),4)
             with lib.connection() as conn:
                 empty=conn.execute("SELECT COUNT(*) FROM press_weeks WHERE json_extract(packet_json,'$.meta.input_validity')='no_matches'").fetchone()[0]
                 fabricated=conn.execute("SELECT COUNT(*) FROM press_weeks w JOIN press_articles a USING(season,week) WHERE json_extract(w.packet_json,'$.meta.input_validity')='no_matches'").fetchone()[0]

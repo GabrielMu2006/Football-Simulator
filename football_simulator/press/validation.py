@@ -114,7 +114,7 @@ def validate_packet(packet, sources=None):
     book = (sources or {}).get("records", {})
     compared_tables = {}
     compared_pre_tables = {}
-    modern = meta["exporter_version"] in ("weekly-export/2", "weekly-export/3", "weekly-export/4")
+    modern = meta["exporter_version"] in ("weekly-export/2", "weekly-export/3", "weekly-export/4", "weekly-export/5")
     known_matches = set(matches) | {r["value"]["match_id"] for r in book.values() if r["kind"] == "match"}
     for f in facts.values():
         require(moment(f["time"]) <= cutoff, "发现未来事实")
@@ -181,7 +181,7 @@ def validate_packet(packet, sources=None):
                     old_rows = standings_from_matches(table["team_ids"], before, previous_rank=table["previous_rank"])
                     require(table["rows"] == rows and table.get("before_rows") == old_rows, "周初或周末积分榜与原始比赛不符")
                     comparisons, lead = compare_tables(old_rows, rows)
-                    records = season_records(table["team_ids"], played, table["previous_rank"]) if meta["exporter_version"] in ("weekly-export/3", "weekly-export/4") else None
+                    records = season_records(table["team_ids"], played, table["previous_rank"]) if meta["exporter_version"] in ("weekly-export/3", "weekly-export/4", "weekly-export/5") else None
                     compared_tables[comp] = ({r["team_id"]: (i, r) for i, r in enumerate(rows, 1)}, comparisons, lead, records)
                 rows, comparisons, lead, records = compared_tables[comp]
                 rank, row = rows[d["team_id"]]
@@ -190,7 +190,7 @@ def validate_packet(packet, sources=None):
                 require(d.get("lead_context") == (lead if rank == 1 else None), "榜首变更或领先分差错误")
                 if records is not None:
                     require(d.get("season_record") == records[d["team_id"]], "赛季胜平负、首败或首次领跑证据错误")
-            if meta["exporter_version"] in ("weekly-export/3", "weekly-export/4"):
+            if meta["exporter_version"] in ("weekly-export/3", "weekly-export/4", "weekly-export/5"):
                 require("season_record" in d, "缺少完整赛季首败与首次领跑证据")
             if d.get("lead_context", {}).get("before_leader_team_id"):
                 require(d["lead_context"]["before_leader_team_id"] in f["team_ids"], "此前榜首缺少球队引用")
@@ -201,7 +201,7 @@ def validate_packet(packet, sources=None):
             if proof_key not in compared_pre_tables:
                 target = book["match:" + proof_key[len("prematch:"):]]["value"]
                 table = book["table:" + f["competition_id"]]["value"]
-                if meta['exporter_version'] == 'weekly-export/4':
+                if meta['exporter_version'] in ('weekly-export/4', 'weekly-export/5'):
                     before = [book[k]['value'] for k in table['match_keys']
                               if (book[k]['value']['week'] < target['week'] if target['competition'] in ('premier', 'second')
                                   else book[k]['value']['week'] <= target['week'])]
@@ -240,6 +240,23 @@ def validate_packet(packet, sources=None):
             require((d["status"], d["next_stage"]) == status_for_team(state, d["team_id"], raw), "赛事资格与签表不符")
         elif f["kind"] == "record":
             require(d["complete_history"] or d["comparison"] == "best_in_available_records", "缺失历史却宣称首次/刷新")
+        elif f["kind"] == "edition_awards" and sources is not None:
+            key = "edition-awards:" + f["competition_id"]
+            require(key in book and key in book["fact:" + f["fact_id"]]["value"]["evidence_keys"], "奖项缺少赛事冻结来源")
+            edition = book[key]["value"]
+            values = edition.get("awards") or {}
+            require((edition["season_number"], edition["completed_week"], edition["competition_id"]) ==
+                    (meta["season"], meta["completed_week"], f["competition_id"]), "奖项并非本周赛事收官时产生")
+            require(values.get("rule_version") == "0.3.1" and int(values.get("evp_slots") or 0) == d["evp_slots"], "奖项规则或名额不符")
+            mvp = values.get("mvp") or []
+            evp = values.get("evp") or []
+            basic = lambda row: {"player_id": row["player_id"], "team_id": row["team_id"]}
+            require(len(mvp) <= 1 and len(evp) <= d["evp_slots"], "赛事奖项数量不符")
+            require(d["mvp"] == (basic(mvp[0]) if mvp else None) and d["evp"] == [basic(row) for row in evp], "得主与冻结赛事奖项不符")
+            winners = ([d["mvp"]] if d["mvp"] else []) + d["evp"]
+            ids = [row["player_id"] for row in winners]
+            require(len(ids) == len(set(ids)), "同届MVP与EVP重复")
+            require(set(ids) == set(f["player_ids"]) and {r["team_id"] for r in winners} == set(f["team_ids"]), "奖项实体引用不符")
         elif f["kind"] == "swiss_record" and sources is not None:
             state = book["cup-state:starpath"]["value"]["state"]
             require([d["wins"], d["losses"]] == state["records"][d["team_id"]], "瑞士资格战绩错误")

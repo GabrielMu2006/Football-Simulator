@@ -100,7 +100,7 @@ def awards(data):
     for name, winners in data.get('awards', {}).items():
         for row in winners:
             unit = '球' if name == '射手王' else '次助攻' if name == '助攻王' else '赛事评分'
-            value = f"{row['value']}{unit}" if name != '赛事MVP' else f"赛事评分{row['value']}"
+            value = f"赛事评分{row['value']}" if name in ('赛事MVP', '赛事EVP') else f"{row['value']}{unit}"
             # Counts/rating are whole-edition results, not production at the
             # club registered when the game settles the award.
             teams = row.get('actual_teams_in_edition', [])
@@ -158,6 +158,16 @@ def competition(data):
         early=[row for row in data['champion_route'] if (row['stage'],row['home'],row['away']) not in included]
         if early:result['冠军此前的非淘汰阶段比赛']=[match(row) for row in early]
     result['正式个人奖项'] = awards(data)
+    status = data.get('award_status') or {}
+    if status.get('status') == 'not_offered':
+        result['本届MVP与EVP'] = '本赛事本届不设MVP和EVP。'
+    elif status.get('status') == 'awarded':
+        mvp = '本届MVP空缺。' if status.get('mvp_status') == 'vacant' else '本届MVP已评出，得主以正式个人奖项为准。'
+        result['本届MVP与EVP'] = mvp + f"本届实际评出{status['evp_count']}名EVP，名额为{status['evp_slots']}名。"
+    elif status.get('status') == 'unknown':
+        result['本届MVP与EVP'] = 'MVP获奖信息以正式个人奖项为准；该届EVP评选情况和名额未记录。'
+    elif status:
+        result['本届MVP与EVP'] = '本届奖项记录不完整，不推断未列得主。'
     result['本届冠军的历史坐标'] = title_history(data)
     if data.get('result_meaning'):
         result['赛事结果意义'] = data['result_meaning']
@@ -267,6 +277,12 @@ def top20_player(card):
         '个人奖项':[f"{player}获得{a['competition']}{a['award']}。" for a in card['personal_awards']] or ['无'],
         '实际随队冠军':[f"{player}随{a['team_at_championship']}获得{a['competition']}冠军。" for a in card['team_titles']]
                       or (['夺冠阵容记录不完整，尚无法确认'] if unknown_roster else ['无'])}
+    if card.get('award_policy') == '0.3.1':
+        personal = card.get('personal_awards', [])
+        result['本季赛事MVP与EVP次数'] = {
+            'MVP': sum(a['award'] == '赛事MVP' for a in personal),
+            'EVP': sum(a['award'] == '赛事EVP' for a in personal),
+        }
     contexts=[]
     for team in card['teams_season_results']:
         facts=[]

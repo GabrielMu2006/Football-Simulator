@@ -192,6 +192,28 @@ def build_packet(conn, world, week, activation):
 
     for m in weekly:
         add_match(m)
+    # The edition archive is written in the same transaction as its last
+    # match. Only report awards that were actually frozen this week.
+    for edition in world.get("edition_archives", {}).values():
+        if int(edition.get("season_number", 0)) != season or int(edition.get("completed_week", 0)) != week:
+            continue
+        comp = edition.get("competition_id")
+        awards = edition.get("awards") or {}
+        slots = int(awards.get("evp_slots") or 0)
+        if awards.get("rule_version") != "0.3.1" or not slots or "mvp" not in awards or "evp" not in awards:
+            continue
+        winners = [*(awards.get("mvp") or []), *(awards.get("evp") or [])]
+        if any(not world["players"].get(row.get("player_id"), {}).get("is_real") or row.get("team_id") not in world["teams"] for row in winners):
+            continue
+        brief = lambda row: {"player_id": row["player_id"], "team_id": row["team_id"]}
+        mvp = awards.get("mvp") or []
+        data = {"mvp": brief(mvp[0]) if mvp else None,
+                "evp": [brief(row) for row in awards["evp"]], "evp_slots": slots}
+        evidence = record("edition-awards:" + comp, "derived", {
+            "season_number": season, "competition_id": comp, "completed_week": week, "awards": awards})
+        emit("edition-awards:" + comp, "edition_awards", data, comp=comp,
+             players=list(dict.fromkeys(row["player_id"] for row in winners)),
+             teams=list(dict.fromkeys(row["team_id"] for row in winners)), keys=[evidence])
     for comp in rules.LEAGUE_COMPETITIONS:
         team_ids = world["season"]["league"][comp]
         played = [m for m in raw if m["season_number"] == season and m["competition"] == comp]

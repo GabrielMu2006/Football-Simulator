@@ -5,6 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 import uuid
+import zlib
 
 from football_simulator import runtime
 from football_simulator.persistence_v2 import store
@@ -17,6 +18,24 @@ def canonical(value):
 
 def digest(value):
     return hashlib.sha256(canonical(value).encode("utf-8")).hexdigest()
+
+
+_COMPRESSED_SOURCE = b"FSZ1"
+
+
+def encode_sources(value):
+    """Compress new snapshots; hashes remain over the canonical uncompressed facts."""
+    return _COMPRESSED_SOURCE + zlib.compress(canonical(value).encode("utf-8"), level=6)
+
+
+def decode_sources(value):
+    """Read both original JSON text and new version-tagged SQLite blobs."""
+    try:
+        if isinstance(value, bytes) and value.startswith(_COMPRESSED_SOURCE):
+            value = zlib.decompress(value[len(_COMPRESSED_SOURCE):]).decode("utf-8")
+        return json.loads(value)
+    except (ValueError, UnicodeError, zlib.error, TypeError) as exc:
+        raise PressError("周报材料无法读取。") from exc
 
 
 def enabled(conn):
@@ -74,7 +93,7 @@ def capture(conn, world, completed_week):
     from football_simulator.press.validation import validate_packet
     packet, sources = build_packet(conn, world, week, dict(activation))
     validate_packet(packet, sources)
-    conn.execute("INSERT INTO press_weeks VALUES(?,?,?,?,?,?,?,?)", (world["world_id"], season, week, world["version"], canonical(packet), canonical(sources), digest(packet), digest(sources)))
+    conn.execute("INSERT INTO press_weeks VALUES(?,?,?,?,?,?,?,?)", (world["world_id"], season, week, world["version"], canonical(packet), encode_sources(sources), digest(packet), digest(sources)))
     from football_simulator.press.local_library import enqueue_week
     enqueue_week(conn, packet, digest(packet), digest(sources))
 
@@ -90,7 +109,7 @@ def load_week(save_name, season, week):
         row = conn.execute("SELECT * FROM press_weeks WHERE world_id=? AND season=? AND week=?", (identity, int(season), int(week))).fetchone()
         if row is None:
             raise PressError("该周没有启用后冻结的材料；不补生成历史周报。")
-        packet, sources = json.loads(row["packet_json"]), json.loads(row["source_json"])
+        packet, sources = json.loads(row["packet_json"]), decode_sources(row["source_json"])
         if digest(packet) != row["packet_sha256"] or digest(sources) != row["source_sha256"]:
             raise PressError("周报材料校验和不符。")
         return {"packet": packet, "sources": sources, "manifest": {"packet_sha256": row["packet_sha256"], "source_sha256": row["source_sha256"], "source_world_version": row["source_version"], "schema_version": packet["meta"]["schema_version"]}}

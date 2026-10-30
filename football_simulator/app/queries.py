@@ -1053,9 +1053,13 @@ def _placement_rows(world: dict, state: dict, competition: str) -> List[dict]:
 def _awards_for(world: dict, competition: str) -> dict:
     awards = (world["season"].get("awards") or {}).get("competitions", {}).get(competition, {})
     return {
+        "awarded": bool(awards),
+        "rule_version": awards.get("rule_version"),
+        "evp_slots": awards.get("evp_slots"),
         "top_scorer": [_award_people(item) for item in awards.get("top_scorer", [])],
         "assist_leader": [_award_people(item) for item in awards.get("assist_leader", [])],
         "mvp": [_award_people(item) for item in awards.get("mvp", [])],
+        "evp": [_award_people(item) for item in awards.get("evp", [])],
         "mvp_minimum": awards.get("mvp_minimum"),
         "max_team_matches": awards.get("max_team_matches"),
     }
@@ -1066,7 +1070,9 @@ def _award_people(item: dict) -> dict:
     return {
         "player_id": item.get("player_id"),
         "label": item.get("label"),
+        "team_id": item.get("team_id"),
         "team": item.get("team_name"),
+        "teams": dict(item.get("teams") or {}),
         "value": item.get("value"),
         "appearances": item.get("appearances"),
     }
@@ -1376,7 +1382,9 @@ def _player_rating(world: dict, player_id: str, stats: dict) -> Optional[float]:
     if not stats or stats.get("appearances", 0) <= 0:
         return None
     player = game_world._player_object(world, player_id)
-    return __import__("football_simulator.domain.formulas", fromlist=["calculate_player_rating"]).calculate_player_rating(
+    formulas = __import__("football_simulator.domain.formulas", fromlist=["calculate_player_rating"])
+    rating = formulas.calculate_player_rating_v031 if world.get("awards_rule_version") == "0.3.1" else formulas.calculate_player_rating
+    return rating(
         game_world._stats_namespace(player, stats), stats["appearances"]
     )
 
@@ -1475,7 +1483,7 @@ def _player_awards(world: dict, player_id: str) -> List[dict]:
                             {
                                 "season": archive["season_number"],
                                 "competition": competition,
-                                "award": {"top_scorer": "射手王", "assist_leader": "助攻王", "mvp": "赛事 MVP"}.get(award_type, award_type),
+                                "award": {"top_scorer": "射手王", "assist_leader": "助攻王", "mvp": "赛事 MVP", "evp": "赛事 EVP"}.get(award_type, award_type),
                                 "value": winner.get("value"),
                             }
                         )
@@ -1593,6 +1601,7 @@ def _history_awards(world: dict, awards: dict) -> dict:
             "top_scorer": "、".join(item.get("label", "") for item in values.get("top_scorer", [])),
             "assist_leader": "、".join(item.get("label", "") for item in values.get("assist_leader", [])),
             "mvp": "、".join(item.get("label", "") for item in values.get("mvp", [])),
+            "evp": "、".join(item.get("label", "") for item in values.get("evp", [])),
             "mvp_minimum": values.get("mvp_minimum"),
         }
     return competitions

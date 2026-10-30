@@ -39,6 +39,22 @@ class PressSaveCase(unittest.TestCase):
 
 
 class WeeklyExportTests(PressSaveCase):
+    def test_compressed_sources_preserve_hash_and_old_text_remains_readable(self):
+        repository.enable("Press"); self.advance()
+        material = repository.load_week("Press", 1, 1)
+        with store._connect(store.database_path("Press")) as conn:
+            row = conn.execute("SELECT source_json,source_sha256 FROM press_weeks WHERE season=1 AND week=1").fetchone()
+            raw = repository.canonical(material["sources"])
+            self.assertIsInstance(row["source_json"], bytes)
+            self.assertLess(len(row["source_json"]), len(raw.encode("utf-8")))
+            self.assertEqual(row["source_sha256"], repository.digest(material["sources"]))
+            conn.execute("UPDATE press_weeks SET source_json=? WHERE season=1 AND week=1", (raw,))
+        self.assertEqual(repository.load_week("Press", 1, 1), material)
+        with store._connect(store.database_path("Press")) as conn:
+            conn.execute("UPDATE press_weeks SET source_json=? WHERE season=1 AND week=1", (b"FSZ1broken",))
+        with self.assertRaises(PressError):
+            repository.load_week("Press", 1, 1)
+
     def test_disabled_saves_get_no_press_tables_or_material(self):
         with patch("football_simulator.press.builder.build_packet") as builder:
             self.advance()

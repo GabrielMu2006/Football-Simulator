@@ -74,6 +74,44 @@ class PressUITests(PressSaveCase):
             window.press.pump();QTest.qWait(20)
             self.assertEqual(lib.read(1,1,mark_read=False),article)
 
+    def test_advance_waits_for_local_reporting_before_refreshing(self):
+        lib=activate('Press');window=self.window();window.press.timer.stop()
+        entered=threading.Event();release=threading.Event()
+        from football_simulator.press.local_templates.engine import render as real_render
+        def slow(packet,plan):
+            entered.set();release.wait(10);return real_render(packet,plan)
+        with offline_guards(), patch('football_simulator.press.local_templates.engine.render',side_effect=slow), \
+                patch.object(window,'_refresh_current_page',wraps=window._refresh_current_page) as refresh:
+            try:
+                window._start_worker()
+                self.assertTrue(self.wait_until(entered.is_set))
+                self.assertTrue(window.progress.isVisible())
+                self.assertTrue(window._worker_running())
+                self.assertFalse(window.primary.isEnabled())
+                self.assertEqual(refresh.call_count,0)
+            finally:
+                release.set()
+            self.assertTrue(self.wait_until(lambda:not window._worker_running() and not window.press.running))
+            self.assertEqual(lib.overview()['weeks'][0]['status'],'ready')
+            self.assertFalse(window.progress.isVisible())
+            self.assertEqual(refresh.call_count,1)
+
+    def test_advance_releases_loading_when_report_fails(self):
+        activate('Press');window=self.window();window.press.timer.stop()
+        with patch.object(LocalLibrary,'generate_local',return_value=False):
+            window._start_worker()
+            self.assertTrue(self.wait_until(lambda:not window._worker_running() and not window.press.running))
+        self.assertTrue(window.press.auto_paused)
+        self.assertFalse(window.progress.isVisible())
+        self.assertIn('报刊生成已暂停',window.status_line.text())
+
+    def test_advance_releases_loading_when_press_is_disabled(self):
+        window=self.window();window.press.timer.stop()
+        window._start_worker()
+        self.assertTrue(self.wait_until(lambda:not window._worker_running()))
+        self.assertFalse(window.progress.isVisible())
+        self.assertFalse(window.press.auto_paused)
+
     def test_explicit_disable_has_no_press_controller(self):
         with patch.dict(os.environ,{'FS_PRESS_DEV':'0'}):window=MainWindow(self.service)
         self.addCleanup(window.close);self.assertIsNone(window.press)
@@ -115,7 +153,17 @@ class PressUITests(PressSaveCase):
             window=self.window();window.press.pump()
             self.assertTrue(self.wait_until(lambda:not window.press.running and lib.next_local() is None))
             self.assertEqual(len(lib.feature_rows()),2)
-            window.navigate('press');types=window.stack.currentWidget().findChild(QComboBox,'PressTypeFilter')
+            window.navigate('press')
+            self.assertEqual(lib.unread_count(),2)
+            status=window.stack.currentWidget().findChild(QComboBox,'PressStatusFilter')
+            status.setCurrentIndex(status.findData('unread'));QTest.qWait(20)
+            unread_buttons=[b for b in window.stack.currentWidget().findChildren(QPushButton)
+                            if b.isVisible() and b.property('report_id')]
+            self.assertEqual({b.property('report_id') for b in unread_buttons},
+                             {row['report_id'] for row in lib.feature_rows()})
+            status=window.stack.currentWidget().findChild(QComboBox,'PressStatusFilter')
+            status.setCurrentIndex(status.findData(None));QTest.qWait(20)
+            types=window.stack.currentWidget().findChild(QComboBox,'PressTypeFilter')
             types.setCurrentIndex(types.findData('phase'));QTest.qWait(20)
             button=next(b for b in window.stack.currentWidget().findChildren(QPushButton) if b.isVisible() and b.property('report_id'))
             rid=button.property('report_id');QTest.mouseClick(button,Qt.LeftButton);QTest.qWait(20)

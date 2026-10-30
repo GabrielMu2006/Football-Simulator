@@ -75,6 +75,7 @@ def create_new_world(save_name: str, *, rng: Optional[random.Random] = None) -> 
         "format_version": rules.WORLD_FORMAT_VERSION,
         "app_version": store.APP_VERSION,
         "rules_version": rules.RULES_VERSION,
+        "awards_rule_version": "0.3.1",
         "world_id": str(uuid.uuid4()),
         "save_name": save_name,
         "created_at": datetime.now(timezone.utc).isoformat(),
@@ -390,8 +391,13 @@ def _compute_settlement(world: dict, stage: str, cutoff_week: int) -> None:
         stats = totals.get(player_id)
         if stats and stats["appearances"] > 0:
             player = _player_object(world, player_id)
-            rating = calculate_player_rating(_stats_namespace(player, stats), stats["appearances"])
-            market_value = calculate_market_value(player, rating)
+            old_rating = calculate_player_rating(_stats_namespace(player, stats), stats["appearances"])
+            market_value = calculate_market_value(player, old_rating)
+            if world.get("awards_rule_version") == "0.3.1":
+                from football_simulator.domain.formulas import calculate_player_rating_v031
+                rating = calculate_player_rating_v031(_stats_namespace(player, stats), stats["appearances"])
+            else:
+                rating = old_rating
         else:
             rating = None
             market_value = data.get("initial_market_value")
@@ -423,6 +429,9 @@ def _finalize_sport(world: dict, rng: random.Random) -> None:
     tables = league_tables(world)
     season["final_tables"] = {key: rows for key, rows in tables.items()}
     season["honor_rows"], season["honor_totals"] = compute_honors(world)
+    if world.get("awards_rule_version") == "0.3.1":
+        from football_simulator.game import editions
+        editions.capture_finished(world)
     season["awards"] = compute_season_awards(world)
     season["transition"] = compute_transition(world, tables)
     season["finalized"] = True
@@ -581,6 +590,9 @@ def _award_winners(rows: List[dict], key, *, value_field: str, require_positive:
 
 
 def compute_season_awards(world: dict) -> dict:
+    if world.get("awards_rule_version") == "0.3.1":
+        from football_simulator.game.awards_v031 import season_awards
+        return season_awards(world)
     season = world["season"]
     totals = _aggregate_player_facts(world, completed_matches(world))
     tables = season.get("final_tables") or league_tables(world)
@@ -645,6 +657,9 @@ def compute_season_awards(world: dict) -> dict:
 
 
 def compute_competition_awards(world: dict, competition_ids=None) -> Dict[str, dict]:
+    if world.get("awards_rule_version") == "0.3.1":
+        from football_simulator.game.awards_v031 import competition_awards
+        return competition_awards(world, competition_ids)
     result: Dict[str, dict] = {}
     competition_ids = competition_ids if competition_ids is not None else [rules.PREMIER, rules.SECOND, *rules.CUP_IDS]
     for competition in competition_ids:

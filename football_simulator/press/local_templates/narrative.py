@@ -105,12 +105,16 @@ def season_numbers(card,*,subject='他',scope='本季'):
     goals=card.get('goals');assists=card.get('assists');parts=[]
     if goals is not None and goals>0:parts.append(f"打进{goals}球")
     if assists is not None and assists>0:parts.append(f"送出{assists}次助攻")
-    if not parts and apps is not None:parts.append('尚无进球或助攻' if goals==0 and assists==0 else '')
-    text=(f"出场{apps}次，" if apps is not None else '')+'、'.join(p for p in parts if p)
+    has_position_facts = ((position=='DF' and card.get('successful_defenses') is not None) or
+                          (position=='MF' and card.get('chances_created') is not None))
+    if not parts and apps is not None and not has_position_facts:
+        parts.append('尚无进球或助攻' if goals==0 and assists==0 else '')
+    text=f"出场{apps}次" if apps is not None else ''
+    if any(parts):text+=('，' if text else '')+'、'.join(p for p in parts if p)
     extra=[]
     if position=='DF' and card.get('successful_defenses') is not None:extra.append(f"完成{card['successful_defenses']}次成功防守")
     if position=='MF' and card.get('chances_created') is not None:extra.append(f"创造{card['chances_created']}次机会")
-    if extra:text+='，'+ '、'.join(extra)
+    if extra:text+=('，' if text else '')+'、'.join(extra)
     return prefix+text+'。' if text else ''
 
 

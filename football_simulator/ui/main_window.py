@@ -38,6 +38,7 @@ from football_simulator.ui.components import Badge, label
 from football_simulator.ui.pages.competitions import (
     CompetitionsPage,
     CompetitionDetailPage,
+    CompetitionEVPPage,
     SeasonPage,
 )
 from football_simulator.ui.pages.core import DashboardPage, MatchDetailPage, MatchesPage, WeeklyPage
@@ -130,6 +131,7 @@ ROUTE_CLASSES = {
     "match": MatchDetailPage,
     "competitions": CompetitionsPage,
     "competition": CompetitionDetailPage,
+    "competition_evp": CompetitionEVPPage,
     "season": SeasonPage,
     "teams": TeamsPage,
     "team": TeamProfilePage,
@@ -155,6 +157,7 @@ NAV_PARENT = {
     "match": "matches",
     "matches": "matches",
     "competition": "competitions",
+    "competition_evp": "competitions",
     "competitions": "competitions",
     "season": "competitions",
     "team": "teams",
@@ -232,6 +235,7 @@ class MainWindow(QMainWindow):
         self._current_route: Optional[Tuple[str, dict]] = None
         self._generation = 0
         self._worker: Optional[AdvanceWorker] = None
+        self._finishing_press = False
         self._worker_started = False
         self._last_error = ""
         self._resetting_pages = False
@@ -737,13 +741,15 @@ class MainWindow(QMainWindow):
         self.status_line.setText("正在推进…")
         self._last_error = ""
         self.error_label.setText("")
+        if self.press:
+            self.press.begin_simulation()
         worker.start()
 
     def _worker_running(self) -> bool:
-        return self._worker is not None and self._worker.isRunning()
+        return self._finishing_press or (self._worker is not None and self._worker.isRunning())
 
     def _request_stop(self) -> None:
-        if self._worker_running():
+        if self._worker is not None and self._worker.isRunning():
             self._worker.request_stop()
             self.stop_button.setText("将在本周完成后停止…")
             self.stop_button.setEnabled(False)
@@ -768,6 +774,17 @@ class MainWindow(QMainWindow):
         self._worker = None
         self.stop_button.hide()
         self.stop_button.setEnabled(True)
+        if worker is not None:
+            worker.deleteLater()
+        if self.press:
+            self._finishing_press = True
+            self.status_line.setText("比赛已结束，正在撰写报刊…")
+            self.press.finish_simulation(lambda: self._finish_advance(save_name))
+        else:
+            self._finish_advance(save_name)
+
+    def _finish_advance(self, save_name: str) -> None:
+        self._finishing_press = False
         self.progress.hide()
         self.progress.setRange(0, 0)
         if save_name == self._save_name:
@@ -775,9 +792,7 @@ class MainWindow(QMainWindow):
             self._refresh_current_page(restore_scroll=False)
             self._refresh_chrome()
             if not self._last_error:
-                self.status_line.setText("就绪")
-        if worker is not None:
-            worker.deleteLater()
+                self.status_line.setText("报刊生成已暂停，请在报刊中心查看" if self.press and self.press.auto_paused else "就绪")
 
     def start_next_season(self) -> bool:
         """页内与顶栏共用的合法换季入口；确认/前置条件/提交只有这一份。"""
@@ -897,12 +912,18 @@ class MainWindow(QMainWindow):
         self._save_name = name
         self.service.set_current_save(name)
         self._reload_world()
-        # 只建档、尚未初始化：原地刷新存档页，避免在事件循环外销毁并重建
-        # 整套 Qt 页面造成卡死。初始化/切档时才清空页面。
+        # Do not rebuild the clicked save form during its accessibility action.
         if self._current_route is None or self._current_route[0] != "saves":
             self.navigate("saves")
         else:
-            self._refresh_current_page(restore_scroll=False)
+            # Cocoa may still be serving the button's accessibility action as
+            # this slot returns. Let it finish before changing the table model.
+            def show_created():
+                if self._current_route and self._current_route[0] == "saves" and self._save_name == name:
+                    self._pages["saves"].show_created_save()
+                    self._refresh_chrome()
+                    self.status_line.setText("存档已建立，请初始化赛季")
+            QTimer.singleShot(600, show_created)
         self.status_line.setText("存档已建立，请初始化赛季")
 
     def initialize_save(self, name: str) -> None:
@@ -1069,7 +1090,7 @@ class MainWindow(QMainWindow):
             self.status_line.setText('正在保存当前段落，完成本次请求后关闭；其余部分下次续写。')
             event.ignore()
             return
-        if self._worker_running():
+        if self._worker is not None and self._worker.isRunning():
             self._worker.request_stop()
             if not self._worker.wait(15000):
                 QMessageBox.warning(self, "正在保存", "当前推进仍在提交事务，窗口将在完成后关闭。")

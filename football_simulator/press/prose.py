@@ -241,7 +241,7 @@ def style_advice(article, packet):
 
 
 def validate_narrative(article, packet, sources=None):
-    if packet["meta"]["exporter_version"] not in ("weekly-export/2", "weekly-export/3", "weekly-export/4"):
+    if packet["meta"]["exporter_version"] not in ("weekly-export/2", "weekly-export/3", "weekly-export/4", "weekly-export/5"):
         return {"narrative_policy": "legacy_material", "prose_semantics": "requires_independent_reading"}
     facts = {f["fact_id"]: f for f in packet["facts"]}
     teams = packet["entities"]["teams"]

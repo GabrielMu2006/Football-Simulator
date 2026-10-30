@@ -1,4 +1,4 @@
-"""Offline, per-save background reporting for the V0.3.0 development UI."""
+"""Offline, per-save background reporting for the development UI."""
 from __future__ import annotations
 
 import uuid
@@ -42,6 +42,7 @@ class PressController(QObject):
         self.credentials,self.transport=credentials,transport
         self.workers={};self._recovered=set()
         self.close_when_idle=False;self.auto_paused=False;self.auto_needs_key=False;self.simulation=False
+        self._after_simulation=None
         self.changed.connect(self._changed)
         self.timer=QTimer(self);self.timer.setInterval(1000)
         self.timer.timeout.connect(self.pump);self.timer.start()
@@ -89,16 +90,34 @@ class PressController(QObject):
         activate(self.window.current_save_name());self.changed.emit();QTimer.singleShot(0,self.pump)
 
     def pump(self):
-        if self.running or self.close_when_idle or self.auto_paused or not self.window.has_save:return
+        if self.running or self.close_when_idle or self.simulation:return
+        if self.auto_paused or not self.window.has_save:
+            self._finish_simulation();return
         try:
             library=self.library()
             with library.connection() as conn:
-                if not repository.enabled(conn):return
+                if not repository.enabled(conn):
+                    self._finish_simulation();return
             item=library.next_local()
             if item:
                 target=LocalLibrary(library.path) if item['kind']=='weekly' else library
                 self._start(target,item)
-        except (PressError,OSError):self._pause_auto()
+            else:self._finish_simulation()
+        except (PressError,OSError):
+            self._pause_auto();self._finish_simulation()
+
+    def begin_simulation(self):
+        self.simulation=True
+
+    def finish_simulation(self, callback):
+        """Drain the local queue before showing the newly simulated results."""
+        self.simulation=False
+        self._after_simulation=callback
+        self.pump()
+
+    def _finish_simulation(self):
+        callback,self._after_simulation=self._after_simulation,None
+        if callback:callback()
 
     def resume_auto(self):
         self.auto_paused=False;self.changed.emit();QTimer.singleShot(0,self.pump)
@@ -131,10 +150,11 @@ class PressController(QObject):
         elif not self.close_when_idle:QTimer.singleShot(0,self.pump)
 
     def _changed(self):
+        if self.simulation or self._after_simulation is not None:return
         if self.window._current_route and self.window._current_route[0] in ('press','dashboard'):
             self.window._refresh_current_page(restore_scroll=True)
         else:self.window._refresh_chrome()
 
     def settings(self):
-        QMessageBox.information(self.window,'本地模板','V0.3.0 使用本地模板离线撰稿，无需 API 密钥。旧 DeepSeek 文章保留原文，未完成的原引擎任务保留状态。')
+        QMessageBox.information(self.window,'本地模板','V0.3.1 使用本地模板离线撰稿，无需 API 密钥。旧 DeepSeek 文章保留原文，未完成的原引擎任务保留状态。')
         return False

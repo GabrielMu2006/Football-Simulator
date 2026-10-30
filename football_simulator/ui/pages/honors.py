@@ -641,16 +641,20 @@ class PlayerHonorsPage(BasePage):
                 self.scroll.layout.addWidget(team_link, 0, Qt.AlignLeft)
         self.scroll.layout.addWidget(StatGrid([
             (str(len(data["awards"])), "个人奖"),
+            (str(sum(row["award_type"] == "mvp" for row in data["awards"])), "MVP"),
+            (str(sum(row["award_type"] == "evp" for row in data["awards"])), "EVP"),
             (str(len(data["championships"])), "随队冠军"),
             (str(len(data["top20"])), "Top20 入榜"),
         ]))
         if macos.enabled():
             self._readable_honors(world, player_id, data)
             return
-        self.scroll.layout.addWidget(SectionTitle("个人奖项", "按赛季记录"))
-        if not data["awards"]:
-            self.scroll.layout.addWidget(label("暂无个人奖项。", "Meta"))
-        for row in data["awards"]:
+        controls = self._award_filter_controls(player_id, data["awards"])
+        awards = self._filtered_awards(player_id, data["awards"])
+        self.scroll.layout.addWidget(SectionTitle("个人奖项", "按赛季记录", controls))
+        if not awards:
+            self.scroll.layout.addWidget(label("暂无符合条件的个人奖项。", "Meta"))
+        for row in awards:
             self.scroll.layout.addWidget(label(f"S{row['season_number']} · {row['competition_label']} · {row['award_label']}（{row.get('value')}）", "Meta"))
         self.scroll.layout.addWidget(SectionTitle("随队冠军", "按夺冠时注册阵容授予，0 出场也有"))
         if not data["championships"]:
@@ -689,20 +693,27 @@ class PlayerHonorsPage(BasePage):
 
     def _readable_honors(self, world: dict, player_id: str, data: dict) -> None:
         """Primary facts use tables/cards, with a full body-size type hierarchy."""
+        controls = self._award_filter_controls(player_id, data["awards"])
         awards = []
-        for row in sorted(data["awards"], key=lambda row: (-int(row["season_number"]), row["competition_label"], row["award_label"])):
+        for row in sorted(self._filtered_awards(player_id, data["awards"]), key=lambda row: (-int(row["season_number"]), row["competition_label"], row["award_label"])):
             team = world["teams"].get(row.get("team_id"), {})
             value = row.get("value")
-            result = "—" if value is None else (f"{float(value):.2f}" if row["award_type"] == "mvp" else str(value))
+            result = "—" if value is None else (f"{float(value):.2f}" if row["award_type"] in ("mvp", "evp") else str(value))
             awards.append({**row, "season_text": f"第 {row['season_number']} 季", "result": result,
                            "team": team.get("club_en", "—"), "club": team.get("club_en", "")})
+        histories = {}
+        for row in awards:
+            history = records.award_team_history(world, row.get("teams") or {})
+            if history:
+                key = (int(row["season_number"]), row["competition_label"])
+                histories[key] = f"第 {key[0]} 季 · {key[1]}：{history}"
         self._honor_table("个人奖项", "PlayerHonorAwards", awards, [
             {"key": "season_text", "label": "赛季", "width": 88},
             {"key": "competition_label", "label": "赛事", "stretch": True},
             {"key": "award_label", "label": "奖项", "width": 100},
             {"key": "result", "label": "成绩", "width": 80, "numeric": True},
             macos.team_column("team", "当届球队", size=26),
-        ], player_id, "暂无个人奖项")
+        ], player_id, "暂无符合条件的个人奖项", action=controls, details=list(histories.values()))
 
         self.scroll.layout.addWidget(SectionTitle("随队冠军"))
         medals = TrophyGrid(max_columns=2, minimum_card=500)
@@ -750,12 +761,53 @@ class PlayerHonorsPage(BasePage):
         ], player_id, "暂无年度排名记录")
         self.scroll.layout.addStretch(1)
 
-    def _honor_table(self, title, name, rows, columns, player_id, empty_text) -> None:
+    def _filtered_awards(self, player_id: str, awards: list) -> list:
+        state = self.detail_state(player_id)
+        return [row for row in awards
+                if (state.get("award_filter", "all") == "all" or row["award_type"] == state["award_filter"])
+                and (state.get("competition_filter", "all") == "all" or row["competition"] == state["competition_filter"])
+                and (state.get("season_filter", "all") == "all" or int(row["season_number"]) == state["season_filter"])]
+
+    def _award_filter_controls(self, player_id: str, awards: list) -> QWidget:
+        state = self.detail_state(player_id)
+        controls = QWidget()
+        layout = QHBoxLayout(controls)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(t.S8)
+        competitions = sorted({(r["competition"], r["competition_label"]) for r in awards}, key=lambda item: item[1])
+        seasons = sorted({int(r["season_number"]) for r in awards}, reverse=True)
+        choices = [
+            ("award_filter", "PlayerAwardFilter", "筛选个人奖项", [("全部奖项", "all"), ("MVP", "mvp"), ("EVP", "evp"), ("射手王", "top_scorer"), ("助攻王", "assist_leader")]),
+            ("competition_filter", "PlayerCompetitionFilter", "筛选赛事", [("全部赛事", "all"), *[(name, cid) for cid, name in competitions]]),
+            ("season_filter", "PlayerSeasonFilter", "筛选赛季", [("全部赛季", "all"), *[(f"第 {season} 赛季", season) for season in seasons]]),
+        ]
+        for key, name, accessible, items in choices:
+            selector = QComboBox()
+            selector.setObjectName(name)
+            selector.setAccessibleName(accessible)
+            for text, value in items:
+                selector.addItem(text, value)
+            index = selector.findData(state.get(key, "all"))
+            if index < 0:
+                state[key] = "all"
+                index = 0
+            selector.setCurrentIndex(index)
+
+            def change_filter(_index, *, state_key=key, box=selector):
+                state[state_key] = box.currentData()
+                state.setdefault("PlayerHonorAwards", {})["page"] = 1
+                self.app._refresh_current_page(restore_scroll=True)
+
+            selector.currentIndexChanged.connect(change_filter)
+            layout.addWidget(selector)
+        return controls
+
+    def _honor_table(self, title, name, rows, columns, player_id, empty_text, *, action=None, details=()) -> None:
         frame = card()
         layout = QVBoxLayout(frame)
         layout.setContentsMargins(t.S20, t.S16, t.S20, t.S16)
         layout.setSpacing(t.S12)
-        layout.addWidget(SectionTitle(title))
+        layout.addWidget(SectionTitle(title, action=action))
         table = DataTable()
         table.setObjectName(name)
         table.set_columns(columns)
@@ -763,6 +815,8 @@ class PlayerHonorsPage(BasePage):
         macos.paginate_table(table, rows, layout, self.detail_state(player_id).setdefault(name, {}), default_size=10)
         if not rows:
             layout.addWidget(label(empty_text, "FactText"))
+        for detail in details:
+            layout.addWidget(label(detail, "FactText", wrap=True))
         self.scroll.layout.addWidget(frame)
 
 

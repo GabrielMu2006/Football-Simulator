@@ -391,6 +391,17 @@ def team_honors(world: dict, team_id: str) -> dict:
     }
 
 
+def award_team_history(world: dict, teams: dict) -> str:
+    """Human-readable match counts from the frozen edition, when multi-club."""
+    if len(teams or {}) < 2:
+        return ""
+    labels = []
+    for team_id, count in teams.items():
+        name = (world.get("teams", {}).get(team_id) or {}).get("club_en", team_id)
+        labels.append(f"{name} {count} 场")
+    return "本届效力：" + "；".join(labels)
+
+
 def _award_rows(world: dict) -> List[dict]:
     rows: List[dict] = []
     season = world["season"]
@@ -403,7 +414,7 @@ def _award_rows(world: dict) -> List[dict]:
     seen = set()
     for season_number, awards in sources:
         for comp, values in (awards.get("competitions") or {}).items():
-            for award_type in ("top_scorer", "assist_leader", "mvp"):
+            for award_type in ("top_scorer", "assist_leader", "mvp", "evp"):
                 for winner in values.get(award_type) or []:
                     key = (season_number, comp, award_type, winner.get("player_id"))
                     if key in seen:
@@ -415,14 +426,27 @@ def _award_rows(world: dict) -> List[dict]:
                             "competition": comp,
                             "competition_label": rules.competition_label(comp),
                             "award_type": award_type,
-                            "award_label": {"top_scorer": "射手王", "assist_leader": "助攻王", "mvp": "MVP"}[award_type],
+                            "award_label": {"top_scorer": "射手王", "assist_leader": "助攻王", "mvp": "MVP", "evp": "EVP"}[award_type],
                             "player_id": winner.get("player_id"),
                             "player": winner.get("label"),
                             "team_id": winner.get("team_id"),
+                            "teams": dict(winner.get("teams") or {}),
                             "value": winner.get("value"),
                         }
                     )
     return rows
+
+
+def award_leaderboard(world: dict, award_type: str) -> List[dict]:
+    counts = {}
+    for row in _award_rows(world):
+        if row["award_type"] != award_type or not row.get("player_id"):
+            continue
+        pid = row["player_id"]
+        if pid not in counts:
+            counts[pid] = {"player_id": pid, "player": row["player"], "count": 0}
+        counts[pid]["count"] += 1
+    return sorted(counts.values(), key=lambda row: (-row["count"], row["player"], row["player_id"]))
 
 
 def player_honors(world: dict, player_id: str) -> dict:

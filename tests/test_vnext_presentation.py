@@ -8,6 +8,7 @@ from football_simulator.app import queries, records
 from football_simulator.app.service import GameService
 from football_simulator.game import rules
 from football_simulator.persistence_v2 import store
+from football_simulator.ui import macos_presentation as macos
 from football_simulator.ui.components import EntityLink, PageHeader
 from football_simulator.ui.main_window import MainWindow
 from tests import support
@@ -80,8 +81,13 @@ class PresentationTests(unittest.TestCase):
         joined = " ".join(labels)
         self.assertIn("第 2 赛季", joined)
         self.assertIn("Reign Cup", joined)
-        # 开发说明改为玩家可读的“往届赛季”。
-        self.assertIn("往届赛季", joined)
+        # The current macOS page uses the real edition context and selector.
+        page = self.window._pages["history_competition"]
+        if macos.enabled():
+            self.assertEqual(page._display_world["season_number"], 2)
+            self.assertEqual(page.findChild(__import__("PySide6").QtWidgets.QComboBox, "CompetitionSeason").currentData(), 2)
+        else:
+            self.assertIn("往届赛季", joined)
 
     def test_team_honors_trophy_fallback_preserves_champion_text(self) -> None:
         row = next(iter(self.world["season"]["championships"].values()))

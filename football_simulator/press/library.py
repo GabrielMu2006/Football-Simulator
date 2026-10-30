@@ -117,7 +117,9 @@ class Library:
                 item = {"season": row['season'], "week": row['week'],
                         "status": saved['status'] if saved else "available",
                         "ready": row['validity'] == 'ready',
-                        "unread": bool(saved and saved['status'] == 'ready' and not saved['read_at']),
+                        # Weekly editions are considered read on publication,
+                        # including older saves whose read_at was never set.
+                        "unread": False,
                         "title": "", "summary": "", "error": saved['error'] if saved else None,
                         "section_total": totals.get(row['report_id'], row['section_total']), "sections_done": completed.get(row['report_id'], 0)}
                 if saved and saved['article_json']:
@@ -128,7 +130,7 @@ class Library:
 
     def unread_count(self):
         with self.connection() as conn:
-            return conn.execute("SELECT COUNT(*) FROM press_articles WHERE status='ready' AND read_at IS NULL").fetchone()[0] if self.initialized(conn) else 0
+            return 0
 
     def latest(self):
         with self.connection() as conn:
@@ -173,7 +175,7 @@ class Library:
             material = conn.execute("SELECT * FROM press_weeks WHERE world_id=? AND season=? AND week=?", (world_id, season, week)).fetchone()
             if not material:
                 raise PressError("该周没有启用后冻结的材料，不补生成旧周报。")
-            packet, sources = json.loads(material['packet_json']), json.loads(material['source_json'])
+            packet, sources = json.loads(material['packet_json']), repository.decode_sources(material['source_json'])
             if repository.digest(packet) != material['packet_sha256'] or repository.digest(sources) != material['source_sha256']:
                 raise PressError("周报材料校验和不符。")
             if packet['meta']['input_validity'] != 'ready':
@@ -291,7 +293,8 @@ class Library:
         return compose_sections(job['packet'],fragments) if plan['strategy']=='per-competition/1' else assemble_story_articles(job['packet'],fragments,plan=plan)
 
     def _published(self,conn,job,article):
-        pass
+        conn.execute('UPDATE press_articles SET read_at=COALESCE(read_at,?) WHERE owner=?',
+                     (now(),job['token']))
 
     def generate(self, job, key, *, transport=provider.send_once, progress=None, grouped=False, should_stop=None):
         try:
