@@ -1,20 +1,29 @@
-# Football Simulator · V0.2.0
+# Football Simulator · V0.3.1
 
-本地运行的足球联赛观察模拟器。推进一个52周赛季，追踪40支球队、两级联赛、六项杯赛、球员数据与赛季故事。V0.2.0加入由DeepSeek API生成的报刊中心。
+本地运行的足球联赛观察模拟器。推进一个52周赛季，追踪40支球队、两级联赛、六项杯赛、球员数据与赛季故事。当前开发分支为 V0.3.1，使用本地模板离线生成报刊，并提供赛事 MVP、EVP 和年度 Top20。
 
 <p align="center">
   <img src="assets/app_icon_256.png" width="128" alt="V0.1.0 绿金足球图标">
   <img src="assets/press-v0.2.0/app_icon_256.png" width="128" alt="V0.2.0 蓝鲸足球图标">
+  <img src="assets/v0.3.1/app_icon_256.png" width="128" alt="V0.3.1 足球盾徽图标">
 </p>
 
 | 版本 | 内容 | 下载 |
 |---|---|---|
+| **V0.3.1** | 足球盾徽图标；离线报刊、MVP 与 EVP | 当前为源码及本机安装版，尚未发布 GitHub Release |
 | **V0.2.0** | 蓝鲸足球图标；含报刊中心 | [macOS Apple Silicon ZIP](https://github.com/GabrielMu2006/Football-Simulator/releases/download/V0.2.0/Football-Simulator-V0.2.0-macOS-arm64.zip) · [Release](https://github.com/GabrielMu2006/Football-Simulator/releases/tag/V0.2.0) |
 | **V0.1.0** | 绿金足球图标；原联赛观察版 | [macOS Apple Silicon ZIP](https://github.com/GabrielMu2006/Football-Simulator/releases/download/V0.1.0/Football-Simulator-V0.1.0-macOS-arm64.zip) · [Release](https://github.com/GabrielMu2006/Football-Simulator/releases/tag/V0.1.0) |
 
 下载后解压，将应用放到任意可访问目录运行，无需安装Python。当前发布仅覆盖macOS Apple Silicon；Windows移植和实测继续延期。应用采用本机临时签名，尚未进行Apple Developer ID公证。
 
-## V0.2.0 报刊中心
+## V0.3.1 报刊与个人奖项
+
+- 每个存档可单独启用本地报刊。周报随比赛推进自动生成；阶段报、赛事总报、转会窗报、选秀报和 Top20 专题在相应事件后生成。
+- 文章依据游戏记录撰写，不需要 API 密钥；已生成的旧版 DeepSeek 文章仍可阅读。周报默认已读，其他已刊发报道在阅读前显示未读。
+- 赛事 MVP 从符合条件的冠亚军球员中选出，EVP 面向赛事参赛球员；次级联赛与升降级附加赛不颁发这两项奖。球员荣誉和赛事历史页面可查看奖项。
+- 年度 Top20 综合赛季表现、赛事个人奖项及球队成绩，具体规则见[奖项方案](docs/v0.3.1-awards-proposal.md)。
+
+## V0.2.0 报刊中心（历史版本）
 
 每篇报道是一篇带小标题的完整长文，以球队故事、走势、冷门和人物表现为主。
 
@@ -34,18 +43,19 @@
 
 **源码、GitHub Release和安装包不含开发者密钥、游玩存档或个人配置。** 密钥不写入文章、存档或日志。API调用费用由密钥所属账户承担。本项目不是DeepSeek官方应用。
 
-## 两个版本同时保留
+## 版本与存档目录
 
-两个应用使用不同名称、图标和应用标识，数据目录分开：
+各版本使用不同的默认数据目录：
 
 | 应用 | 默认数据目录 |
 |---|---|
 | Football Simulator V0.1.0 | `~/Library/Application Support/Football Simulator/` |
 | Football Simulator V0.2.0 | `~/Library/Application Support/Football Simulator V0.2.0/` |
+| Football Simulator V0.3.1 | `~/Library/Application Support/Football Simulator V0.3.1/` |
 
 V0.2.0不会自动改写V0.1.0的存档。需要继续原有进度时，先在V0.1.0导出`.fsarchive`，再在V0.2.0导入副本；两个版本之后分别推进。完整导出包包含数据库、配置和manifest，旧裸SQLite/JSON格式仍不迁移。
 
-本项目本机发布位置：`release/macos/V0.1.0/`和`release/macos/V0.2.0/`。源码修改不会更新这两个正式包；后续开发使用[隔离开发流程](docs/isolated-development.md)。
+各版本不会自动共享写入存档。V0.3.1 的本机应用位于个人应用程序目录；本机安装包保存在 `release/macos/`。源码修改不会自动更新已安装的应用；后续开发使用[隔离开发流程](docs/isolated-development.md)。
 
 ## 游戏内容
 
